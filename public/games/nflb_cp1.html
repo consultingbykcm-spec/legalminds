@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Fact Left Behind — Community Property Q1</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 860px; }
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(29,158,117,0.3); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; letter-spacing: 0.04em; }
+#header h1 span { color: #1d9e75; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#level-indicator { display: flex; gap: 8px; align-items: center; }
+.level-pip { width: 32px; height: 6px; border-radius: 3px; background: #1a2f4a; transition: background 0.3s; }
+.level-pip.active { background: #1d9e75; }
+.level-pip.done { background: #c9973a; }
+#level-label { font-size: 12px; color: #1d9e75; font-weight: 500; margin-left: 4px; }
+
+/* APPROACH REFERENCE */
+#approach { background: #0f1e35; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.2); }
+#approach-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+#approach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.approach-col h4 { font-size: 11px; color: #f5f0e8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; border-bottom: 1px solid rgba(29,158,117,0.2); padding-bottom: 4px; }
+.approach-col ul { list-style: none; }
+.approach-col li { font-size: 11px; color: #a0b8cc; padding: 2px 0; line-height: 1.4; }
+.approach-col li strong { color: #1d9e75; }
+#mnemonic { grid-column: span 2; background: rgba(29,158,117,0.1); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #9fe1cb; text-align: center; border: 1px solid rgba(29,158,117,0.2); }
+
+/* HYPO */
+#hypo-box { background: #0f1e35; border-radius: 12px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.15); }
+#hypo-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#hypo-text { font-size: 13px; color: #d0dce8; line-height: 1.75; }
+.fact { background: rgba(29,158,117,0.15); border-radius: 3px; padding: 1px 4px; }
+
+/* ASSET MATRIX */
+#matrix-box { background: #0f1e35; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.15); }
+#matrix-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px; }
+#matrix-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+#matrix-table th { background: #1a2f4a; color: #6b8aaa; text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; padding: 8px 10px; text-align: center; }
+#matrix-table th:first-child { text-align: left; }
+#matrix-table td { padding: 9px 10px; border-bottom: 1px solid #1a2f4a; color: #a0b8cc; text-align: center; }
+#matrix-table td:first-child { text-align: left; color: #f5f0e8; font-weight: 500; }
+#matrix-table tr:last-child td { border-bottom: none; }
+.matrix-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.dot-sp { background: #e24b4a; }
+.dot-cp { background: #1d9e75; }
+.dot-mixed { background: #c9973a; }
+.dot-empty { background: #2a4a6a; }
+.matrix-note { font-size: 10px; color: #6b8aaa; margin-top: 8px; }
+
+/* PANEL */
+#panel { background: #0f1e35; border-radius: 12px; padding: 20px; }
+#l1-question { font-size: 14px; font-weight: 500; color: #f5f0e8; margin-bottom: 4px; }
+#l1-sub { font-size: 11px; color: #6b8aaa; margin-bottom: 18px; line-height: 1.5; }
+#issue-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.cat-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 0 2px; font-weight: 500; }
+.issue-item { display: flex; align-items: flex-start; gap: 12px; background: #1a2f4a; border-radius: 8px; padding: 13px 15px; cursor: pointer; border: 1.5px solid #1a2f4a; transition: all 0.15s; }
+.issue-item:hover { border-color: #2a4a6a; }
+.issue-item.selected { background: #1a3a2a; border-color: #1d9e75; }
+.issue-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #2a4a6a; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.issue-item.selected .issue-check { background: #1d9e75; border-color: #1d9e75; }
+.check-mark { font-size: 12px; color: #0f1e35; display: none; }
+.issue-item.selected .check-mark { display: block; }
+.issue-text { font-size: 13px; color: #a0b8cc; line-height: 1.4; }
+.issue-item.selected .issue-text { color: #f5f0e8; }
+.issue-item.correct { background: #0f3d2a; border-color: #1d9e75; }
+.issue-item.correct .issue-text { color: #9fe1cb; }
+.issue-item.correct .issue-check { background: #1d9e75; border-color: #1d9e75; }
+.issue-item.missed { background: #2a1a0a; border-color: #c9973a; }
+.issue-item.missed .issue-text { color: #f5d06a; }
+.issue-item.wrong { background: #3d1515; border-color: #e24b4a; }
+.issue-item.wrong .issue-text { color: #f09595; }
+.result-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
+.tag-correct { background: rgba(29,158,117,0.2); color: #1d9e75; }
+.tag-missed { background: rgba(201,151,58,0.2); color: #c9973a; }
+.tag-wrong { background: rgba(226,75,74,0.2); color: #e24b4a; }
+#score-bar { background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; display: none; }
+#score-cells { display: flex; gap: 10px; }
+.score-cell { flex: 1; text-align: center; background: #0f1e35; border-radius: 6px; padding: 10px 6px; }
+.score-cell-n { font-size: 18px; font-weight: 500; color: #1d9e75; }
+.score-cell-l { font-size: 9px; color: #6b8aaa; text-transform: uppercase; margin-top: 2px; }
+#l2-progress { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.issue-dot { width: 28px; height: 28px; border-radius: 50%; background: #1a2f4a; border: 2px solid #2a4a6a; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #6b8aaa; }
+.issue-dot.active { border-color: #1d9e75; background: rgba(29,158,117,0.15); color: #9fe1cb; }
+.issue-dot.done { border-color: #c9973a; background: rgba(201,151,58,0.15); color: #f5d06a; }
+#l2-subq { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+#l2-issue-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#l2-element-box { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(29,158,117,0.2); }
+#l2-element-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+#l2-element-text { font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.5; }
+#l2-element-sub { font-size: 12px; color: #6b8aaa; margin-top: 5px; }
+#l2-instruction { font-size: 11px; color: #6b8aaa; margin-bottom: 10px; }
+#fact-tiles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.fact-tile { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #2a4a6a; background: #1a2f4a; color: #a0b8cc; font-size: 12px; cursor: pointer; transition: all 0.15s; line-height: 1.4; }
+.fact-tile:hover { border-color: #1d9e75; color: #f5f0e8; }
+.fact-tile.selected { background: #1a3a2a; border-color: #1d9e75; color: #f5f0e8; }
+.fact-tile.correct { background: #0f3d2a; border-color: #1d9e75; color: #9fe1cb; cursor: default; }
+.fact-tile.missed-fact { background: #3d2f0a; border-color: #c9973a; color: #f5d06a; cursor: default; }
+.fact-tile.wrong-fact { background: #3d1515; border-color: #e24b4a; color: #f09595; cursor: default; }
+.fact-tile.neutral { background: #1a2f4a; border-color: #1a2f4a; color: #4a6a8a; cursor: default; }
+#l2-explain { display: none; background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(29,158,117,0.3); }
+#l2-explain-text { font-size: 13px; color: #a0b8cc; line-height: 1.6; }
+.btn-primary { width: 100%; background: #1d9e75; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; margin-bottom: 8px; }
+.btn-secondary { width: 100%; background: #1a2f4a; border: 1.5px solid #2a4a6a; border-radius: 8px; padding: 12px; font-size: 13px; color: #a0b8cc; cursor: pointer; font-family: inherit; }
+#prog-text { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 12px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 22px; font-weight: 500; color: #f5f0e8; margin-bottom: 6px; }
+#results-score { font-size: 54px; font-weight: 500; color: #1d9e75; line-height: 1; margin-bottom: 4px; }
+#results-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-cell-n { font-size: 20px; font-weight: 500; color: #1d9e75; }
+.r-cell-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="header">
+  <div>
+    <h1>No Fact <span>Left Behind</span></h1>
+    <p>Community Property · Question 1 · Harry &amp; Wilma</p>
+  </div>
+  <div id="level-indicator">
+    <div class="level-pip active" id="pip1"></div>
+    <div class="level-pip" id="pip2"></div>
+    <span id="level-label">Level 1</span>
+  </div>
+</div>
+
+<!-- APPROACH REFERENCE -->
+<div id="approach">
+  <div id="approach-title">CP Essay Approach — Tap to expand ▼</div>
+  <div id="approach-grid" style="display:none;">
+    <div class="approach-col">
+      <h4>Source the Asset</h4>
+      <ul>
+        <li>A. Before marriage? → <strong>SP</strong></li>
+        <li>B. During marriage? → <strong>CP presumption</strong></li>
+        <li>C. After separation? → <strong>SP</strong></li>
+        <li>Exchange Rule: SP in → SP out</li>
+      </ul>
+    </div>
+    <div class="approach-col">
+      <h4>Conduct of Parties</h4>
+      <ul>
+        <li><strong>S</strong>eparation</li>
+        <li><strong>I</strong>mprovements (Moore/Marsden)</li>
+        <li><strong>P</strong>ereira / Van Camp</li>
+        <li><strong>T</strong>ransmutation</li>
+        <li><strong>G</strong>ifts</li>
+        <li><strong>C</strong>ommingling</li>
+      </ul>
+    </div>
+    <div class="approach-col">
+      <h4>Legal Presumptions</h4>
+      <ul>
+        <li>General CP presumption</li>
+        <li>Married Woman Pre-1975</li>
+        <li>Title in joint form</li>
+      </ul>
+    </div>
+    <div class="approach-col">
+      <h4>Distribution</h4>
+      <ul>
+        <li>Divorce: equal division of CP</li>
+        <li>Death: each owns ½ CP</li>
+        <li>SP confirmed to owning spouse</li>
+      </ul>
+    </div>
+    <div id="mnemonic">🧠 <strong>SIP That Good Cognac</strong> — Separation · Improvements · Pereira/Van Camp · Transmutation · Gifts · Commingling</div>
+  </div>
+</div>
+
+<!-- ASSET MATRIX -->
+<div id="matrix-box">
+  <div id="matrix-title">Asset Matrix — Classify Before You Write</div>
+  <table id="matrix-table">
+    <tr>
+      <th>Asset</th>
+      <th>SP</th>
+      <th>CP</th>
+      <th>Mixed</th>
+      <th>Doctrine</th>
+      <th>Distribution</th>
+    </tr>
+    <tr>
+      <td>The House</td>
+      <td><span class="matrix-dot dot-sp"></span></td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td><span class="matrix-dot dot-mixed"></span></td>
+      <td style="font-size:11px;color:#6b8aaa;">Moore/Marsden</td>
+      <td style="font-size:11px;color:#6b8aaa;">SP + CP buy-in</td>
+    </tr>
+    <tr>
+      <td>Flora, Inc.</td>
+      <td><span class="matrix-dot dot-sp"></span></td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td><span class="matrix-dot dot-mixed"></span></td>
+      <td style="font-size:11px;color:#6b8aaa;">Pereira/Van Camp</td>
+      <td style="font-size:11px;color:#6b8aaa;">SP + CP allocation</td>
+    </tr>
+    <tr>
+      <td>Corporate Stocks</td>
+      <td><span class="matrix-dot dot-sp"></span></td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td style="font-size:11px;color:#6b8aaa;">PI settlement → SP at dissolution</td>
+      <td style="font-size:11px;color:#6b8aaa;">Harry's SP</td>
+    </tr>
+    <tr>
+      <td>Disability Payments</td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td><span class="matrix-dot dot-mixed"></span></td>
+      <td style="font-size:11px;color:#6b8aaa;">Replaces lost wages</td>
+      <td style="font-size:11px;color:#6b8aaa;">CP + SP portions</td>
+    </tr>
+    <tr>
+      <td>Retirement Benefits</td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td><span class="matrix-dot dot-mixed"></span></td>
+      <td style="font-size:11px;color:#6b8aaa;">Pro-rata pension</td>
+      <td style="font-size:11px;color:#6b8aaa;">CP pro-rata</td>
+    </tr>
+    <tr>
+      <td>Education (Wilma)</td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td><span class="matrix-dot dot-cp"></span></td>
+      <td><span class="matrix-dot dot-empty"></span></td>
+      <td style="font-size:11px;color:#6b8aaa;">CP paid → reimbursement</td>
+      <td style="font-size:11px;color:#6b8aaa;">Reimburse community</td>
+    </tr>
+  </table>
+  <div class="matrix-note">🔴 SP &nbsp;|&nbsp; 🟢 CP &nbsp;|&nbsp; 🟡 Mixed &nbsp;|&nbsp; ⚫ Not applicable</div>
+</div>
+
+<!-- HYPO -->
+<div id="hypo-box">
+  <div id="hypo-title">Fact Pattern — Question #1 · Harry &amp; Wilma (California)</div>
+  <div id="hypo-text">
+    Shortly after graduating from college in 1957, <span class="fact" id="f-house-pre">Harry purchased a home for $40,000, taking title in his name</span>. <span class="fact" id="f-house-dp">Harry's father gave him the $10,000 down payment</span> and <span class="fact" id="f-house-mortgage">Harry borrowed the balance on a note secured by a 30-year mortgage</span>. A month later, <span class="fact" id="f-marriage">Harry married Wilma and began work for ABDO Corporation</span>. <span class="fact" id="f-mortgage-cp">Harry made all mortgage payments from his ABDO earnings</span>. The house is now worth $500,000.<br><br>
+    A homemaker until their children were grown, Wilma enrolled in a local university and <span class="fact" id="f-edu-credential">in 1983 earned a professional credential in landscape architecture</span>. <span class="fact" id="f-edu-cp">Harry paid her tuition and other educational costs from his ABDO earnings</span>.<br><br>
+    In 1984, <span class="fact" id="f-flora-source">using a $50,000 inheritance from her father, Wilma established Flora, Inc.</span> In 1990, <span class="fact" id="f-flora-offer">Wilma was offered $600,000 for Flora even though the physical assets were worth only $50,000</span>. <span class="fact" id="f-flora-rejected">Wilma rejected the offer</span>.<br><br>
+    In 1990, <span class="fact" id="f-pi-accident">Harry was permanently and totally disabled in a hunting accident</span>. <span class="fact" id="f-pi-settlement">In satisfaction of his personal injury claim, he received a $400,000 settlement</span>, which he <span class="fact" id="f-pi-stocks">used to purchase a portfolio of corporate stocks now worth $600,000</span>.<br><br>
+    <span class="fact" id="f-disability">Harry now receives ABDO disability benefits providing two-thirds of his monthly pre-injury salary</span>. <span class="fact" id="f-disability-end">Disability payments will continue until 1995 when Harry turns 60</span>. <span class="fact" id="f-retirement">He will then receive ABDO early retirement benefits equal to three-fourths of his pre-injury monthly salary</span>.<br><br>
+    <span class="fact" id="f-dissolution">Harry and Wilma have decided to obtain dissolution of their marriage</span>.
+  </div>
+</div>
+
+<!-- PANEL -->
+<div id="panel">
+  <div id="level1">
+    <div id="l1-question">Spot the Issues — Six Assets</div>
+    <div id="l1-sub">For each asset, check the legal issues that must be addressed. Use the CP approach: Source → Conduct → Presumptions → Distribution. Some assets raise multiple issues.</div>
+    <div id="issue-grid"></div>
+    <div id="score-bar">
+      <div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Level 1 Results</div>
+      <div id="score-cells">
+        <div class="score-cell"><div class="score-cell-n" id="l1-correct-n">0</div><div class="score-cell-l">Spotted</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-missed-n">0</div><div class="score-cell-l">Missed</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-wrong-n">0</div><div class="score-cell-l">False alarms</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-pct">0%</div><div class="score-cell-l">Accuracy</div></div>
+      </div>
+    </div>
+    <div id="l1-btn-wrap"><button class="btn-primary" id="l1-submit">Check My Issues →</button></div>
+    <div id="l1-next-wrap" style="display:none;"><button class="btn-primary" id="l1-next">Level 2 — No Fact Left Behind →</button></div>
+  </div>
+
+  <div id="level2" style="display:none;">
+    <div id="l2-progress"></div>
+    <div id="l2-subq"></div>
+    <div id="l2-issue-title"></div>
+    <div id="l2-element-box">
+      <div id="l2-element-label">Element / Rule</div>
+      <div id="l2-element-text"></div>
+      <div id="l2-element-sub"></div>
+    </div>
+    <div id="l2-instruction">Tap every fact from the hypo that is legally operative for this element.</div>
+    <div id="fact-tiles"></div>
+    <div id="l2-explain"><div id="l2-explain-text"></div></div>
+    <button class="btn-primary" id="l2-check">Check Facts →</button>
+    <div id="prog-text"></div>
+  </div>
+
+  <div id="results">
+    <h2>No Fact Left Behind.</h2>
+    <div id="results-score"></div>
+    <div id="results-sub"></div>
+    <div id="results-grid">
+      <div class="r-cell"><div class="r-cell-n" id="r-issues"></div><div class="r-cell-l">Issues spotted</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-facts"></div><div class="r-cell-l">Facts deployed</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-total"></div><div class="r-cell-l">Combined %</div></div>
+    </div>
+    <button class="btn-primary" id="replay-btn">Play again</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function(){
+
+var ISSUES = [
+  // HOUSE
+  { id:'house-sp', text:'House — Source: purchased BEFORE marriage → separate property', cat:'A. The House', real:true },
+  { id:'house-moore', text:'House — Conduct/Improvement: mortgage paid with CP (ABDO earnings) → Moore/Marsden community buy-in', cat:'A. The House', real:true },
+  { id:'house-title', text:'House — Title taken in Harry\'s name alone (pre-1975 context)', cat:'A. The House', real:true },
+  // FLORA
+  { id:'flora-sp', text:'Flora, Inc. — Source: funded with $50,000 inheritance → separate property (Exchange Rule)', cat:'B. Flora, Inc.', real:true },
+  { id:'flora-pereira', text:'Flora, Inc. — Conduct: Wilma\'s labor during marriage grew the business → Pereira/Van Camp apportionment', cat:'B. Flora, Inc.', real:true },
+  { id:'flora-goodwill', text:'Flora, Inc. — Goodwill: $600K offer vs. $50K physical assets → business goodwill attributable to Wilma\'s personal skill and reputation', cat:'B. Flora, Inc.', real:true },
+  // STOCKS
+  { id:'stocks-pi', text:'Corporate Stocks — Source: funded with personal injury settlement → CP during marriage', cat:'C. Corporate Stocks', real:true },
+  { id:'stocks-sp-dissolution', text:'Corporate Stocks — Distribution: PI recovery assigned to injured spouse as SP at dissolution', cat:'C. Corporate Stocks', real:true },
+  { id:'stocks-exchange', text:'Corporate Stocks — Exchange Rule: SP PI settlement → SP stocks', cat:'C. Corporate Stocks', real:true },
+  // DISABILITY
+  { id:'disability-cp', text:'Disability Payments — CP portion: replaces wages that would have been CP (earned during marriage before separation)', cat:'D. ABDO Disability Payments', real:true },
+  { id:'disability-sp', text:'Disability Payments — SP portion: replaces post-dissolution earning capacity → SP', cat:'D. ABDO Disability Payments', real:true },
+  // RETIREMENT
+  { id:'retirement-cp', text:'Future Retirement Benefits — CP portion: pension earned during marriage → pro-rata CP based on years of service', cat:'E. Future Retirement Benefits', real:true },
+  { id:'retirement-prorata', text:'Future Retirement Benefits — Pro-rata formula: years of CP service / total years of service × benefit', cat:'E. Future Retirement Benefits', real:true },
+  // EDUCATION
+  { id:'edu-cp', text:'Education — CP funds (ABDO earnings) used to pay Wilma\'s tuition and costs → community entitled to reimbursement', cat:'F. Education', real:true },
+  { id:'edu-reimburse', text:'Education — Reimbursement reduces unless community substantially benefited from the education', cat:'F. Education', real:true },
+  // DECOYS
+  { id:'house-transmute', text:'House — Transmutation: title in Harry\'s name alone transmuted house to his SP', cat:'Consider carefully', real:false },
+  { id:'flora-transmute', text:'Flora, Inc. — Transmutation: Wilma\'s running of the business transmuted it to CP', cat:'Consider carefully', real:false },
+  { id:'stocks-cp-keep', text:'Corporate Stocks — Stocks remain CP at dissolution because they were purchased during marriage', cat:'Consider carefully', real:false },
+];
+
+var L2 = [
+  {
+    subq:'A. The House — Source + Conduct',
+    issueTitle:'Moore/Marsden — CP Mortgage Payments on SP Home',
+    element:'Moore/Marsden rule: When community funds are used to pay down the mortgage on separate property, the community acquires a pro rata ownership interest. CP interest = (CP principal payments / total purchase price) × current fair market value.',
+    sub:'What facts establish the SP source AND the CP buy-in for the house?',
+    keyFacts:['f-house-pre','f-house-dp','f-house-mortgage','f-marriage','f-mortgage-cp'],
+    allFacts:['f-house-pre','f-house-dp','f-house-mortgage','f-marriage','f-mortgage-cp','f-flora-source','f-dissolution','f-pi-accident'],
+    explain:'Three facts establish the SP source: (1) purchased in 1957 BEFORE marriage — before-marriage acquisition = SP; (2) father gave the $10,000 down payment — gift = SP; (3) Harry borrowed the balance — the obligation was his alone at marriage. The CP buy-in comes from: (4) Harry married Wilma then worked for ABDO — establishes community begins; (5) ALL mortgage payments came from ABDO earnings — CP funds reducing SP mortgage principal creates a community interest proportional to the CP principal paid vs. total purchase price × current FMV ($500,000).'
+  },
+  {
+    subq:'B. Flora, Inc. — Source + Conduct',
+    issueTitle:'Pereira/Van Camp — SP Business Grown by Community Labor',
+    element:'When a spouse uses separate property to start a business and then works in it during marriage, courts must apportion profits between SP (return on capital) and CP (return on labor). Pereira: SP gets a fair rate of return; excess = CP. Van Camp: CP gets the reasonable value of services; remainder = SP.',
+    sub:'What facts establish the SP source AND the need for Pereira/Van Camp apportionment?',
+    keyFacts:['f-flora-source','f-flora-offer','f-marriage'],
+    allFacts:['f-flora-source','f-flora-offer','f-flora-rejected','f-marriage','f-house-pre','f-edu-credential','f-dissolution'],
+    explain:'"Using a $50,000 inheritance from her father" = SP source. Inheritance = SP under Exchange Rule. Wilma worked in the business during the marriage — her labor is a community asset. The $600,000 offer vs. $50,000 physical assets = $550,000 in goodwill/growth. That gap requires Pereira/Van Camp to apportion how much is attributable to the SP capital (remains SP) vs. Wilma\'s personal skill and labor (CP). The fact that Wilma REJECTED the $600K offer is relevant — goodwill attributable to personal reputation may not survive Wilma\'s departure.'
+  },
+  {
+    subq:'C. Corporate Stocks — Source + Distribution',
+    issueTitle:'Personal Injury Settlement — CP During Marriage; SP at Dissolution',
+    element:'A personal injury recovery received during marriage is CP. However, at dissolution, the PI award is ASSIGNED to the injured spouse as their separate property — unless the interests of justice require otherwise.',
+    sub:'What facts control the character of the corporate stocks?',
+    keyFacts:['f-pi-accident','f-pi-settlement','f-pi-stocks','f-dissolution'],
+    allFacts:['f-pi-accident','f-pi-settlement','f-pi-stocks','f-dissolution','f-marriage','f-mortgage-cp','f-flora-source'],
+    explain:'"Permanently and totally disabled in a hunting accident" + "$400,000 settlement" + "used to purchase corporate stocks" — the chain: PI recovery during marriage = CP. The stocks are CP during the marriage (relevant for creditors). But at DISSOLUTION, the PI award is assigned to Harry as his SP. The stocks (now worth $600K) are Harry\'s SP at dissolution. Wilma has no claim to them. The Exchange Rule confirms: SP settlement → SP stocks.'
+  },
+  {
+    subq:'D. ABDO Disability Payments — Source',
+    issueTitle:'Disability Payments — CP vs. SP Apportionment',
+    element:'Disability payments that replace wages that would have been CP are themselves CP to the extent they replace CP earning capacity. Disability payments that replace post-dissolution earning capacity are SP. The payments are apportioned between CP and SP portions based on what they replace.',
+    sub:'What facts determine the CP vs. SP character of the disability payments?',
+    keyFacts:['f-disability','f-disability-end','f-marriage','f-dissolution'],
+    allFacts:['f-disability','f-disability-end','f-marriage','f-dissolution','f-pi-accident','f-retirement','f-mortgage-cp'],
+    explain:'"Two-thirds of his monthly pre-injury salary" — disability payments replace lost wages. Wages earned during marriage = CP. So disability payments replacing those wages = CP to the extent they replace what would have been community income. HOWEVER, at dissolution the purpose shifts: payments going forward replace Harry\'s individual earning capacity post-dissolution = his SP. The payments are apportioned: CP portion covers the period through dissolution; SP portion covers the period after dissolution.'
+  },
+  {
+    subq:'E. Future Retirement Benefits — Source',
+    issueTitle:'Pension Plan — Pro-Rata CP/SP Apportionment',
+    element:'Retirement benefits earned during marriage are CP. Benefits attributable to service before or after marriage are SP. The pro-rata formula: (years of CP service / total years of service) × total benefit = CP portion.',
+    sub:'What facts establish the need for pro-rata apportionment of the retirement benefits?',
+    keyFacts:['f-marriage','f-retirement','f-disability-end','f-dissolution'],
+    allFacts:['f-marriage','f-retirement','f-disability-end','f-dissolution','f-disability','f-pi-accident','f-mortgage-cp'],
+    explain:'"Harry married Wilma and began work for ABDO" — Harry started at ABDO at the same time the community began. "Retirement benefits equal to three-fourths of his pre-injury monthly salary" — these benefits were earned over his ABDO career. The period of service during the marriage = CP. Any service before marriage (there is none here — he started at ABDO when he married Wilma) or after separation would be SP. Pro-rata formula applies: CP years of service / total years × retirement benefit = CP share. Wilma is entitled to her half of the CP portion.'
+  },
+  {
+    subq:'F. Education — Conduct',
+    issueTitle:'CP Funds Used for Education — Reimbursement to Community',
+    element:'When CP funds are used to pay for a spouse\'s education or training that substantially enhances earning capacity, the community is entitled to reimbursement at dissolution. Reimbursement is reduced if the community has substantially benefited from the education (presumed after 10+ years).',
+    sub:'What facts establish the CP expenditure AND the reimbursement claim?',
+    keyFacts:['f-edu-cp','f-edu-credential','f-flora-source','f-dissolution'],
+    allFacts:['f-edu-cp','f-edu-credential','f-flora-source','f-dissolution','f-marriage','f-flora-offer','f-mortgage-cp'],
+    explain:'"Harry paid her tuition and other educational costs from his ABDO earnings" = CP funds used. "In 1983 earned a professional credential in landscape architecture" = education that substantially enhanced Wilma\'s earning capacity (she then built a $600K business). At dissolution, the community is entitled to reimbursement for the CP funds spent on Wilma\'s education. HOWEVER: "In 1984 Wilma established Flora, Inc." — the community benefited substantially from the education almost immediately. That may reduce or eliminate the reimbursement claim.'
+  },
+];
+
+var state = { phase:'l1', selected:{}, l1Correct:0, l1Missed:0, l1Wrong:0, l2Idx:0, l2FactSel:{}, totalFactsCorrect:0, totalFactsTotal:0 };
+
+function g(id){ return document.getElementById(id); }
+
+// APPROACH TOGGLE
+g('approach-title').addEventListener('click', function(){
+  var grid = g('approach-grid');
+  var showing = grid.style.display !== 'none';
+  grid.style.display = showing ? 'none' : 'grid';
+  g('approach-title').textContent = 'CP Essay Approach — Tap to ' + (showing ? 'expand ▼' : 'collapse ▲');
+});
+
+function buildL1(){
+  var grid = g('issue-grid'); grid.innerHTML = '';
+  var lastCat = '';
+  ISSUES.forEach(function(issue){
+    if(issue.cat !== lastCat){
+      var label = document.createElement('div'); label.className='cat-label'; label.textContent=issue.cat;
+      grid.appendChild(label); lastCat=issue.cat;
+    }
+    var div = document.createElement('div'); div.className='issue-item'; div.id='iss-'+issue.id;
+    div.innerHTML='<div class="issue-check"><span class="check-mark">✓</span></div><div class="issue-text">'+issue.text+'</div>';
+    div.addEventListener('click',function(){
+      if(state.phase!=='l1')return;
+      state.selected[issue.id]=!state.selected[issue.id];
+      div.classList.toggle('selected',!!state.selected[issue.id]);
+    });
+    grid.appendChild(div);
+  });
+}
+
+g('l1-submit').addEventListener('click',function(){
+  if(state.phase!=='l1')return;
+  state.phase='l1-result';
+  var correct=0,missed=0,wrong=0;
+  ISSUES.forEach(function(issue){
+    var el=g('iss-'+issue.id); var sel=!!state.selected[issue.id];
+    if(issue.real&&sel){correct++;el.classList.add('correct');var t=document.createElement('span');t.className='result-tag tag-correct';t.textContent='✓ Spotted';el.appendChild(t);}
+    else if(issue.real&&!sel){missed++;el.classList.add('missed');var t=document.createElement('span');t.className='result-tag tag-missed';t.textContent='⚠ Missed';el.appendChild(t);}
+    else if(!issue.real&&sel){wrong++;el.classList.add('wrong');var t=document.createElement('span');t.className='result-tag tag-wrong';t.textContent='✗ False alarm';el.appendChild(t);}
+  });
+  state.l1Correct=correct;state.l1Missed=missed;state.l1Wrong=wrong;
+  var realCount=ISSUES.filter(function(i){return i.real;}).length;
+  var pct=Math.round(correct/realCount*100);
+  g('l1-correct-n').textContent=correct;g('l1-missed-n').textContent=missed;g('l1-wrong-n').textContent=wrong;g('l1-pct').textContent=pct+'%';
+  g('score-bar').style.display='block';g('l1-btn-wrap').style.display='none';g('l1-next-wrap').style.display='block';
+  g('pip1').className='level-pip done';g('pip2').className='level-pip active';g('level-label').textContent='Level 2 ready';
+});
+
+g('l1-next').addEventListener('click',function(){
+  g('level1').style.display='none';g('level2').style.display='block';
+  state.phase='l2';state.l2Idx=0;g('level-label').textContent='Level 2';
+  buildDots();renderL2();
+});
+
+function buildDots(){
+  var wrap=g('l2-progress');wrap.innerHTML='';
+  L2.forEach(function(el,i){
+    var dot=document.createElement('div');
+    dot.className='issue-dot'+(i===0?' active':'');dot.id='dot-'+i;dot.textContent=(i+1);
+    wrap.appendChild(dot);
+  });
+}
+
+var HYPO_FACTS = {
+  'f-house-pre':'Harry purchased a home for $40,000 BEFORE marriage in 1957',
+  'f-house-dp':'Harry\'s father gave him the $10,000 down payment',
+  'f-house-mortgage':'Harry borrowed the balance on a 30-year mortgage',
+  'f-marriage':'Harry married Wilma and began work for ABDO Corporation',
+  'f-mortgage-cp':'Harry made all mortgage payments from his ABDO earnings',
+  'f-edu-credential':'Wilma earned a professional credential in landscape architecture (1983)',
+  'f-edu-cp':'Harry paid her tuition and educational costs from his ABDO earnings',
+  'f-flora-source':'Wilma established Flora, Inc. using a $50,000 inheritance from her father',
+  'f-flora-offer':'Wilma was offered $600,000 for Flora — physical assets worth only $50,000',
+  'f-flora-rejected':'Wilma rejected the $600,000 offer',
+  'f-pi-accident':'Harry was permanently and totally disabled in a hunting accident (1990)',
+  'f-pi-settlement':'Harry received a $400,000 personal injury settlement',
+  'f-pi-stocks':'Harry used the settlement to purchase a portfolio of corporate stocks (now $600,000)',
+  'f-disability':'Harry receives ABDO disability benefits — two-thirds of monthly pre-injury salary',
+  'f-disability-end':'Disability payments continue until 1995 when Harry turns 60',
+  'f-retirement':'Harry will then receive ABDO early retirement benefits — three-fourths of pre-injury salary',
+  'f-dissolution':'Harry and Wilma have decided to obtain dissolution of their marriage',
+};
+
+function renderL2(){
+  var el=L2[state.l2Idx];
+  state.l2FactSel={};
+  g('l2-subq').textContent=el.subq;
+  g('l2-issue-title').textContent=el.issueTitle;
+  g('l2-element-text').textContent=el.element;
+  g('l2-element-sub').textContent=el.sub;
+  g('l2-explain').style.display='none';
+  g('l2-check').textContent='Check Facts →';
+  g('prog-text').textContent='Element '+(state.l2Idx+1)+' of '+L2.length;
+  var tilesWrap=g('fact-tiles');tilesWrap.innerHTML='';
+  el.allFacts.forEach(function(fid){
+    var text=HYPO_FACTS[fid]||fid;
+    var tile=document.createElement('div');
+    tile.className='fact-tile';tile.textContent=text;tile.id='tile-'+fid;
+    tile.addEventListener('click',function(){
+      if(state.l2FactSel._locked)return;
+      state.l2FactSel[fid]=!state.l2FactSel[fid];
+      tile.classList.toggle('selected',!!state.l2FactSel[fid]);
+    });
+    tilesWrap.appendChild(tile);
+  });
+  L2.forEach(function(e,i){
+    var dot=g('dot-'+i);
+    if(dot)dot.className='issue-dot'+(i===state.l2Idx?' active':i<state.l2Idx?' done':'');
+  });
+}
+
+g('l2-check').addEventListener('click',function(){
+  if(state.phase!=='l2')return;
+  var el=L2[state.l2Idx];
+  if(!state.l2FactSel._locked){
+    state.l2FactSel._locked=true;
+    var correct=0;
+    el.allFacts.forEach(function(fid){
+      var isKey=el.keyFacts.indexOf(fid)>=0;
+      var sel=!!state.l2FactSel[fid];
+      var tile=g('tile-'+fid);
+      tile.classList.remove('selected');
+      if(isKey&&sel){correct++;tile.className='fact-tile correct';}
+      else if(isKey&&!sel){tile.className='fact-tile missed-fact';}
+      else if(!isKey&&sel){tile.className='fact-tile wrong-fact';}
+      else{tile.className='fact-tile neutral';}
+    });
+    state.totalFactsCorrect+=correct;state.totalFactsTotal+=el.keyFacts.length;
+    g('l2-explain-text').textContent=el.explain;
+    g('l2-explain').style.display='block';
+    g('l2-check').textContent=state.l2Idx<L2.length-1?'Next Element →':'See Results →';
+  } else {
+    if(state.l2Idx<L2.length-1){
+      g('dot-'+state.l2Idx).className='issue-dot done';
+      state.l2Idx++;state.l2FactSel={};renderL2();
+    } else { showResults(); }
+  }
+});
+
+function showResults(){
+  g('level2').style.display='none';g('results').style.display='block';
+  g('pip2').className='level-pip done';g('level-label').textContent='Complete';
+  var realCount=ISSUES.filter(function(i){return i.real;}).length;
+  var issuePct=Math.round(state.l1Correct/realCount*100);
+  var factPct=state.totalFactsTotal>0?Math.round(state.totalFactsCorrect/state.totalFactsTotal*100):0;
+  var combined=Math.round((issuePct+factPct)/2);
+  g('results-score').textContent=combined+'%';
+  g('results-sub').textContent=combined>=85?'No fact left behind, Counselor.':combined>=65?'Solid — a few facts slipped through.':'Keep drilling — the facts are all there.';
+  g('r-issues').textContent=state.l1Correct+'/'+realCount;
+  g('r-facts').textContent=state.totalFactsCorrect+'/'+state.totalFactsTotal;
+  g('r-total').textContent=combined+'%';
+}
+
+g('replay-btn').addEventListener('click',function(){
+  state={phase:'l1',selected:{},l1Correct:0,l1Missed:0,l1Wrong:0,l2Idx:0,l2FactSel:{},totalFactsCorrect:0,totalFactsTotal:0};
+  g('results').style.display='none';g('level2').style.display='none';g('level1').style.display='block';
+  g('score-bar').style.display='none';g('l1-btn-wrap').style.display='block';g('l1-next-wrap').style.display='none';
+  g('pip1').className='level-pip active';g('pip2').className='level-pip';g('level-label').textContent='Level 1';
+  buildL1();
+});
+
+buildL1();
+})();
+</script>
+</body>
+</html>

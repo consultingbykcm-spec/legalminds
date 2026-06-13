@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community Property — Checklist Drill</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+:root{
+  --bg:#050f08;--surface:#0a150d;--surface2:#0d1a10;
+  --border:#1a2e1e;--green:#2d6a4f;--green-bright:#52b788;--green-dim:#1a4a30;
+  --cream:#e0ece4;--muted:#5a8a6a;--text:#b8d4c0;
+  --got:#2d6a4f;--got-bright:#52b788;--red:#7a2a2a;--red-bright:#c05555;
+  --policy:#4a2a6a;--policy-bright:#9b72cf;--gold:#c9a84c;--gold-dim:#7a6430;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;min-height:100vh;}
+header{padding:20px 32px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;}
+.brand{font-family:'Playfair Display',serif;font-size:10pt;color:var(--green-bright);letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px;}
+.title{font-family:'Playfair Display',serif;font-size:22pt;font-weight:900;color:var(--cream);line-height:1;}
+.subtitle{font-size:8pt;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:4px;}
+.header-right{display:flex;gap:20px;align-items:center;}
+.score-item{text-align:center;}
+.score-num{font-family:'Playfair Display',serif;font-size:18pt;font-weight:700;display:block;line-height:1;}
+.score-num.got{color:var(--green-bright);}.score-num.again{color:var(--red-bright);}
+.score-lbl{font-size:7pt;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.controls{padding:10px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;}
+.ctrl-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Source Serif 4',serif;font-size:8pt;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:2px;cursor:pointer;transition:all .18s;}
+.ctrl-btn:hover{border-color:var(--green-dim);color:var(--green-bright);}
+.ctrl-btn.active{background:var(--green);border-color:var(--green);color:#050f08;font-weight:600;}
+main{max-width:900px;margin:0 auto;padding:28px 24px;}
+.mental{display:flex;gap:0;margin-bottom:24px;border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.step{flex:1;text-align:center;padding:10px 4px;border-right:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all .2s;}
+.step:last-child{border-right:none;}
+.step:hover{background:rgba(45,106,79,.08);}
+.step-num{font-family:'Playfair Display',serif;font-size:14pt;font-weight:900;color:var(--green-bright);display:block;line-height:1;}
+.step-lbl{font-size:6.5pt;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.progress-wrap{width:100%;display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.progress-bar{flex:1;height:2px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--green);border-radius:2px;transition:width .4s;}
+.progress-text{font-size:8pt;color:var(--muted);white-space:nowrap;}
+.section{margin-bottom:16px;}
+.section-header{font-family:'Playfair Display',serif;font-size:12pt;font-weight:900;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--green);padding:8px 14px;border-radius:2px;margin-bottom:2px;color:var(--cream);}
+.row{display:flex;align-items:center;gap:10px;padding:5px 8px;border-bottom:1px solid rgba(26,46,30,.6);cursor:pointer;transition:background .15s;position:relative;}
+.row:hover{background:rgba(45,106,79,.05);}
+.row.revealed{background:rgba(26,74,48,.1);}
+.row.marked-got{background:rgba(45,106,79,.12);}
+.row.marked-again{background:rgba(122,42,42,.12);}
+.row-indent-0{padding-left:8px;}
+.row-indent-1{padding-left:24px;}
+.row-indent-2{padding-left:40px;}
+.row-indent-3{padding-left:56px;}
+.row-label{font-size:9.5pt;min-width:220px;flex-shrink:0;line-height:1.35;color:var(--text);}
+.row-label.l1{font-weight:600;}
+.row-label.l2{font-weight:400;}
+.row-label.l3{font-weight:400;font-style:italic;font-size:8.5pt;color:var(--muted);}
+.buzz-area{display:flex;flex-wrap:wrap;gap:5px;align-items:center;flex:1;}
+.buzz-hidden{color:var(--muted);font-size:8pt;font-style:italic;}
+.tag{display:inline-block;font-family:'Playfair Display',serif;font-size:9.5pt;font-weight:700;padding:3px 10px;border-radius:2px;letter-spacing:.03em;opacity:0;transition:opacity .3s;pointer-events:none;}
+.tag.show{opacity:1;pointer-events:auto;}
+.tag.standard{background:rgba(45,106,79,.15);border:1px solid var(--green-dim);color:var(--green-bright);}
+.tag.policy{background:rgba(155,114,207,.1);border:1px solid var(--policy);color:var(--policy-bright);}
+.tag.essay{background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);color:var(--gold);font-family:'Source Serif 4',serif;font-weight:400;font-style:italic;font-size:8pt;}
+.row-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s;flex-shrink:0;}
+.row:hover .row-actions,.row.revealed .row-actions{opacity:1;}
+.act-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:7.5pt;padding:3px 8px;border-radius:2px;cursor:pointer;transition:all .15s;font-family:'Source Serif 4',serif;letter-spacing:.08em;text-transform:uppercase;}
+.act-btn.got:hover,.act-btn.got.active{background:var(--green);border-color:var(--green);color:#fff;}
+.act-btn.again:hover,.act-btn.again.active{background:var(--red);border-color:var(--red);color:#fff;}
+.summary{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:16px 20px;margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.summary-title{font-family:'Playfair Display',serif;font-size:13pt;color:var(--cream);}
+.summary-scores{display:flex;gap:20px;}
+.sum-item{text-align:center;}
+.sum-num{font-family:'Playfair Display',serif;font-size:22pt;font-weight:700;display:block;line-height:1;}
+.sum-num.got{color:var(--green-bright);}.sum-num.again{color:var(--red-bright);}
+.sum-lbl{font-size:7.5pt;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.btn-reset{background:transparent;border:1px solid var(--green-dim);color:var(--green-bright);font-family:'Source Serif 4',serif;font-size:9pt;letter-spacing:.1em;text-transform:uppercase;padding:9px 20px;border-radius:2px;cursor:pointer;transition:all .18s;}
+.btn-reset:hover{background:var(--green);color:#050f08;}
+.btn-reveal-all{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Source Serif 4',serif;font-size:9pt;letter-spacing:.1em;text-transform:uppercase;padding:9px 20px;border-radius:2px;cursor:pointer;transition:all .18s;}
+.btn-reveal-all:hover{border-color:var(--muted);color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="brand">LegalMinds ⚖️</div>
+    <div class="title">COMMUNITY PROPERTY — CHECKLIST DRILL</div>
+    <div class="subtitle">Click each issue to reveal buzz words · Colleges of Law · Class of 2026</div>
+  </div>
+  <div class="header-right">
+    <div class="score-item"><span class="score-num got" id="got-count">0</span><span class="score-lbl">Got It</span></div>
+    <div class="score-item"><span class="score-num again" id="again-count">0</span><span class="score-lbl">Again</span></div>
+  </div>
+</header>
+<div class="controls">
+  <button class="ctrl-btn active" onclick="setMode('hide',this)">Hide All</button>
+  <button class="ctrl-btn" onclick="setMode('show',this)">Show All</button>
+  <button class="ctrl-btn" onclick="resetAll()">Reset</button>
+</div>
+<main>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-text" id="progress-text">0 revealed</div>
+  </div>
+  <div class="mental">
+    <div class="step" onclick="scrollTo('s1')"><span class="step-num">I</span><span class="step-lbl">Relationship</span></div>
+    <div class="step" onclick="scrollTo('s2')"><span class="step-num">II</span><span class="step-lbl">Classify Property</span></div>
+    <div class="step" onclick="scrollTo('s3')"><span class="step-num">III</span><span class="step-lbl">Presumptions</span></div>
+    <div class="step" onclick="scrollTo('s4')"><span class="step-num">IV</span><span class="step-lbl">Potential Rights</span></div>
+    <div class="step" onclick="scrollTo('s5')"><span class="step-num">V</span><span class="step-lbl">Distribution</span></div>
+  </div>
+  <div id="checklist"></div>
+  <div class="summary">
+    <div><div class="summary-title">Progress</div><div style="font-size:8.5pt;color:var(--muted);margin-top:4px;">Click rows to reveal · Mark Got It or Again</div></div>
+    <div class="summary-scores">
+      <div class="sum-item"><span class="sum-num got" id="sum-got">0</span><span class="sum-lbl">Got It</span></div>
+      <div class="sum-item"><span class="sum-num again" id="sum-again">0</span><span class="sum-lbl">Again</span></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-reveal-all" onclick="revealAll()">Reveal All</button>
+      <button class="btn-reset" onclick="resetAll()">Reset ↺</button>
+    </div>
+  </div>
+</main>
+<script>
+const CHECKLIST=[
+  {id:'s1',type:'section',label:'I. Classify Relationship'},
+  {id:'r1',type:'row',indent:1,label:'Classify Relationship',buzz:[{t:'Valid Marriage'},{t:'Putative'},{t:'Non-CA Marriage'},{t:'Meretricious'},{t:'Registered Partner (CA)'}]},
+  {id:'r2',type:'row',indent:2,label:'A. Valid California Marriage',buzz:[{t:'Legal'},{t:'Domiciled in CA'},{t:'Default CP Rules'}]},
+  {id:'r3',type:'row',indent:2,label:'B. Non-CA Marriage',buzz:[{t:'Fact Based'},{t:'QCP or QMP'}]},
+  {id:'r4',type:'row',indent:2,label:'C. Putative Marriage',buzz:[{t:'1 Party'},{t:'Good Faith'},{t:'QMP'}]},
+  {id:'r5',type:'row',indent:2,label:'D. Meretricious Relationship',buzz:[{t:'Cohabitation'},{t:'No Auto CP'},{t:'Marvin Rule'}]},
+  {id:'r6',type:'row',indent:3,label:'Marvin Rule',buzz:[{t:'Contract'},{t:'Express or Implied'},{t:'Court Enforces'}]},
+
+  {id:'s2',type:'section',label:'II. Classify Each Property'},
+  {id:'r7',type:'row',indent:1,label:'A. Source — Type of Property',buzz:[]},
+  {id:'r8',type:'row',indent:2,label:'SP — Separate Property',buzz:[{t:'Before Marriage'},{t:'Gift / Devise / Bequest'},{t:'Rents Issues Profits'}]},
+  {id:'r9',type:'row',indent:2,label:'CP — Community Property',buzz:[{t:'During Marriage'},{t:'Domiciled in CA'},{t:'Earned or Acquired'}]},
+  {id:'r10',type:'row',indent:2,label:'QCP — Quasi-Community Property',buzz:[{t:'Out of CA'},{t:'Would Have Been CP'}]},
+  {id:'r11',type:'row',indent:2,label:'QMP — Quasi-Marital Property',buzz:[{t:'Putative / Void or Voidable'},{t:'Would Have Been CP or QCP'}]},
+  {id:'r12',type:'row',indent:2,label:'CPWROS',buzz:[{t:'Death'},{t:'Passes to Survivor'},{t:'No Administration'},{t:'Like Joint Tenancy'}]},
+  {id:'r13',type:'row',indent:1,label:'B. Conduct of Parties — SIP That Good Cognac',buzz:[{t:'Separation'},{t:'Improvements'},{t:'Pereira/Van Camp'},{t:'Transmutation'},{t:'Gifts'},{t:'Commingling'}]},
+  {id:'r14',type:'row',indent:2,label:'1. Separation',buzz:[{t:'Intent'},{t:'Manifestation of Intent'}]},
+  {id:'r15',type:'row',indent:2,label:'2. Improvements (Moore/Marsden)',buzz:[{t:'Moore: CP $ Benefit SP'},{t:'Marsden: DIP — Down Payment / Improvements / Principal'}]},
+  {id:'r16',type:'row',indent:2,label:'3. Pereira',buzz:[{t:'SP Business'},{t:'CP Labor'},{t:'Fair Return'}]},
+  {id:'r17',type:'row',indent:2,label:'3. Van Camp',buzz:[{t:'SP Business'},{t:'External Factor'},{t:'Reimburse CP'}]},
+  {id:'r18',type:'row',indent:2,label:'4. Transmutation',buzz:[{t:'Writing'},{t:'Signed'},{t:'Character Change'}]},
+  {id:'r19',type:'row',indent:2,label:'5. Gifts',buzz:[{t:'Intent'},{t:'Delivery'}]},
+  {id:'r20',type:'row',indent:2,label:'6. Commingling',buzz:[{t:'Cannot ID Source'},{t:'Presumed CP'},{t:'Exception: De Minimis SP'}]},
+
+  {id:'s3',type:'section',label:'III. Presumptions'},
+  {id:'r21',type:'row',indent:1,label:'General CP Presumption',buzz:[{t:'During Marriage'},{t:'Presumed CP'},{t:'Rebutted by Writing (Post-1986)'}]},
+  {id:'r22',type:'row',indent:1,label:'Married Woman Pre-1975',buzz:[{t:"Title in Wife's Name"},{t:'Presumed Her SP'}]},
+  {id:'r23',type:'row',indent:1,label:'Title in Joint Form',buzz:[{t:'Post-1987'},{t:'JT = CP'}]},
+  {id:'r24',type:'row',indent:1,label:'Prenup Formation',buzz:[{t:'Writing'},{t:'Signed Both'},{t:'No Consideration Required'},{t:'Statute of Frauds'}]},
+  {id:'r25',type:'row',indent:1,label:'Prenup Enforcement',buzz:[{t:'Voluntary'},{t:'Independent Counsel or Waiver'},{t:'7 Days'},{t:'Full Disclosure'},{t:'No Duress-Fraud-UI'},{t:'Does Not Promote Divorce'}]},
+
+  {id:'s4',type:'section',label:'IV. Classify Potential Rights'},
+  {id:'r26',type:'row',indent:1,label:'A. Creditors',buzz:[{t:'Type of Property'},{t:'Who Incurred'},{t:'When Incurred'}]},
+  {id:'r27',type:'row',indent:2,label:'For Benefit of Community',buzz:[{t:'CP Liable First'},{t:'Then SP of Debtor'}],c:'policy'},
+  {id:'r28',type:'row',indent:2,label:'Debt Timing Rules',buzz:[{t:'Contract: When Made'},{t:'Tort: When Occurs'},{t:'Prior Support: Premarital'},{t:'Others: When Arises'}]},
+  {id:'r29',type:'row',indent:1,label:'B. Third Party Transfers',buzz:[{t:'CP: Both Spouses Sign'},{t:'SP: Can Transfer Alone'}]},
+  {id:'r30',type:'row',indent:1,label:'C. Spouses — Management & Control',buzz:[{t:'Each Full'},{t:'Can Buy Solo'},{t:'Cannot Sell Solo'}]},
+  {id:'r31',type:'row',indent:2,label:'Fiduciary Duty',buzz:[{t:'Highest Good Faith'},{t:'Fair Dealing'},{t:'Breaches: Hiding / Negligence / Mismanaging / Failure to Disclose'}]},
+  {id:'r32',type:'row',indent:1,label:'D. Survivors',buzz:[{t:'Only at Death'}]},
+
+  {id:'s5',type:'section',label:'V. Distribution of Property'},
+  {id:'r33',type:'row',indent:1,label:'A. Divorce',buzz:[{t:'CP Divided Equally'},{t:'Unless Prenup'},{t:'Or SP: Inheritance / Gift / Bequest'}]},
+  {id:'r34',type:'row',indent:1,label:'B. Death',buzz:[{t:'JT or Survivorship'},{t:'Each Owns ½ CP'},{t:'Testamentary Disposition of Own Half'}]},
+];
+
+let revealed={},marked={},mode='hide';
+
+function build(){
+  const container=document.getElementById('checklist');container.innerHTML='';
+  CHECKLIST.forEach(item=>{
+    if(item.type==='section'){
+      const sec=document.createElement('div');sec.className='section';sec.id=item.id;
+      const h=document.createElement('div');h.className='section-header';h.textContent=item.label;
+      sec.appendChild(h);container.appendChild(sec);return;
+    }
+    const lastSection=container.lastElementChild;
+    const row=document.createElement('div');
+    row.className=`row row-indent-${item.indent}`;row.id=item.id;
+    if(marked[item.id]==='got')row.classList.add('marked-got');
+    if(marked[item.id]==='again')row.classList.add('marked-again');
+    if(revealed[item.id]||mode==='show')row.classList.add('revealed');
+    const lbl=document.createElement('div');
+    lbl.className=`row-label l${Math.min(item.indent,3)}`;lbl.textContent=item.label;
+    row.appendChild(lbl);
+    const buzzArea=document.createElement('div');buzzArea.className='buzz-area';
+    if(item.buzz&&item.buzz.length>0){
+      if(!revealed[item.id]&&mode!=='show'){
+        const hint=document.createElement('span');hint.className='buzz-hidden';hint.textContent='— click to reveal';buzzArea.appendChild(hint);
+      }
+      item.buzz.forEach(b=>{
+        const tag=document.createElement('span');
+        const cls=item.c==='policy'?'policy':b.c||'standard';
+        tag.className=`tag ${cls}`;
+        if(revealed[item.id]||mode==='show')tag.classList.add('show');
+        tag.textContent=b.t;buzzArea.appendChild(tag);
+      });
+      if(revealed[item.id]||mode==='show'){
+        const actions=document.createElement('div');actions.className='row-actions';
+        const gotBtn=document.createElement('button');gotBtn.className='act-btn got'+(marked[item.id]==='got'?' active':'');gotBtn.textContent='✓ Got It';
+        gotBtn.onclick=(e)=>{e.stopPropagation();markRow(item.id,'got');};
+        const againBtn=document.createElement('button');againBtn.className='act-btn again'+(marked[item.id]==='again'?' active':'');againBtn.textContent='↺ Again';
+        againBtn.onclick=(e)=>{e.stopPropagation();markRow(item.id,'again');};
+        actions.appendChild(gotBtn);actions.appendChild(againBtn);row.appendChild(actions);
+      }
+      row.onclick=()=>revealRow(item.id);
+    }
+    row.appendChild(buzzArea);
+    if(lastSection)lastSection.appendChild(row);
+  });
+  updateProgress();
+}
+
+function revealRow(id){revealed[id]=true;build();}
+function markRow(id,mark){if(marked[id]===mark){delete marked[id];}else{marked[id]=mark;}updateProgress();build();}
+function revealAll(){CHECKLIST.forEach(item=>{if(item.type==='row'&&item.buzz&&item.buzz.length)revealed[item.id]=true;});build();}
+function resetAll(){revealed={};marked={};mode='hide';document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));document.querySelector('.ctrl-btn').classList.add('active');build();}
+function setMode(m,btn){mode=m;document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(m==='show')revealAll();else build();}
+function updateProgress(){
+  const rows=CHECKLIST.filter(i=>i.type==='row'&&i.buzz&&i.buzz.length>0);
+  const rev=rows.filter(i=>revealed[i.id]||mode==='show').length;
+  const got=Object.values(marked).filter(v=>v==='got').length;
+  const again=Object.values(marked).filter(v=>v==='again').length;
+  const pct=rows.length?(rev/rows.length*100):0;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-text').textContent=rev+' of '+rows.length+' revealed';
+  document.getElementById('got-count').textContent=got;document.getElementById('again-count').textContent=again;
+  document.getElementById('sum-got').textContent=got;document.getElementById('sum-again').textContent=again;
+}
+function scrollTo(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+build();
+</script>
+</body>
+</html>

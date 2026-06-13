@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community Property — Elements Drill</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 780px; }
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; border-bottom: 1px solid rgba(201,151,58,0.25); display: flex; align-items: center; justify-content: space-between; }
+#header-left h1 { font-size: 17px; font-weight: 500; color: #f5f0e8; }
+#header-left h1 span { color: #c9973a; font-style: italic; }
+#header-left p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#stats { display: flex; gap: 20px; }
+.stat { text-align: center; }
+.stat-n { font-size: 16px; font-weight: 500; color: #c9973a; }
+.stat-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; }
+#main { background: #0f1e35; border-radius: 12px; padding: 20px; }
+#progress-bar-wrap { height: 3px; background: #1a2f4a; border-radius: 2px; margin-bottom: 18px; }
+#progress-bar { height: 3px; background: #c9973a; border-radius: 2px; transition: width 0.4s; width: 0%; }
+#category-badge { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; }
+#question { background: #1a2f4a; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; font-size: 15px; font-weight: 500; color: #f5f0e8; line-height: 1.55; border: 1px solid rgba(201,151,58,0.15); }
+#answer-wrap { margin-bottom: 12px; }
+#answer { width: 100%; background: #1a2f4a; border: 1.5px solid #2a4a6a; border-radius: 8px; padding: 13px 15px; font-size: 13px; color: #f5f0e8; font-family: inherit; resize: vertical; min-height: 90px; line-height: 1.55; outline: none; transition: border-color 0.2s; }
+#answer:focus { border-color: #c9973a; }
+#submit-btn { width: 100%; background: #c9973a; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; margin-bottom: 14px; }
+#submit-btn:disabled { opacity: 0.5; cursor: default; }
+#feedback { display: none; margin-bottom: 14px; }
+#score-display { border-radius: 8px; padding: 12px 15px; margin-bottom: 12px; font-size: 13px; font-weight: 500; }
+#score-display.strong { background: #0f3d2a; border: 1.5px solid #1d9e75; color: #9fe1cb; }
+#score-display.partial { background: #3d2f0a; border: 1.5px solid #c9973a; color: #f5d06a; }
+#score-display.miss { background: #3d1515; border: 1.5px solid #e24b4a; color: #f09595; }
+#keywords-wrap { margin-bottom: 12px; }
+#keywords-wrap .kw-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+#keywords-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.kw { font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 500; }
+.kw.hit { background: rgba(29,158,117,0.2); color: #9fe1cb; border: 1px solid #1d9e75; }
+.kw.miss { background: rgba(226,75,74,0.15); color: #f09595; border: 1px solid #e24b4a; }
+#model-answer { background: #1a2f4a; border-radius: 8px; padding: 14px 15px; margin-bottom: 12px; border: 1px solid rgba(201,151,58,0.3); }
+#model-answer .ma-label { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+#model-answer .ma-text { font-size: 13px; color: #a0b8cc; line-height: 1.6; }
+#self-grade { display: none; margin-bottom: 12px; }
+#self-grade p { font-size: 12px; color: #6b8aaa; margin-bottom: 8px; }
+#self-grade-btns { display: flex; gap: 8px; }
+.sg-btn { flex: 1; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
+.sg-strong { background: #0f3d2a; color: #9fe1cb; border: 1.5px solid #1d9e75; }
+.sg-partial { background: #3d2f0a; color: #f5d06a; border: 1.5px solid #c9973a; }
+.sg-miss { background: #3d1515; color: #f09595; border: 1.5px solid #e24b4a; }
+#next-btn { display: none; width: 100%; background: #c9973a; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; }
+#prog-text { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 12px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 20px; font-weight: 500; color: #f5f0e8; margin-bottom: 8px; }
+#results .big-score { font-size: 52px; font-weight: 500; color: #c9973a; line-height: 1; margin-bottom: 4px; }
+#results .sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#results .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+#results .grid-item { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+#results .grid-n { font-size: 20px; font-weight: 500; color: #c9973a; }
+#results .grid-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+#restart-btn { background: #c9973a; border: none; border-radius: 8px; padding: 13px 32px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div id="header-left">
+      <h1>LEGAL<span>MINDS</span> — Community Property</h1>
+      <p>Name That Rule · Offline Edition</p>
+    </div>
+    <div id="stats">
+      <div class="stat"><div class="stat-n" id="s-strong">0</div><div class="stat-l">Strong</div></div>
+      <div class="stat"><div class="stat-n" id="s-partial">0</div><div class="stat-l">Partial</div></div>
+      <div class="stat"><div class="stat-n" id="s-miss">0</div><div class="stat-l">Miss</div></div>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+    <div id="category-badge"></div>
+    <div id="question"></div>
+
+    <div id="answer-wrap">
+      <textarea id="answer" placeholder="State the rule, elements, or analysis…"></textarea>
+    </div>
+    <button id="submit-btn">Check My Answer</button>
+
+    <div id="feedback">
+      <div id="score-display"></div>
+      <div id="keywords-wrap">
+        <div class="kw-label">Key terms</div>
+        <div id="keywords-list"></div>
+      </div>
+      <div id="model-answer">
+        <div class="ma-label">Model Answer</div>
+        <div class="ma-text" id="ma-text"></div>
+      </div>
+      <div id="self-grade">
+        <p>Your wording differs — override if you captured the concept:</p>
+        <div id="self-grade-btns">
+          <button class="sg-btn sg-strong" id="sg-strong">Strong</button>
+          <button class="sg-btn sg-partial" id="sg-partial">Partial</button>
+          <button class="sg-btn sg-miss" id="sg-miss">Miss</button>
+        </div>
+      </div>
+      <button id="next-btn">Next →</button>
+    </div>
+
+    <div id="prog-text"></div>
+  </div>
+
+  <div id="results">
+    <h2>Round complete.</h2>
+    <div class="big-score" id="r-pct"></div>
+    <div class="sub" id="r-sub"></div>
+    <div class="grid">
+      <div class="grid-item"><div class="grid-n" id="r-strong"></div><div class="grid-l">Strong</div></div>
+      <div class="grid-item"><div class="grid-n" id="r-partial"></div><div class="grid-l">Partial</div></div>
+      <div class="grid-item"><div class="grid-n" id="r-miss"></div><div class="grid-l">Miss</div></div>
+    </div>
+    <button id="restart-btn">Shuffle &amp; Replay</button>
+  </div>
+</div>
+
+<script>
+var CARDS = [
+  // CP PRESUMPTION
+  {cat:"CP Presumption", q:"What is the community property presumption?",
+   answer:"All property acquired during marriage while domiciled in a CP state is presumed community property. The burden is on the party claiming separate property to rebut the presumption with clear and convincing evidence (or by preponderance in some jurisdictions).",
+   keys:["during marriage","presumed community","burden","rebut","separate property","domiciled"]},
+
+  {cat:"CP Presumption", q:"How is the CP presumption rebutted?",
+   answer:"By tracing the asset to a separate property source — gift, inheritance, or property owned before marriage. Must show clear and convincing evidence of SP character. Commingling may defeat tracing.",
+   keys:["tracing","separate property source","gift","inheritance","before marriage","commingling"]},
+
+  {cat:"CP Presumption", q:"What is the Married Woman's Special Presumption (title presumption)?",
+   answer:"In California, if property is titled solely in the wife's name during marriage (pre-1975), a rebuttable presumption arose that it was her separate property. Abolished prospectively by 1975 legislation. Today, title in one spouse's name alone does not change CP presumption without a valid transmutation.",
+   keys:["title","wife","rebuttable","1975","transmutation","abolished"]},
+
+  // SEPARATE PROPERTY
+  {cat:"Separate Property", q:"What is separate property? Name all three sources.",
+   answer:"Property owned before marriage. Property acquired during marriage by gift or inheritance. Rents, issues, and profits from separate property (in most CP states). In California, income from SP is also SP.",
+   keys:["before marriage","gift","inheritance","rents issues profits","owned before","income from SP"]},
+
+  {cat:"Separate Property", q:"What is the SP income rule and how does California differ from most states?",
+   answer:"Most CP states: income earned during marriage is CP regardless of source. California follows the same rule for earnings. However, income/rents/profits FROM separate property remain separate property in California and most CP states — the key is distinguishing between income from labor (CP) and income from SP (SP).",
+   keys:["income from labor","community","income from separate property","rents","profits","remains separate"]},
+
+  // PEREIRA / VAN CAMP
+  {cat:"Pereira / Van Camp", q:"When do Pereira and Van Camp apply?",
+   answer:"When a spouse's separate property business generates profits during marriage. Courts must apportion the profits between CP (attributable to the spouse's labor/skill/effort) and SP (attributable to the capital/nature of the SP asset). Pereira and Van Camp are the two apportionment methods.",
+   keys:["separate property business","apportionment","labor","skill","effort","capital","community","separate"]},
+
+  {cat:"Pereira / Van Camp", q:"Explain the Pereira formula.",
+   answer:"Pereira: Start with the SP value at marriage. Apply a fair rate of return (usually legal interest rate) to calculate the SP return. Everything above that fair return is CP — attributed to the spouse's labor and effort during marriage. Favors community when the business grew substantially due to personal effort.",
+   keys:["fair rate of return","legal interest","above that return is CP","labor","effort","SP value at marriage","favors community"]},
+
+  {cat:"Pereira / Van Camp", q:"Explain the Van Camp formula.",
+   answer:"Van Camp: Calculate the reasonable value of the spouse's services to the business (what they would have been paid on the open market). That amount is CP. Subtract any compensation already paid to the spouse. Remainder belongs to SP. Favors separate property when the business success is due to the nature of the SP asset rather than personal effort.",
+   keys:["reasonable value of services","open market","compensation paid","remainder SP","favors separate","nature of asset"]},
+
+  {cat:"Pereira / Van Camp", q:"Which formula does a court choose — Pereira or Van Camp?",
+   answer:"Courts have discretion. Pereira is preferred when the business grew primarily due to the spouse's labor and skill — the personal effort drove returns above a fair rate. Van Camp is preferred when the business success is more attributable to the inherent nature of the SP asset (capital, market, etc.) and the spouse was adequately compensated.",
+   keys:["discretion","labor and skill","Pereira","inherent nature","SP asset","Van Camp","adequately compensated"]},
+
+  // MOORE / MARSDEN
+  {cat:"Moore / Marsden", q:"What is the Moore/Marsden rule?",
+   answer:"When a spouse uses community funds to pay down a mortgage on separate property, the community acquires a pro rata ownership interest in the property. The community's share is calculated based on the proportion of the principal paid down with CP funds relative to the total purchase price.",
+   keys:["community funds","pay down mortgage","separate property","pro rata","ownership interest","principal","purchase price"]},
+
+  {cat:"Moore / Marsden", q:"State the Moore/Marsden formula.",
+   answer:"Community interest = (CP principal payments / total purchase price) × current fair market value. Separate property interest = remainder. The formula tracks actual principal reduction, not interest payments — interest payments do not build equity.",
+   keys:["CP principal payments","total purchase price","current fair market value","principal reduction","not interest","equity"]},
+
+  // LUCAS / ANTI-LUCAS
+  {cat:"Lucas / Anti-Lucas", q:"What was the Lucas rule and what problem did it create?",
+   answer:"In re Marriage of Lucas (1980): When CP funds were used to acquire property titled in one spouse's name, the titled spouse took the property as SP because the community was presumed to have gifted its interest. This harsh result meant the non-titled spouse lost their CP contribution.",
+   keys:["Lucas","1980","titled spouse","SP","gifted","community contribution","non-titled spouse","harsh"]},
+
+  {cat:"Lucas / Anti-Lucas", q:"What is Anti-Lucas (Family Code § 2581)?",
+   answer:"California Family Code § 2581 (Anti-Lucas): Property acquired during marriage in joint form (joint tenancy, tenancy in common, community property) is presumed CP for purposes of division on dissolution, regardless of the source of funds used. The presumption can only be rebutted by: (1) a written agreement, or (2) a written statement in the deed that the property is SP.",
+   keys:["§ 2581","joint form","joint tenancy","presumed CP","dissolution","written agreement","written statement in deed","rebut"]},
+
+  // TRANSMUTATION
+  {cat:"Transmutation", q:"What is transmutation and what does California require?",
+   answer:"Transmutation is the change of property's character — SP to CP, CP to SP, or one spouse's SP to the other's SP. California Family Code § 852 requires: (1) a writing, (2) signed by the adversely affected spouse, (3) expressly stating the change in character. Oral transmutations are NOT valid for property acquired after 1/1/1985.",
+   keys:["writing","signed","adversely affected spouse","expressly","change in character","§ 852","oral not valid","1985"]},
+
+  {cat:"Transmutation", q:"What are the exceptions to California's transmutation writing requirement?",
+   answer:"Gifts of personal property: interspousal gifts of clothing, jewelry, or other tangible articles of a personal nature that are not substantial in value are exempt from the writing requirement. Also: transmutations occurring before January 1, 1985 may be governed by prior law allowing oral transmutations.",
+   keys:["gifts","clothing","jewelry","personal nature","not substantial","exempt","before 1985","oral"]},
+
+  // COMMINGLING & TRACING
+  {cat:"Commingling & Tracing", q:"What is commingling and what is its effect?",
+   answer:"Commingling occurs when separate property and community property funds are mixed together (e.g., in a joint bank account) such that the SP cannot be identified. If the SP cannot be traced, it loses its separate character and becomes CP. The burden is on the party claiming SP to trace the funds.",
+   keys:["mixed","cannot be identified","loses separate character","becomes CP","burden","trace","bank account"]},
+
+  {cat:"Commingling & Tracing", q:"What are the two tracing methods?",
+   answer:"(1) Direct tracing: show the SP funds were used to purchase the specific asset. Requires sufficient SP funds in the account at the time of purchase and an intent to use SP funds. (2) Exhaustion method: show that all CP funds were exhausted for living expenses, so any remaining funds must be SP.",
+   keys:["direct tracing","SP funds","intent","exhaustion method","living expenses","remaining funds SP","sufficient SP funds"]},
+
+  // DEBT LIABILITY
+  {cat:"Debt Liability", q:"What is the general rule for debt liability in community property?",
+   answer:"Debts incurred during marriage for the benefit of the community are the joint responsibility of both spouses and can be satisfied from CP. Premarital debts of one spouse can be satisfied from that spouse's SP and earnings (with limits in California). The non-debtor spouse's SP is generally protected from the other spouse's premarital debts.",
+   keys:["during marriage","community benefit","joint responsibility","CP","premarital debts","SP","non-debtor spouse protected","earnings"]},
+
+  {cat:"Debt Liability", q:"In California, what protections does the non-debtor spouse have against the other's premarital debts?",
+   answer:"California Family Code § 910-916: CP and the debtor spouse's SP are liable for debts incurred before or during marriage. HOWEVER, the non-debtor spouse's SP is NOT liable for the other spouse's premarital debts. Additionally, the non-debtor spouse's earnings are protected from premarital debts IF they are kept in a separate account not commingled with other CP.",
+   keys:["§ 910","non-debtor SP not liable","premarital","separate account","not commingled","earnings protected"]},
+
+  // PRENUPTIAL AGREEMENTS
+  {cat:"Prenuptial Agreements", q:"What are the requirements for a valid prenuptial agreement in California (UPAA)?",
+   answer:"Under California's Uniform Premarital Agreement Act: (1) Must be in writing and signed by both parties. (2) Voluntary — cannot be the product of duress, fraud, or undue influence. (3) Full disclosure of assets and obligations (or knowing waiver of disclosure). (4) Not unconscionable at the time of execution. (5) Independent legal counsel advised or party had opportunity and voluntarily waived in writing. (6) Seven-day waiting period between presentation and signing.",
+   keys:["writing","signed","voluntary","duress","full disclosure","not unconscionable","independent legal counsel","seven day","waiting period"]},
+
+  {cat:"Prenuptial Agreements", q:"What can and cannot be covered in a prenuptial agreement?",
+   answer:"Can cover: property rights, spousal support modification/elimination, choice of law, any other matter not in violation of public policy or criminal law. CANNOT cover: child support (courts retain jurisdiction), child custody, provisions that promote divorce, provisions that waive the right to a court-ordered property division on dissolution.",
+   keys:["property rights","spousal support","choice of law","cannot waive child support","courts retain jurisdiction","promote divorce","public policy"]},
+
+  // FEDERAL PREEMPTION
+  {cat:"Federal Preemption", q:"What is the federal preemption rule in community property?",
+   answer:"Federal law can preempt state CP law. Key examples: ERISA preempts state CP law for most private pension plans (non-CP spouse's rights governed by federal law, not state CP). Federal government employees — certain federal benefits (military pensions, Social Security) are governed by federal law and may preempt CP claims. States cannot give a non-employee spouse more rights than federal law allows.",
+   keys:["ERISA","preempts","pension","federal law","military","Social Security","cannot give more rights","federal employees"]},
+
+  {cat:"Federal Preemption", q:"What is the ERISA preemption rule for retirement benefits?",
+   answer:"ERISA (Employee Retirement Income Security Act) preempts state CP laws for private employer pension plans. A non-employee spouse cannot obtain CP rights in an ERISA plan that exceed what federal law provides. To protect the non-employee spouse's interest, a Qualified Domestic Relations Order (QDRO) must be obtained.",
+   keys:["ERISA","preempts","private employer","non-employee spouse","QDRO","Qualified Domestic Relations Order","federal"]},
+
+  // LEGAL SEPARATION
+  {cat:"Legal Separation & Divorce", q:"When does the community end for CP purposes?",
+   answer:"The community ends at the date of separation — the date when one spouse expresses an intent to permanently end the marriage AND takes action consistent with that intent. After separation, earnings and acquisitions become SP. Legal separation and divorce both terminate the community. Date of separation is a fact question.",
+   keys:["date of separation","permanent intent","action consistent","earnings become SP","after separation","fact question","terminates community"]},
+
+  {cat:"Legal Separation & Divorce", q:"How is community property divided on divorce in California?",
+   answer:"California is an equal division state. Each spouse is entitled to one-half of all CP accumulated during the marriage. Court must confirm SP to the owning spouse. Spouses can agree to unequal division by written agreement. Court may award more than half CP to one spouse only in cases of misappropriation, breach of fiduciary duty, or by agreement.",
+   keys:["equal division","one-half","CP","confirm SP","written agreement","misappropriation","breach of fiduciary duty"]},
+
+  // FIDUCIARY DUTY
+  {cat:"Fiduciary Duty", q:"What fiduciary duties do spouses owe each other regarding CP?",
+   answer:"California Family Code § 721: Spouses owe each other the highest duty of good faith and fair dealing — the same duty as business partners. Includes: duty to disclose all material facts, duty not to take unfair advantage, duty of full disclosure of all CP, and duty not to misappropriate CP. Breach may result in court awarding more than 50% CP to the non-breaching spouse.",
+   keys:["§ 721","good faith","fair dealing","business partners","disclose","material facts","misappropriate","more than 50%","breach"]},
+
+  // QUASI-COMMUNITY PROPERTY
+  {cat:"Quasi-Community Property", q:"What is quasi-community property?",
+   answer:"Property acquired by either spouse while domiciled outside California that would have been CP had the couple been domiciled in California at the time of acquisition. Treated as CP on dissolution or death. NOT treated as CP during the marriage — the acquiring spouse retains management and control.",
+   keys:["domiciled outside California","would have been CP","dissolution","death","not during marriage","acquiring spouse retains control","quasi"]},
+
+  // MANAGEMENT & CONTROL
+  {cat:"Management & Control", q:"Who has management and control of community property in California?",
+   answer:"Both spouses have equal management and control of CP. Either spouse acting alone can manage and control CP, EXCEPT: (1) Neither spouse can gift CP without the other's written consent. (2) Real property CP requires both spouses' consent for any disposition or encumbrance. (3) Certain business interests require both spouses' consent.",
+   keys:["equal management","either spouse","gift requires written consent","real property both spouses","disposition","encumbrance","consent"]},
+
+  // PERSONAL INJURY
+  {cat:"Personal Injury", q:"What is the character of a personal injury award during marriage?",
+   answer:"California: Personal injury damages recovered during marriage are CP IF the tortfeasor was a third party. HOWEVER, at dissolution, the PI award is assigned to the injured spouse (unless the interests of justice require otherwise). The PI recovery remains CP during the marriage for creditor purposes but is treated as that spouse's on division.",
+   keys:["personal injury","CP during marriage","third party","assigned to injured spouse","dissolution","interests of justice","creditor"]},
+
+  // PUTATIVE SPOUSE
+  {cat:"Putative Spouse", q:"What is a putative spouse and what property rights do they have?",
+   answer:"A putative spouse is one who has a good faith belief that they are validly married, but the marriage is void or voidable. Quasi-marital property — property acquired during the putative marriage that would have been CP — is divided like CP on termination. Good faith belief must be genuine and reasonable. Rights terminate when the putative spouse learns of the invalidity.",
+   keys:["good faith belief","validly married","void or voidable","quasi-marital property","divided like CP","reasonable","terminates when learns"]},
+
+  // GIFTS BETWEEN SPOUSES
+  {cat:"Gifts & Interspousal Transactions", q:"Can one spouse give CP to the other as a gift?",
+   answer:"Yes, but requires written consent of BOTH spouses. An interspousal gift of CP changes it to the donee spouse's SP. Without the other spouse's written consent, a unilateral gift of CP is voidable — not void. The defrauded spouse can recover their half within the applicable statute of limitations.",
+   keys:["written consent","both spouses","donee spouse SP","unilateral gift voidable","not void","recover half","statute of limitations"]},
+
+  // EDUCATION & TRAINING
+  {cat:"Education & Reimbursement", q:"What is the reimbursement rule for education and training paid with CP funds?",
+   answer:"Community contributions to a spouse's education or training that substantially enhances earning capacity must be reimbursed to the community at dissolution. Reimbursement is reduced if: (1) the community substantially benefited from the education (10+ years is presumed benefited), (2) the other spouse also received CP-funded education, or (3) reimbursement would be unjust.",
+   keys:["education","training","substantially enhances earning capacity","reimbursed","10 years presumed benefited","reduced","unjust"]},
+
+  // TRACING IN BUSINESS
+  {cat:"Business & SP Investment", q:"What is the general approach when SP is invested in a business during marriage?",
+   answer:"Courts must determine whether the growth in value is attributable to the SP capital (remains SP) or to the community labor/effort of the spouse (CP). Apply Pereira or Van Camp to apportion. The spouse claiming SP character must trace the SP investment and demonstrate the growth is attributable to the SP source rather than community effort.",
+   keys:["SP capital","community labor","apportion","Pereira","Van Camp","trace","growth","SP source"]},
+
+  // CREDITORS
+  {cat:"Debt Liability", q:"Can a creditor reach community property for one spouse's debt?",
+   answer:"For debts incurred DURING marriage for community benefit: creditor can reach all CP and the debtor spouse's SP. For PREMARITAL debts: creditor can reach the debtor spouse's SP and the debtor spouse's share of CP (earnings), but NOT the non-debtor spouse's SP. Non-debtor spouse can protect earnings by keeping them in a separate account not commingled with CP.",
+   keys:["community benefit","all CP","premarital","debtor SP","non-debtor SP not reachable","separate account","not commingled","earnings"]},
+
+  // TITLE & FORM OF OWNERSHIP
+  {cat:"Title & Form of Ownership", q:"If spouses take title as joint tenants, what is the effect on CP character?",
+   answer:"Under Anti-Lucas (FC § 2581): property taken in joint tenancy during marriage is presumed CP for dissolution purposes, regardless of source of funds. However, for other purposes (e.g., death, creditors), joint tenancy form may control. The CP presumption can only be rebutted by written agreement or written statement in the deed designating it as SP.",
+   keys:["joint tenancy","presumed CP","dissolution","§ 2581","written agreement","written statement in deed","rebut","other purposes"]},
+];
+
+var deck=[], cur=0, strong=0, partial=0, miss=0, graded=false;
+
+function shuffle(a){var b=a.slice();for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}return b;}
+function g(id){return document.getElementById(id);}
+
+function init(){
+  deck=shuffle(CARDS);
+  cur=0;strong=0;partial=0;miss=0;
+  g('s-strong').textContent='0';
+  g('s-partial').textContent='0';
+  g('s-miss').textContent='0';
+  g('results').style.display='none';
+  g('main').style.display='block';
+  renderCard();
+}
+
+function renderCard(){
+  graded=false;
+  var c=deck[cur];
+  g('category-badge').textContent=c.cat;
+  g('question').textContent=c.q;
+  g('answer').value='';
+  g('answer').disabled=false;
+  g('submit-btn').style.display='block';
+  g('submit-btn').disabled=false;
+  g('feedback').style.display='none';
+  g('self-grade').style.display='none';
+  g('next-btn').style.display='none';
+  g('progress-bar').style.width=((cur/deck.length)*100)+'%';
+  g('prog-text').textContent=(cur+1)+' of '+deck.length;
+}
+
+function checkAnswer(){
+  if(graded)return;
+  var c=deck[cur];
+  var ans=g('answer').value.toLowerCase();
+  if(!ans.trim()){alert('Write something first.');return;}
+
+  g('answer').disabled=true;
+  g('submit-btn').style.display='none';
+  g('feedback').style.display='block';
+  g('ma-text').textContent=c.answer;
+
+  var hits=[], misses=[];
+  c.keys.forEach(function(k){
+    var terms=k.toLowerCase().split('/');
+    var hit=terms.some(function(t){return ans.indexOf(t.trim())>=0;});
+    if(hit) hits.push(k); else misses.push(k);
+  });
+
+  var pct=Math.round((hits.length/c.keys.length)*100);
+  var kl=g('keywords-list');
+  kl.innerHTML='';
+  hits.forEach(function(k){var s=document.createElement('span');s.className='kw hit';s.textContent='✓ '+k;kl.appendChild(s);});
+  misses.forEach(function(k){var s=document.createElement('span');s.className='kw miss';s.textContent='✗ '+k;kl.appendChild(s);});
+
+  var sd=g('score-display');
+  if(pct>=85){
+    sd.className='score-display strong';
+    sd.textContent='Strong — '+pct+'% of key terms hit';
+    strong++;g('s-strong').textContent=strong;
+    graded=true;
+    g('next-btn').style.display='block';
+    g('next-btn').textContent=cur<deck.length-1?'Next →':'See results';
+  } else if(pct>=40){
+    sd.className='score-display partial';
+    sd.textContent='Partial — '+pct+'% of key terms hit. Override below if you captured the concept.';
+    g('self-grade').style.display='block';
+  } else {
+    sd.className='score-display miss';
+    sd.textContent='Miss — '+pct+'% of key terms hit. Override below if warranted.';
+    g('self-grade').style.display='block';
+  }
+}
+
+function applyGrade(grade){
+  graded=true;
+  if(grade==='strong'){strong++;g('s-strong').textContent=strong;}
+  else if(grade==='partial'){partial++;g('s-partial').textContent=partial;}
+  else{miss++;g('s-miss').textContent=miss;}
+  g('self-grade').style.display='none';
+  g('next-btn').style.display='block';
+  g('next-btn').textContent=cur<deck.length-1?'Next →':'See results';
+}
+
+function nextCard(){
+  cur++;
+  if(cur>=deck.length){showResults();}
+  else{renderCard();}
+}
+
+function showResults(){
+  g('main').style.display='none';
+  g('results').style.display='block';
+  var total=strong+partial+miss;
+  var pct=total>0?Math.round(((strong+(partial*0.5))/total)*100):0;
+  g('r-pct').textContent=pct+'%';
+  g('r-sub').textContent=pct>=80?'Counselor.':pct>=60?'Getting there.':'More reps needed.';
+  g('r-strong').textContent=strong;
+  g('r-partial').textContent=partial;
+  g('r-miss').textContent=miss;
+}
+
+// Wire events
+g('submit-btn').addEventListener('click', checkAnswer);
+g('answer').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.metaKey){checkAnswer();}});
+g('next-btn').addEventListener('click', nextCard);
+g('restart-btn').addEventListener('click', init);
+g('sg-strong').addEventListener('click',function(){applyGrade('strong');});
+g('sg-partial').addEventListener('click',function(){applyGrade('partial');});
+g('sg-miss').addEventListener('click',function(){applyGrade('miss');});
+
+init();
+</script>
+</body>
+</html>

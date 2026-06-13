@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Fact Left Behind — Community Property Q4</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 860px; }
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(29,158,117,0.3); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; letter-spacing: 0.04em; }
+#header h1 span { color: #1d9e75; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#level-indicator { display: flex; gap: 8px; align-items: center; }
+.level-pip { width: 32px; height: 6px; border-radius: 3px; background: #1a2f4a; transition: background 0.3s; }
+.level-pip.active { background: #1d9e75; }
+.level-pip.done { background: #c9973a; }
+#level-label { font-size: 12px; color: #1d9e75; font-weight: 500; margin-left: 4px; }
+#approach { background: #0f1e35; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.2); }
+#approach-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+#approach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.approach-col h4 { font-size: 11px; color: #f5f0e8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; border-bottom: 1px solid rgba(29,158,117,0.2); padding-bottom: 4px; }
+.approach-col ul { list-style: none; }
+.approach-col li { font-size: 11px; color: #a0b8cc; padding: 2px 0; line-height: 1.4; }
+.approach-col li strong { color: #1d9e75; }
+#mnemonic { grid-column: span 2; background: rgba(29,158,117,0.1); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #9fe1cb; text-align: center; border: 1px solid rgba(29,158,117,0.2); }
+#matrix-box { background: #0f1e35; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.15); }
+#matrix-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px; }
+#matrix-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+#matrix-table th { background: #1a2f4a; color: #6b8aaa; text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; padding: 8px 10px; text-align: center; }
+#matrix-table th:first-child { text-align: left; }
+#matrix-table td { padding: 9px 10px; border-bottom: 1px solid #1a2f4a; color: #a0b8cc; text-align: center; }
+#matrix-table td:first-child { text-align: left; color: #f5f0e8; font-weight: 500; }
+#matrix-table tr:last-child td { border-bottom: none; }
+.matrix-note { font-size: 10px; color: #6b8aaa; margin-top: 8px; }
+#hypo-box { background: #0f1e35; border-radius: 12px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.15); }
+#hypo-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#hypo-text { font-size: 13px; color: #d0dce8; line-height: 1.75; }
+.fact { background: rgba(29,158,117,0.15); border-radius: 3px; padding: 1px 4px; }
+#panel { background: #0f1e35; border-radius: 12px; padding: 20px; }
+#l1-question { font-size: 14px; font-weight: 500; color: #f5f0e8; margin-bottom: 4px; }
+#l1-sub { font-size: 11px; color: #6b8aaa; margin-bottom: 18px; line-height: 1.5; }
+#issue-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.asset-block { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; border: 1.5px solid #1a2f4a; }
+.asset-block-title { font-size: 12px; font-weight: 600; color: #f5f0e8; margin-bottom: 10px; }
+.checklist-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.check-item { display: flex; align-items: center; gap: 7px; background: #0f1e35; border: 1.5px solid #2a4a6a; border-radius: 7px; padding: 7px 11px; cursor: pointer; transition: all 0.15s; user-select: none; }
+.check-item:hover { border-color: #1d9e75; }
+.check-item.selected { background: #1a3a2a; border-color: #1d9e75; }
+.check-box { width: 16px; height: 16px; border-radius: 3px; border: 2px solid #2a4a6a; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #0f1e35; transition: all 0.15s; }
+.check-item.selected .check-box { background: #1d9e75; border-color: #1d9e75; }
+.check-label { font-size: 11px; font-weight: 500; color: #6b8aaa; }
+.check-item.selected .check-label { color: #9fe1cb; }
+.check-item.ans-yes { background: #0f3d2a; border-color: #1d9e75; pointer-events: none; }
+.check-item.ans-yes .check-box { background: #1d9e75; border-color: #1d9e75; }
+.check-item.ans-yes .check-label { color: #9fe1cb; }
+.check-item.ans-no { background: #1a2f4a; border-color: #1a2f4a; pointer-events: none; }
+.check-item.ans-no .check-label { color: #2a4a6a; }
+.check-item.missed-item { background: #3d2f0a; border-color: #c9973a; pointer-events: none; }
+.check-item.missed-item .check-box { border-color: #c9973a; }
+.check-item.missed-item .check-label { color: #f5d06a; }
+.check-item.wrong-item { background: #3d1515; border-color: #e24b4a; pointer-events: none; }
+.check-item.wrong-item .check-label { color: #f09595; }
+.reveal-asset-btn { background: transparent; border: 1px solid #2a4a6a; border-radius: 6px; padding: 5px 12px; font-size: 10px; color: #6b8aaa; cursor: pointer; font-family: inherit; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.08em; }
+.reveal-asset-btn:hover { border-color: #1d9e75; color: #9fe1cb; }
+.asset-answer { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #2a4a6a; font-size: 12px; color: #a0b8cc; line-height: 1.6; }
+.asset-answer.visible { display: block; }
+#score-bar { background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; display: none; }
+#score-cells { display: flex; gap: 10px; }
+.score-cell { flex: 1; text-align: center; background: #0f1e35; border-radius: 6px; padding: 10px 6px; }
+.score-cell-n { font-size: 18px; font-weight: 500; color: #1d9e75; }
+.score-cell-l { font-size: 9px; color: #6b8aaa; text-transform: uppercase; margin-top: 2px; }
+#l2-progress { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.issue-dot { width: 28px; height: 28px; border-radius: 50%; background: #1a2f4a; border: 2px solid #2a4a6a; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #6b8aaa; }
+.issue-dot.active { border-color: #1d9e75; background: rgba(29,158,117,0.15); color: #9fe1cb; }
+.issue-dot.done { border-color: #c9973a; background: rgba(201,151,58,0.15); color: #f5d06a; }
+#l2-subq { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+#l2-issue-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#l2-element-box { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(29,158,117,0.2); }
+#l2-element-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+#l2-element-text { font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.5; }
+#l2-element-sub { font-size: 12px; color: #6b8aaa; margin-top: 5px; }
+#l2-instruction { font-size: 11px; color: #6b8aaa; margin-bottom: 10px; }
+#fact-tiles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.fact-tile { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #2a4a6a; background: #1a2f4a; color: #a0b8cc; font-size: 12px; cursor: pointer; transition: all 0.15s; line-height: 1.4; }
+.fact-tile:hover { border-color: #1d9e75; color: #f5f0e8; }
+.fact-tile.selected { background: #1a3a2a; border-color: #1d9e75; color: #f5f0e8; }
+.fact-tile.correct { background: #0f3d2a; border-color: #1d9e75; color: #9fe1cb; cursor: default; }
+.fact-tile.missed-fact { background: #3d2f0a; border-color: #c9973a; color: #f5d06a; cursor: default; }
+.fact-tile.wrong-fact { background: #3d1515; border-color: #e24b4a; color: #f09595; cursor: default; }
+.fact-tile.neutral { background: #1a2f4a; border-color: #1a2f4a; color: #4a6a8a; cursor: default; }
+#l2-explain { display: none; background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(29,158,117,0.3); }
+#l2-explain-text { font-size: 13px; color: #a0b8cc; line-height: 1.6; }
+.btn-primary { width: 100%; background: #1d9e75; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; margin-bottom: 8px; }
+#prog-text { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 12px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 22px; font-weight: 500; color: #f5f0e8; margin-bottom: 6px; }
+#results-score { font-size: 54px; font-weight: 500; color: #1d9e75; line-height: 1; margin-bottom: 4px; }
+#results-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-cell-n { font-size: 20px; font-weight: 500; color: #1d9e75; }
+.r-cell-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+<div id="header">
+  <div><h1>No Fact <span>Left Behind</span></h1><p>Community Property · Q4 · Herb &amp; Wendy / CoinCo · Feb 2010</p></div>
+  <div id="level-indicator">
+    <div class="level-pip active" id="pip1"></div>
+    <div class="level-pip" id="pip2"></div>
+    <span id="level-label">Level 1</span>
+  </div>
+</div>
+<div id="approach">
+  <div id="approach-title">CP Mental Checklist — Tap to expand ▼</div>
+  <div id="approach-grid" style="display:none;">
+    <div class="approach-col"><h4>Source</h4><ul><li>Before marriage? → <strong>SP</strong></li><li>During marriage? → <strong>CP</strong></li><li>Gift/inheritance? → <strong>SP</strong></li><li>Exchange Rule: SP in → SP out</li></ul></div>
+    <div class="approach-col"><h4>Conduct</h4><ul><li><strong>S</strong>eparation</li><li><strong>I</strong>mprovements (Moore/Marsden)</li><li><strong>P</strong>ereira / Van Camp</li><li><strong>T</strong>ransmutation (writing post-1985)</li><li><strong>G</strong>ifts (writing if substantial)</li><li><strong>C</strong>ommingling</li></ul></div>
+    <div class="approach-col"><h4>Presumptions</h4><ul><li>General CP presumption</li><li>Married Woman Pre-1975</li><li>Title in joint form</li><li>Prenuptial agreement validity</li></ul></div>
+    <div class="approach-col"><h4>Potential Rights / Debts</h4><ul><li>Who incurred the debt?</li><li>When incurred?</li><li>Common necessities rule</li><li>Premarital vs. post-separation</li></ul></div>
+    <div id="mnemonic">🧠 <strong>Source → Conduct → Presumptions → Potential Rights → Distribution</strong></div>
+  </div>
+</div>
+<div id="matrix-box">
+  <div id="matrix-title">Asset Matrix — Classify Each Asset</div>
+  <div style="font-size:11px;color:#6b8aaa;margin-bottom:12px;">Click each dot to cycle: ⚫ None → 🔴 SP → 🟢 CP → 🟡 Mixed. Then hit Reveal to check.</div>
+  <table id="matrix-table">
+    <tr><th>Asset / Issue</th><th>SP</th><th>CP</th><th>Mixed</th><th>Doctrine</th><th>Distribution</th></tr>
+    <tr><td>The Drawing</td><td><span class="mdot" data-answer="sp"></span></td><td><span class="mdot" data-answer="empty"></span></td><td><span class="mdot" data-answer="empty"></span></td><td class="doctrine-cell" style="display:none;font-size:11px;color:#6b8aaa;">Transmutation / Gift</td><td class="dist-cell" style="display:none;font-size:11px;color:#6b8aaa;">Likely H's SP</td></tr>
+    <tr><td>CoinCo (prenup invalid)</td><td><span class="mdot" data-answer="sp"></span></td><td><span class="mdot" data-answer="empty"></span></td><td><span class="mdot" data-answer="mixed"></span></td><td class="doctrine-cell" style="display:none;font-size:11px;color:#6b8aaa;">Pereira allocation</td><td class="dist-cell" style="display:none;font-size:11px;color:#6b8aaa;">SP + CP residual split</td></tr>
+    <tr><td>CoinCo (prenup valid)</td><td><span class="mdot" data-answer="sp"></span></td><td><span class="mdot" data-answer="empty"></span></td><td><span class="mdot" data-answer="empty"></span></td><td class="doctrine-cell" style="display:none;font-size:11px;color:#6b8aaa;">Wages = SP → no CP claim</td><td class="dist-cell" style="display:none;font-size:11px;color:#6b8aaa;">Likely all W's SP</td></tr>
+    <tr><td>Hospital Bill (liability)</td><td><span class="mdot" data-answer="sp"></span></td><td><span class="mdot" data-answer="empty"></span></td><td><span class="mdot" data-answer="mixed"></span></td><td class="doctrine-cell" style="display:none;font-size:11px;color:#6b8aaa;">Common necessities</td><td class="dist-cell" style="display:none;font-size:11px;color:#6b8aaa;">W SP first; H SP also liable</td></tr>
+  </table>
+  <div class="matrix-note">Click any dot: ⚫ None → 🔴 SP → 🟢 CP → 🟡 Mixed</div>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button id="matrix-reveal" style="flex:1;background:#1d9e75;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:500;color:#0f1e35;cursor:pointer;font-family:inherit;">Reveal Answers</button>
+    <button id="matrix-reset" style="flex:0 0 auto;background:#1a2f4a;border:1px solid #2a4a6a;border-radius:8px;padding:10px 16px;font-size:13px;color:#6b8aaa;cursor:pointer;font-family:inherit;">Reset</button>
+  </div>
+  <div id="matrix-score" style="font-size:12px;color:#9fe1cb;margin-top:10px;text-align:center;display:none;"></div>
+</div>
+<div id="hypo-box">
+  <div id="hypo-title">Fact Pattern — Q4 · Herb &amp; Wendy / CoinCo (California) · February 2010</div>
+  <div id="hypo-text">
+    <span class="fact" id="f-marriage">Herb and Wendy, residents of California, married in 2001</span>. Herb worked as an accountant. Wendy was an avid coin collector who hoped to turn her hobby into a business. <span class="fact" id="f-prenup">Prior to marriage, they entered into a prenuptial agreement providing that each spouse's wages would be his or her separate property</span>.<br><br>
+    <span class="fact" id="f-drawing-gift">On Wendy's birthday in 2002, Herb gave Wendy a drawing by a famous artist</span>. <span class="fact" id="f-drawing-source">Herb paid for the drawing with $15,000 that his parents had given him</span>. <span class="fact" id="f-drawing-hung">Wendy hung the drawing in their bedroom</span>.<br><br>
+    In 2003, <span class="fact" id="f-coinco-source">Wendy opened CoinCo, capitalizing the business with a $10,000 inheritance from her grandfather</span>. <span class="fact" id="f-coinco-labor">Wendy worked at the shop alone every day</span>. <span class="fact" id="f-coinco-skill">Customers appreciated her enthusiasm and ability to obtain special coins at reasonable prices</span>. Over time, <span class="fact" id="f-coinco-coins">Wendy learned she had acquired a number of highly valuable coins</span>. <span class="fact" id="f-coinco-market">There was also a renewed interest in coin collecting due to the discovery of several boxes of old coins found buried in the area</span>.<br><br>
+    <span class="fact" id="f-coinco-salary">Although Wendy's services were worth $40,000 per year, she took an annual salary of $25,000. She also paid $5,000 in household expenses from business earnings each year</span>.<br><br>
+    In 2008, <span class="fact" id="f-separation">Herb and Wendy separated, and Wendy filed for dissolution</span>. At that time, <span class="fact" id="f-coinco-val-sep">CoinCo was worth $150,000</span> and <span class="fact" id="f-drawing-val">the drawing was worth $30,000</span>.<br><br>
+    In 2009, before trial, <span class="fact" id="f-illness">Wendy was disabled by a serious illness and had to be hospitalized</span>. <span class="fact" id="f-coinco-closed">She closed CoinCo while hospitalized, and the value of the business fell to $100,000 by the time of trial</span>. <span class="fact" id="f-hospital-bill">Her hospital bill was not covered by health insurance</span>.<br><br>
+    In the dissolution proceeding, <span class="fact" id="f-prenup-dispute">Wendy claims the prenuptial agreement is valid and Herb claims it is not</span>.
+  </div>
+</div>
+<div id="panel">
+  <div id="level1">
+    <div id="l1-question">Level 1 — CP Mental Checklist</div>
+    <div id="l1-sub">For each asset or issue, check every category of the CP framework that is implicated. This hypo has a prenuptial agreement twist — address it as a threshold before working each asset. Reveal each asset individually or submit all at once.</div>
+    <div id="issue-grid"></div>
+    <div id="score-bar">
+      <div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Level 1 Results</div>
+      <div id="score-cells">
+        <div class="score-cell"><div class="score-cell-n" id="l1-correct-n">0</div><div class="score-cell-l">Correct</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-missed-n">0</div><div class="score-cell-l">Missed</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-wrong-n">0</div><div class="score-cell-l">Over-checked</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-pct">0%</div><div class="score-cell-l">Accuracy</div></div>
+      </div>
+    </div>
+    <div id="l1-btn-wrap"><button class="btn-primary" id="l1-submit">Check My Checklist →</button></div>
+    <div id="l1-next-wrap" style="display:none;"><button class="btn-primary" id="l1-next">Level 2 — No Fact Left Behind →</button></div>
+  </div>
+  <div id="level2" style="display:none;">
+    <div id="l2-progress"></div>
+    <div id="l2-subq"></div>
+    <div id="l2-issue-title"></div>
+    <div id="l2-element-box">
+      <div id="l2-element-label">Rule / Element</div>
+      <div id="l2-element-text"></div>
+      <div id="l2-element-sub"></div>
+    </div>
+    <div id="l2-instruction">Tap every fact from the hypo that is legally operative for this element.</div>
+    <div id="fact-tiles"></div>
+    <div id="l2-explain"><div id="l2-explain-text"></div></div>
+    <button class="btn-primary" id="l2-check">Check Facts →</button>
+    <div id="prog-text"></div>
+  </div>
+  <div id="results">
+    <h2>No Fact Left Behind.</h2>
+    <div id="results-score"></div>
+    <div id="results-sub"></div>
+    <div id="results-grid">
+      <div class="r-cell"><div class="r-cell-n" id="r-issues"></div><div class="r-cell-l">Checklist score</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-facts"></div><div class="r-cell-l">Facts deployed</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-total"></div><div class="r-cell-l">Combined %</div></div>
+    </div>
+    <button class="btn-primary" id="restart-btn">Play again</button>
+  </div>
+</div>
+</div>
+<script>
+(function(){
+var ASSETS=[
+  {id:'prenup',title:'⚑ Threshold — Prenuptial Agreement Validity',cats:['Source','Conduct','Presumptions','Potential Rights','Distribution'],answers:[true,true,false,false,true],
+   explanation:'Source: If valid, wages = each spouse\'s SP (not default CP). This is a source rule modification. Conduct: Validity requires (1) in writing; (2) voluntarily signed; (3) party against whom enforcement sought had independent legal counsel OR executed a written waiver. Facts are silent on all three — these silences are Herb\'s invalidity arguments. Distribution: If valid → W\'s wages are SP → dramatically changes CoinCo analysis. If invalid → default CP rules apply → W\'s wages = CP → H gets Pereira residual. Note: prenup affects only CoinCo; irrelevant to the drawing (not purchased with wages) and the hospital bill (not a wage characterization question).'},
+  {id:'drawing',title:'1 — The Drawing',cats:['Source','Conduct','Presumptions','Potential Rights','Distribution'],answers:[true,true,false,false,true],
+   explanation:'Source: H paid with $15,000 gift from his parents (during marriage). Gift = H\'s SP. Exchange Rule: SP funds → drawing takes SP character. Conduct: H gave drawing to W as birthday gift. W argues transmutation of H\'s SP to W\'s SP. BUT since 1985, transmutation requires a signed writing from the adversely affected spouse (H). No evidence of a signed writing → transmutation fails. Gift between spouses analysis: gifts of clothing, jewelry, personal articles → presumed SP of recipient. But substantial value items require writing. Drawing is now worth $30,000 — H argues substantial. W argues it was only $15k at purchase and was a personal birthday gift. Without a valid writing, H can trace the drawing to his SP source → drawing remains H\'s SP. Prenup is irrelevant here (not purchased with wages). Distribution: Most likely H\'s SP → W returns drawing to H.'},
+  {id:'coinco',title:'2 — CoinCo',cats:['Source','Conduct','Presumptions','Potential Rights','Distribution'],answers:[true,true,false,false,true],
+   explanation:'Source: Capitalized with W\'s $10,000 inheritance (SP). Exchange Rule → CoinCo = W\'s SP business. Conduct: W\'s community labor (time & skill during marriage = CP) used in her SP business → must allocate. Pereira (H\'s argument): W\'s personal time and skill drove the increase ($10k → $100k+). Business collapsed when she left (proves her skill was dominant factor). SP gets $10k + 10%/yr × 5 yrs = $15k; CP gets $85k residual (split equally → H gets ~$42,500 if prenup invalid). Van Camp (W\'s argument): renewed market interest (external factor) drove increase → SP gets residual. Likely disfavored — personal skill seems dominant. Value: use $100,000 (trial value), not $150,000 (separation value). Prenup: if VALID, W\'s wages = SP → her time/skill = SP contribution → H may get nothing or very little. Distribution depends on prenup validity and which formula applies.'},
+  {id:'hospital',title:'3 — Hospital Bill (Liability)',cats:['Source','Conduct','Presumptions','Potential Rights','Distribution'],answers:[true,true,false,true,true],
+   explanation:'Source: H & W separated in 2008. Post-separation earnings and debts = each spouse\'s SP. Hospital bill incurred in 2009 (after separation) → W\'s separate obligation in the first instance. Conduct: Separation — the economic community ended in 2008. Potential Rights: Common Necessities Rule — SP and CP are liable for debts for necessities (food, shelter, medical care) incurred by a separated spouse, UNLESS the spouses were living separate by formal written agreement. H and W had no formal separation agreement. Medical care = common necessity → W\'s SP, any remaining CP, AND H\'s SP are all potentially liable. Distribution: W\'s SP first. If insufficient, H\'s SP also reachable. No reimbursement on these facts — W appears unable to pay it from her own resources. Prenup has no effect on this analysis — the prenup covers wages, not liabilities.'},
+];
+var L2=[
+  {subq:'Threshold — Prenuptial Agreement',issueTitle:'Prenup Validity — Fam. Code §1612',
+   element:'Prenuptial agreements affecting marital rights in property must be: (1) in writing; (2) voluntarily signed by both parties; (3) at execution, the party against whom enforcement is sought must have had independent legal counsel OR executed a written waiver of that right. Free from fraud, duress, undue influence.',
+   sub:'What facts are relevant to prenup validity, and what is missing?',
+   keyFacts:['f-prenup','f-prenup-dispute','f-marriage'],
+   allFacts:['f-prenup','f-prenup-dispute','f-marriage','f-coinco-source','f-coinco-labor','f-coinco-salary','f-drawing-source'],
+   explain:'"Prior to marriage, they entered into a prenuptial agreement providing that each spouse\'s wages would be his or her separate property" — the agreement exists. "Wendy claims the prenuptial agreement is valid and Herb claims it is not" — directly in dispute. What the facts are SILENT on: whether the agreement was in writing, whether both voluntarily signed, whether Herb had independent counsel or waived that right. These silences are Herb\'s invalidity arguments. If the prenup is valid: W\'s wages = SP → major impact on CoinCo analysis. If invalid: default CP rules apply → wages = CP → H gets Pereira residual from CoinCo.'},
+  {subq:'1 — The Drawing',issueTitle:'Transmutation — Signed Writing Required Post-1985',
+   element:'Since 1985, transmutation of property (changing character from one spouse\'s SP to the other\'s SP, or between SP and CP) requires a signed writing from the adversely affected spouse. Without a valid writing, the original character is preserved. Exchange Rule: SP funds → property takes SP character.',
+   sub:'What facts establish the SP source, and what facts determine whether transmutation occurred?',
+   keyFacts:['f-drawing-source','f-drawing-gift','f-drawing-hung','f-drawing-val'],
+   allFacts:['f-drawing-source','f-drawing-gift','f-drawing-hung','f-drawing-val','f-prenup','f-marriage','f-coinco-source','f-separation'],
+   explain:'"Herb paid for the drawing with $15,000 that his parents had given him" — parents\' gift = H\'s SP. Exchange Rule: SP funds used to purchase drawing → drawing = H\'s SP. "Herb gave Wendy a drawing... for her birthday" — W will argue transmutation of H\'s SP to her SP. But since 1985, this requires a signed writing from H (the adversely affected spouse). No evidence of a signed writing. "Wendy hung the drawing in their bedroom" — H will argue this shows it was shared property, not solely personal to W, and that $30,000 value makes it substantial, requiring a writing. Without a signed writing, H can trace the drawing to his SP source → drawing stays H\'s SP.'},
+  {subq:'2 — CoinCo',issueTitle:'Pereira vs. Van Camp — SP Business / Community Labor',
+   element:'When community labor is used to increase a separately-owned business: Pereira applies when personal time and skill was the greater factor — SP gets original investment plus fair return (10%/yr); CP gets the residual. Van Camp applies when external factors drove the increase — CP gets reasonable value of services less what community already received; SP gets residual.',
+   sub:'What facts support Pereira? What facts support Van Camp? Which wins?',
+   keyFacts:['f-coinco-source','f-coinco-labor','f-coinco-skill','f-coinco-closed','f-coinco-salary','f-coinco-val-sep'],
+   allFacts:['f-coinco-source','f-coinco-labor','f-coinco-skill','f-coinco-closed','f-coinco-salary','f-coinco-val-sep','f-coinco-market','f-coinco-coins','f-separation','f-prenup'],
+   explain:'Pereira facts (H\'s argument): "Wendy worked at the shop alone every day" (time); "customers appreciated her enthusiasm and ability to obtain special coins" (skill); "value of business fell to $100,000" when she stopped working (proves her time/skill was the dominant factor — the business literally couldn\'t function without her). Van Camp facts (W\'s argument): "renewed interest in coin collecting due to the discovery of several boxes of old coins" — external market conditions. Van Camp likely disfavored — personal skill seems dominant. Calculation (prenup invalid): SP gets $10,000 + $5,000 fair return (10% × 5 yrs) = $15,000. CP residual = $85,000 (split equally → H gets $42,500). Use $100,000 trial value, not $150,000 separation value — CA values CP as close to trial as possible.'},
+  {subq:'3 — Hospital Bill',issueTitle:'Post-Separation Debt + Common Necessities Exception',
+   element:'Post-separation debts are each spouse\'s SP obligation. Exception: SP and CP are liable for debts for common necessities (food, shelter, clothing, medical care) incurred by a separated spouse, UNLESS the spouses were living separate by formal written agreement.',
+   sub:'What facts establish the post-separation character of the bill AND trigger the necessities exception?',
+   keyFacts:['f-separation','f-illness','f-hospital-bill','f-coinco-closed'],
+   allFacts:['f-separation','f-illness','f-hospital-bill','f-coinco-closed','f-prenup','f-marriage','f-prenup-dispute','f-coinco-source'],
+   explain:'"Herb and Wendy separated" in 2008 — economic community ended. "Wendy was disabled by a serious illness and had to be hospitalized" in 2009 — AFTER separation. "Her hospital bill was not covered by health insurance" — W cannot pay it herself. Post-separation debt → W\'s SP obligation in the first instance. BUT: no formal written separation agreement between H and W. Medical care = common necessity. Common Necessities Rule: W\'s SP, remaining CP, AND H\'s SP are all potentially liable for the hospital bill. "Value of the business fell to $100,000" — W closed CoinCo while hospitalized → appears insolvent. No reimbursement right on these facts. Prenup has no effect — it covers wages, not liabilities.'},
+];
+var HYPO_FACTS={
+  'f-marriage':'H and W married in 2001 as California residents',
+  'f-prenup':'Prior to marriage: prenuptial agreement — each spouse\'s wages would be his or her SP',
+  'f-drawing-gift':'On W\'s birthday in 2002, Herb gave Wendy a drawing by a famous artist',
+  'f-drawing-source':'Herb paid for the drawing with $15,000 that his parents had given him',
+  'f-drawing-hung':'Wendy hung the drawing in their bedroom',
+  'f-drawing-val':'Drawing was worth $30,000 at time of separation (2008)',
+  'f-coinco-source':'Wendy opened CoinCo in 2003, capitalized with $10,000 inheritance from her grandfather',
+  'f-coinco-labor':'Wendy worked at the shop alone every day',
+  'f-coinco-skill':'Customers appreciated her enthusiasm and ability to obtain special coins at reasonable prices',
+  'f-coinco-coins':'Over time, Wendy learned she had acquired a number of highly valuable coins',
+  'f-coinco-market':'Renewed interest in coin collecting due to discovery of buried boxes of old coins',
+  'f-coinco-salary':'W\'s services worth $40k/yr; she took $25k salary and paid $5k/yr household expenses from business earnings',
+  'f-separation':'Herb and Wendy separated in 2008; Wendy filed for dissolution',
+  'f-coinco-val-sep':'CoinCo was worth $150,000 at time of separation (2008)',
+  'f-illness':'In 2009 (before trial), Wendy disabled by serious illness and hospitalized',
+  'f-coinco-closed':'Wendy closed CoinCo while hospitalized; value fell to $100,000 by time of trial',
+  'f-hospital-bill':'Wendy\'s hospital bill was not covered by health insurance',
+  'f-prenup-dispute':'W claims prenuptial agreement is valid; H claims it is not',
+};
+var state={phase:'l1',checks:{},l1Correct:0,l1Missed:0,l1Wrong:0,l2Idx:0,l2FactSel:{},totalFactsCorrect:0,totalFactsTotal:0};
+function g(id){return document.getElementById(id);}
+g('approach-title').addEventListener('click',function(){
+  var grid=g('approach-grid');var showing=grid.style.display!=='none';
+  grid.style.display=showing?'none':'grid';
+  g('approach-title').textContent='CP Mental Checklist — Tap to '+(showing?'expand ▼':'collapse ▲');
+});
+var STATES=['empty','sp','cp','mixed'];
+var SC={empty:'#1a2f4a',sp:'#e24b4a',cp:'#1d9e75',mixed:'#c9973a'};
+var SB={empty:'#2a4a6a',sp:'#e24b4a',cp:'#1d9e75',mixed:'#c9973a'};
+document.querySelectorAll('.mdot').forEach(function(dot){
+  dot.style.cssText='width:20px;height:20px;border-radius:50%;display:inline-block;cursor:pointer;border:2px solid #2a4a6a;background:#1a2f4a;transition:all 0.15s;';
+  dot.dataset.state='empty';
+  dot.addEventListener('click',function(){
+    if(dot.dataset.locked)return;
+    var idx=STATES.indexOf(dot.dataset.state);var next=STATES[(idx+1)%STATES.length];
+    dot.dataset.state=next;dot.style.background=SC[next];dot.style.borderColor=SB[next];dot.style.boxShadow='';
+  });
+});
+g('matrix-reveal').addEventListener('click',function(){
+  var correct=0,total=0;
+  document.querySelectorAll('.mdot').forEach(function(dot){
+    dot.dataset.locked='true';var answer=dot.dataset.answer;var chosen=dot.dataset.state;total++;
+    dot.style.background=SC[answer];dot.style.borderColor=SB[answer];
+    if(chosen===answer){correct++;dot.style.boxShadow='0 0 0 3px rgba(29,158,117,0.6)';}
+    else{dot.style.boxShadow='0 0 0 3px rgba(226,75,74,0.6)';}
+  });
+  document.querySelectorAll('.doctrine-cell,.dist-cell').forEach(function(td){td.style.display='';});
+  var pct=Math.round(correct/total*100);
+  g('matrix-score').style.display='block';
+  g('matrix-score').textContent=correct+'/'+total+' correct ('+pct+'%) — Green ring = correct · Red ring = check answer';
+  g('matrix-reveal').style.display='none';
+});
+g('matrix-reset').addEventListener('click',function(){
+  document.querySelectorAll('.mdot').forEach(function(dot){
+    delete dot.dataset.locked;dot.dataset.state='empty';dot.style.background=SC['empty'];dot.style.borderColor=SB['empty'];dot.style.boxShadow='';
+  });
+  document.querySelectorAll('.doctrine-cell,.dist-cell').forEach(function(td){td.style.display='none';});
+  g('matrix-score').style.display='none';g('matrix-reveal').style.display='block';
+});
+function buildL1(){
+  var grid=g('issue-grid');grid.innerHTML='';
+  ASSETS.forEach(function(asset){
+    var block=document.createElement('div');block.className='asset-block';block.id='block-'+asset.id;
+    var title=document.createElement('div');title.className='asset-block-title';title.textContent=asset.title;block.appendChild(title);
+    var row=document.createElement('div');row.className='checklist-row';
+    asset.cats.forEach(function(cat,idx){
+      var item=document.createElement('div');item.className='check-item';item.id='check-'+asset.id+'-'+idx;
+      item.innerHTML='<div class="check-box"></div><div class="check-label">'+cat+'</div>';
+      item.addEventListener('click',function(){
+        if(state.phase!=='l1')return;
+        var key=asset.id+'-'+idx;state.checks[key]=!state.checks[key];
+        item.classList.toggle('selected',!!state.checks[key]);
+        item.querySelector('.check-box').textContent=state.checks[key]?'✓':'';
+      });
+      row.appendChild(item);
+    });
+    block.appendChild(row);
+    var revBtn=document.createElement('button');revBtn.className='reveal-asset-btn';revBtn.textContent='Reveal this asset';
+    revBtn.addEventListener('click',function(e){e.stopPropagation();revealAsset(asset,block,revBtn);});
+    block.appendChild(revBtn);
+    var ansDiv=document.createElement('div');ansDiv.className='asset-answer';ansDiv.id='ans-'+asset.id;
+    ansDiv.textContent=asset.explanation;block.appendChild(ansDiv);
+    grid.appendChild(block);
+  });
+}
+function revealAsset(asset,block,btn){
+  asset.cats.forEach(function(cat,idx){
+    var item=g('check-'+asset.id+'-'+idx);
+    var key=asset.id+'-'+idx;var selected=!!state.checks[key];var correct=asset.answers[idx];
+    item.classList.remove('selected');item.querySelector('.check-box').textContent=correct?'✓':'';
+    if(correct&&selected){item.classList.add('ans-yes');}
+    else if(correct&&!selected){item.classList.add('missed-item');}
+    else if(!correct&&selected){item.classList.add('wrong-item');}
+    else{item.classList.add('ans-no');}
+  });
+  g('ans-'+asset.id).classList.add('visible');btn.style.display='none';
+}
+g('l1-submit').addEventListener('click',function(){
+  if(state.phase!=='l1')return;state.phase='l1-result';
+  var correct=0,missed=0,wrong=0;
+  ASSETS.forEach(function(asset){
+    var block=g('block-'+asset.id);var btn=block.querySelector('.reveal-asset-btn');
+    revealAsset(asset,block,btn);
+    asset.cats.forEach(function(cat,idx){
+      var key=asset.id+'-'+idx;var selected=!!state.checks[key];var ans=asset.answers[idx];
+      if(ans){if(selected)correct++;else missed++;}else{if(selected)wrong++;}
+    });
+  });
+  state.l1Correct=correct;state.l1Missed=missed;state.l1Wrong=wrong;
+  var realTotal=ASSETS.reduce(function(sum,a){return sum+a.answers.filter(Boolean).length;},0);
+  var pct=Math.round(correct/realTotal*100);
+  g('l1-correct-n').textContent=correct;g('l1-missed-n').textContent=missed;g('l1-wrong-n').textContent=wrong;g('l1-pct').textContent=pct+'%';
+  g('score-bar').style.display='block';g('l1-btn-wrap').style.display='none';g('l1-next-wrap').style.display='block';
+  g('pip1').className='level-pip done';g('pip2').className='level-pip active';g('level-label').textContent='Level 2 ready';
+});
+g('l1-next').addEventListener('click',function(){
+  g('level1').style.display='none';g('level2').style.display='block';
+  state.phase='l2';state.l2Idx=0;g('level-label').textContent='Level 2';buildDots();renderL2();
+});
+function buildDots(){
+  var wrap=g('l2-progress');wrap.innerHTML='';
+  L2.forEach(function(el,i){
+    var dot=document.createElement('div');dot.className='issue-dot'+(i===0?' active':'');dot.id='dot-'+i;dot.textContent=(i+1);wrap.appendChild(dot);
+  });
+}
+function renderL2(){
+  var el=L2[state.l2Idx];state.l2FactSel={};
+  g('l2-subq').textContent=el.subq;g('l2-issue-title').textContent=el.issueTitle;
+  g('l2-element-text').textContent=el.element;g('l2-element-sub').textContent=el.sub;
+  g('l2-explain').style.display='none';g('l2-check').textContent='Check Facts →';
+  g('prog-text').textContent='Element '+(state.l2Idx+1)+' of '+L2.length;
+  var tilesWrap=g('fact-tiles');tilesWrap.innerHTML='';
+  el.allFacts.forEach(function(fid){
+    var text=HYPO_FACTS[fid]||fid;var tile=document.createElement('div');
+    tile.className='fact-tile';tile.textContent=text;tile.id='tile-'+fid;
+    tile.addEventListener('click',function(){
+      if(state.l2FactSel._locked)return;
+      state.l2FactSel[fid]=!state.l2FactSel[fid];tile.classList.toggle('selected',!!state.l2FactSel[fid]);
+    });
+    tilesWrap.appendChild(tile);
+  });
+  L2.forEach(function(e,i){var dot=g('dot-'+i);if(dot)dot.className='issue-dot'+(i===state.l2Idx?' active':i<state.l2Idx?' done':'');});
+}
+g('l2-check').addEventListener('click',function(){
+  if(state.phase!=='l2')return;var el=L2[state.l2Idx];
+  if(!state.l2FactSel._locked){
+    state.l2FactSel._locked=true;var correct=0;
+    el.allFacts.forEach(function(fid){
+      var isKey=el.keyFacts.indexOf(fid)>=0;var sel=!!state.l2FactSel[fid];var tile=g('tile-'+fid);
+      tile.classList.remove('selected');
+      if(isKey&&sel){correct++;tile.className='fact-tile correct';}
+      else if(isKey&&!sel){tile.className='fact-tile missed-fact';}
+      else if(!isKey&&sel){tile.className='fact-tile wrong-fact';}
+      else{tile.className='fact-tile neutral';}
+    });
+    state.totalFactsCorrect+=correct;state.totalFactsTotal+=el.keyFacts.length;
+    g('l2-explain-text').textContent=el.explain;g('l2-explain').style.display='block';
+    g('l2-check').textContent=state.l2Idx<L2.length-1?'Next Element →':'See Results →';
+  } else {
+    if(state.l2Idx<L2.length-1){g('dot-'+state.l2Idx).className='issue-dot done';state.l2Idx++;state.l2FactSel={};renderL2();}
+    else{showResults();}
+  }
+});
+function showResults(){
+  g('level2').style.display='none';g('results').style.display='block';
+  g('pip2').className='level-pip done';g('level-label').textContent='Complete';
+  var realTotal=ASSETS.reduce(function(sum,a){return sum+a.answers.filter(Boolean).length;},0);
+  var issuePct=Math.round(state.l1Correct/realTotal*100);
+  var factPct=state.totalFactsTotal>0?Math.round(state.totalFactsCorrect/state.totalFactsTotal*100):0;
+  var combined=Math.round((issuePct+factPct)/2);
+  g('results-score').textContent=combined+'%';
+  g('results-sub').textContent=combined>=85?'No fact left behind, Counselor.':combined>=65?'Solid — a few facts slipped through.':'Keep drilling — the facts are all there.';
+  g('r-issues').textContent=state.l1Correct+'/'+realTotal;g('r-facts').textContent=state.totalFactsCorrect+'/'+state.totalFactsTotal;g('r-total').textContent=combined+'%';
+}
+g('restart-btn').addEventListener('click',function(){
+  state={phase:'l1',checks:{},l1Correct:0,l1Missed:0,l1Wrong:0,l2Idx:0,l2FactSel:{},totalFactsCorrect:0,totalFactsTotal:0};
+  g('results').style.display='none';g('level2').style.display='none';g('level1').style.display='block';
+  g('score-bar').style.display='none';g('l1-btn-wrap').style.display='block';g('l1-next-wrap').style.display='none';
+  g('pip1').className='level-pip active';g('pip2').className='level-pip';g('level-label').textContent='Level 1';buildL1();
+});
+buildL1();
+})();
+</script>
+</body>
+</html>

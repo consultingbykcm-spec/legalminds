@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Fact Left Behind — Wills</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 860px; }
+
+/* HEADER */
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(201,151,58,0.25); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; letter-spacing: 0.04em; }
+#header h1 span { color: #c9973a; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#level-indicator { display: flex; gap: 8px; align-items: center; }
+.level-pip { width: 32px; height: 6px; border-radius: 3px; background: #1a2f4a; transition: background 0.3s; }
+.level-pip.active { background: #c9973a; }
+.level-pip.done { background: #1d9e75; }
+#level-label { font-size: 12px; color: #c9973a; font-weight: 500; margin-left: 4px; }
+
+/* QUESTION SELECTOR */
+#selector { background: #0f1e35; border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+#selector h2 { font-size: 13px; font-weight: 500; color: #f5f0e8; margin-bottom: 14px; }
+#q-cards { display: flex; flex-direction: column; gap: 10px; }
+.q-card { background: #1a2f4a; border-radius: 10px; padding: 16px 18px; cursor: pointer; border: 1.5px solid #1a2f4a; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; }
+.q-card:hover { border-color: #c9973a; }
+.q-card.done { border-color: #1d9e75; }
+.q-card-left { display: flex; flex-direction: column; gap: 4px; }
+.q-card-num { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
+.q-card-title { font-size: 14px; font-weight: 500; color: #f5f0e8; }
+.q-card-sub { font-size: 11px; color: #6b8aaa; }
+.q-card-badge { font-size: 11px; padding: 4px 12px; border-radius: 12px; font-weight: 500; }
+.badge-new { background: rgba(201,151,58,0.15); color: #c9973a; }
+.badge-done { background: rgba(29,158,117,0.15); color: #1d9e75; }
+#selector-footer { margin-top: 14px; font-size: 11px; color: #6b8aaa; text-align: center; }
+
+/* HYPO */
+#hypo-box { background: #0f1e35; border-radius: 12px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(201,151,58,0.15); display: none; }
+#hypo-title { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#hypo-text { font-size: 13px; color: #d0dce8; line-height: 1.75; }
+.fact { background: rgba(201,151,58,0.15); border-radius: 3px; padding: 1px 4px; }
+
+/* PANEL */
+#panel { background: #0f1e35; border-radius: 12px; padding: 20px; display: none; }
+#l1-question { font-size: 14px; font-weight: 500; color: #f5f0e8; margin-bottom: 4px; }
+#l1-sub { font-size: 11px; color: #6b8aaa; margin-bottom: 18px; }
+#issue-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.cat-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 0 2px; font-weight: 500; }
+.issue-item { display: flex; align-items: flex-start; gap: 12px; background: #1a2f4a; border-radius: 8px; padding: 13px 15px; cursor: pointer; border: 1.5px solid #1a2f4a; transition: all 0.15s; }
+.issue-item:hover { border-color: #2a4a6a; }
+.issue-item.selected { background: #1e3a58; border-color: #c9973a; }
+.issue-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #2a4a6a; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.issue-item.selected .issue-check { background: #c9973a; border-color: #c9973a; }
+.check-mark { font-size: 12px; color: #0f1e35; display: none; }
+.issue-item.selected .check-mark { display: block; }
+.issue-text { font-size: 13px; color: #a0b8cc; line-height: 1.4; }
+.issue-item.selected .issue-text { color: #f5f0e8; }
+.issue-item.correct { background: #0f3d2a; border-color: #1d9e75; }
+.issue-item.correct .issue-text { color: #9fe1cb; }
+.issue-item.correct .issue-check { background: #1d9e75; border-color: #1d9e75; }
+.issue-item.missed { background: #2a1a0a; border-color: #c9973a; }
+.issue-item.missed .issue-text { color: #f5d06a; }
+.issue-item.missed .issue-check { border-color: #c9973a; }
+.issue-item.wrong { background: #3d1515; border-color: #e24b4a; }
+.issue-item.wrong .issue-text { color: #f09595; }
+.result-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
+.tag-correct { background: rgba(29,158,117,0.2); color: #1d9e75; }
+.tag-missed { background: rgba(201,151,58,0.2); color: #c9973a; }
+.tag-wrong { background: rgba(226,75,74,0.2); color: #e24b4a; }
+#score-bar { background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; display: none; }
+#score-bar-title { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+#score-cells { display: flex; gap: 10px; }
+.score-cell { flex: 1; text-align: center; background: #0f1e35; border-radius: 6px; padding: 10px 6px; }
+.score-cell-n { font-size: 18px; font-weight: 500; color: #c9973a; }
+.score-cell-l { font-size: 9px; color: #6b8aaa; text-transform: uppercase; margin-top: 2px; }
+#l2-progress { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.issue-dot { width: 28px; height: 28px; border-radius: 50%; background: #1a2f4a; border: 2px solid #2a4a6a; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #6b8aaa; }
+.issue-dot.active { border-color: #c9973a; background: rgba(201,151,58,0.15); color: #c9973a; }
+.issue-dot.done { border-color: #1d9e75; background: rgba(29,158,117,0.15); color: #9fe1cb; }
+#l2-subq { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+#l2-issue-title { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#l2-element-box { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(201,151,58,0.2); }
+#l2-element-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+#l2-element-text { font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.5; }
+#l2-element-sub { font-size: 12px; color: #6b8aaa; margin-top: 5px; }
+#l2-instruction { font-size: 11px; color: #6b8aaa; margin-bottom: 10px; }
+#fact-tiles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.fact-tile { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #2a4a6a; background: #1a2f4a; color: #a0b8cc; font-size: 12px; cursor: pointer; transition: all 0.15s; line-height: 1.4; }
+.fact-tile:hover { border-color: #c9973a; color: #f5f0e8; }
+.fact-tile.selected { background: #1e3a58; border-color: #c9973a; color: #f5f0e8; }
+.fact-tile.correct { background: #0f3d2a; border-color: #1d9e75; color: #9fe1cb; cursor: default; }
+.fact-tile.missed-fact { background: #3d2f0a; border-color: #c9973a; color: #f5d06a; cursor: default; }
+.fact-tile.wrong-fact { background: #3d1515; border-color: #e24b4a; color: #f09595; cursor: default; }
+.fact-tile.neutral { background: #1a2f4a; border-color: #1a2f4a; color: #4a6a8a; cursor: default; }
+#l2-explain { display: none; background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(201,151,58,0.3); }
+#l2-explain-text { font-size: 13px; color: #a0b8cc; line-height: 1.6; }
+.btn-primary { width: 100%; background: #c9973a; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; margin-bottom: 8px; }
+.btn-secondary { width: 100%; background: #1a2f4a; border: 1.5px solid #2a4a6a; border-radius: 8px; padding: 12px; font-size: 13px; color: #a0b8cc; cursor: pointer; font-family: inherit; }
+#prog-text { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 12px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 22px; font-weight: 500; color: #f5f0e8; margin-bottom: 6px; }
+#results-score { font-size: 54px; font-weight: 500; color: #c9973a; line-height: 1; margin-bottom: 4px; }
+#results-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-cell-n { font-size: 20px; font-weight: 500; color: #c9973a; }
+.r-cell-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="header">
+  <div>
+    <h1>No Fact <span>Left Behind</span></h1>
+    <p id="header-sub">Wills · Issue Spotting &amp; Fact Analysis</p>
+  </div>
+  <div id="level-indicator">
+    <div class="level-pip" id="pip1"></div>
+    <div class="level-pip" id="pip2"></div>
+    <span id="level-label" style="color:#6b8aaa;">Select a question</span>
+  </div>
+</div>
+
+<!-- QUESTION SELECTOR -->
+<div id="selector">
+  <h2>Choose a question to drill — or play them all</h2>
+  <div id="q-cards"></div>
+  <div id="selector-footer">Each question has two levels: Spot the Issue → No Fact Left Behind</div>
+</div>
+
+<!-- HYPO -->
+<div id="hypo-box">
+  <div id="hypo-title"></div>
+  <div id="hypo-text"></div>
+</div>
+
+<!-- PANEL -->
+<div id="panel">
+  <div id="level1">
+    <div id="l1-question">Spot the Issues</div>
+    <div id="l1-sub">Check every legal issue raised by this fact pattern. Include all issues you would address in your essay — even ones that resolve quickly.</div>
+    <div id="issue-grid"></div>
+    <div id="score-bar">
+      <div id="score-bar-title">Level 1 Results</div>
+      <div id="score-cells">
+        <div class="score-cell"><div class="score-cell-n" id="l1-correct-n">0</div><div class="score-cell-l">Spotted</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-missed-n">0</div><div class="score-cell-l">Missed</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-wrong-n">0</div><div class="score-cell-l">False alarms</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-pct">0%</div><div class="score-cell-l">Accuracy</div></div>
+      </div>
+    </div>
+    <div id="l1-btn-wrap"><button class="btn-primary" id="l1-submit">Check My Issues →</button></div>
+    <div id="l1-next-wrap" style="display:none;"><button class="btn-primary" id="l1-next">Level 2 — No Fact Left Behind →</button></div>
+  </div>
+  <div id="level2" style="display:none;">
+    <div id="l2-progress"></div>
+    <div id="l2-subq"></div>
+    <div id="l2-issue-title"></div>
+    <div id="l2-element-box">
+      <div id="l2-element-label">Element / Rule</div>
+      <div id="l2-element-text"></div>
+      <div id="l2-element-sub"></div>
+    </div>
+    <div id="l2-instruction">Tap every fact from the hypo that is legally operative for this element.</div>
+    <div id="fact-tiles"></div>
+    <div id="l2-explain"><div id="l2-explain-text"></div></div>
+    <button class="btn-primary" id="l2-check">Check Facts →</button>
+    <div id="prog-text"></div>
+  </div>
+  <div id="results">
+    <h2>No Fact Left Behind.</h2>
+    <div id="results-score"></div>
+    <div id="results-sub"></div>
+    <div id="results-grid">
+      <div class="r-cell"><div class="r-cell-n" id="r-issues"></div><div class="r-cell-l">Issues spotted</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-facts"></div><div class="r-cell-l">Facts deployed</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-total"></div><div class="r-cell-l">Combined %</div></div>
+    </div>
+    <button class="btn-primary" id="replay-btn">Replay this question</button>
+    <button class="btn-secondary" id="back-btn">← Back to question list</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function(){
+
+// ═══════════════════════════════════════════════════════════════
+// QUESTION DATA
+// ═══════════════════════════════════════════════════════════════
+
+var QUESTIONS = [
+
+// ─── Q1: TESS ────────────────────────────────────────────────
+{
+  id: 'q1',
+  title: "Tess's Estate",
+  sub: "Witness competency · Revocation · DRR · Intestacy",
+  hypoTitle: "Fact Pattern — Question #1 · Tess's Estate",
+  hypo: [
+    { id:'f-sam', text:'Sam, from whom Tess was estranged' },
+    { id:'f-donna', text:'Donna, to whom Tess was devoted' },
+    { id:'f-1992will', text:'Tess validly executed a typewritten will in 1992' },
+    { id:'f-fred', text:'My Bigco stock to my friend, Fred' },
+    { id:'f-residue92', text:'The residue of my estate to my daughter, Donna (1992)' },
+    { id:'f-reconciled', text:'Tess and Sam reconciled' },
+    { id:'f-revoke', text:'"I hereby revoke all prior wills"' },
+    { id:'f-sam-stock', text:'My Bigco stock to my son, Sam' },
+    { id:'f-residue95', text:'The residue of my estate to my daughter, Donna (1995)' },
+    { id:'f-wit-decl', text:'Tess declared to Wit that it was her will' },
+    { id:'f-wit-sign', text:'Signed the will in Wit\'s presence' },
+    { id:'f-wit-witness', text:'Wit signed as witness — did not know its contents' },
+    { id:'f-ness-ask', text:'Tess asked Ness to "witness this paper"' },
+    { id:'f-ness-sign', text:'Ness signed the will as witness' },
+    { id:'f-ness-nodont', text:'Ness did not understand that it was a will' },
+    { id:'f-x', text:'Large "X" drawn across all pages of the 1992 will' },
+    { id:'f-95unmarked', text:'The 1995 will was unmarred' },
+    { id:'f-survivors', text:'Survived by Donna, Sam, and Fred' },
+    { id:'f-estate', text:'Bigco stock ($400,000) and $600,000 in cash' },
+  ],
+  issues: [
+    { id:'validity', text:'Validity of Tess\'s 1995 will — formal will requirements', cat:'Validity of 1995 Will', real:true },
+    { id:'writing', text:'Writing requirement — 1995 will is a typewritten document', cat:'Validity of 1995 Will', real:true },
+    { id:'witnesses', text:'Witness requirement — two witnesses must be present at the same time', cat:'Validity of 1995 Will', real:true },
+    { id:'ness', text:'Ness\'s competency — did Ness understand the instrument was Tess\'s will?', cat:'Validity of 1995 Will', real:true },
+    { id:'revoke-expr', text:'Express revocation of 1992 will by subsequent testamentary instrument', cat:'Revocation', real:true },
+    { id:'revoke-phys', text:'Revocation by physical act — "X" drawn across 1992 will', cat:'Revocation', real:true },
+    { id:'drr', text:'Dependent Relative Revocation (DRR) — revival of 1992 will', cat:'DRR & Revival', real:true },
+    { id:'intestate', text:'Intestate succession — distribution if both wills fail', cat:'Intestacy', real:true },
+    { id:'capacity', text:'Testamentary capacity — Tess lacked sound mind', cat:'Consider carefully', real:false },
+    { id:'undue', text:'Undue influence — Sam influenced Tess to change the will', cat:'Consider carefully', real:false },
+    { id:'fraud', text:'Fraud — Tess was deceived into signing the 1995 will', cat:'Consider carefully', real:false },
+    { id:'holographic', text:'Holographic will — 1995 will qualifies as a holographic will', cat:'Consider carefully', real:false },
+  ],
+  elements: [
+    {
+      subq:'Validity — Witness Requirement',
+      issueTitle:'Two Witnesses — Present at the Same Time',
+      element:'Two witnesses — each present at the same time — must witness either the signing of the will or the testator\'s acknowledgment of the signature.',
+      sub:'Were Wit and Ness present at the same time?',
+      keyFacts:['f-wit-decl','f-wit-sign','f-ness-ask','f-ness-nodont'],
+      allFacts:['f-wit-decl','f-wit-sign','f-wit-witness','f-ness-ask','f-ness-sign','f-ness-nodont','f-1992will','f-revoke'],
+      explain:'Wit witnessed Tess\'s acknowledgment ("declared to Wit that it was her will") and signing — Wit is satisfied. But Wit and Ness witnessed at different houses on different occasions — NOT simultaneously present. This is the core validity problem. Additionally, Ness was only asked to "witness this paper" and did not understand it was a will — a second independent basis to invalidate.'
+    },
+    {
+      subq:'Revocation',
+      issueTitle:'Physical Act Revocation — "X" on the 1992 Will',
+      element:'A will may be revoked by a physical act (burning, tearing, canceling, obliterating) performed with simultaneous intent to revoke.',
+      sub:'Does the "X" across all pages of the 1992 will constitute valid revocation by physical act?',
+      keyFacts:['f-x','f-95unmarked'],
+      allFacts:['f-x','f-95unmarked','f-revoke','f-1992will','f-reconciled'],
+      explain:'The large "X" drawn across ALL pages of the 1992 will is a valid revocation by physical act — cancellation with apparent intent to revoke. The 1995 will was unmarred, confirming Tess did not intend to revoke it physically. So: 1992 will = physically revoked; 1995 will = not physically revoked but invalid as a matter of formalities.'
+    },
+    {
+      subq:'DRR & Revival',
+      issueTitle:'Dependent Relative Revocation — Did Tess Revoke in Reliance on a Mistake?',
+      element:'DRR: A court may disregard a revocation if (1) the revocation was based on a mistake of law or fact; (2) testator would not have revoked but for that mistake; AND (3) disregarding the revocation brings the result closer to testator\'s intent than intestacy.',
+      sub:'Did Tess revoke the 1992 will believing the 1995 will was valid? Would she have revoked if she knew it was invalid?',
+      keyFacts:['f-x','f-reconciled','f-sam-stock','f-residue95','f-residue92'],
+      allFacts:['f-x','f-reconciled','f-sam-stock','f-residue95','f-residue92','f-revoke','f-donna','f-survivors'],
+      explain:'Tess drew the "X" in apparent reliance on the 1995 will being valid. The reconciliation with Sam and the change of the Bigco stock gift to Sam (while keeping residue to Donna) shows she likely would NOT have revoked the 1992 will if she knew the 1995 will was invalid. Under DRR, the revocation of the 1992 will is disregarded — it is revived. Result under 1992 will (Fred gets Bigco stock; Donna gets residue) is closer to Tess\'s intent than intestacy (Sam and Donna split everything; Fred gets nothing).'
+    },
+    {
+      subq:'Intestacy',
+      issueTitle:'Intestate Succession — What Happens if Both Wills Fail and DRR Does Not Apply?',
+      element:'If both wills are invalid and DRR does not revive the 1992 will, the estate passes by intestate succession. Under California intestacy, estate passes to the decedent\'s children in equal shares. Friends are not heirs.',
+      sub:'Who takes under intestacy — and what happens to Fred?',
+      keyFacts:['f-survivors','f-fred','f-estate','f-sam','f-donna'],
+      allFacts:['f-survivors','f-fred','f-estate','f-sam','f-donna','f-reconciled','f-residue92'],
+      explain:'"Friend, Fred" is the critical intestacy fact. Fred is NOT an heir — only blood relatives and spouses inherit under intestacy. Sam and Donna (Tess\'s two adult children) each take one-half: $200K of Bigco stock and $300K cash each. Fred takes nothing. The estrangement and reconciliation are relevant to DRR analysis but do not affect intestate shares.'
+    },
+  ]
+},
+
+// ─── Q2: THERESA ─────────────────────────────────────────────
+{
+  id: 'q2',
+  title: "Theresa's Estate",
+  sub: "Omitted heir · Separation · Life insurance · Incorporation by reference · Mistake",
+  hypoTitle: "Fact Pattern — Question #2 · Theresa's Estate",
+  hypo: [
+    { id:'g-craig', text:'Craig — child born before the will' },
+    { id:'g-1990will', text:'Theresa executed a valid will in 1990 leaving Henry all of her property' },
+    { id:'g-painting-sis', text:'A favorite painting left to her sister, Sis' },
+    { id:'g-mistake-belief', text:'Theresa believed the painting was worth less than $500' },
+    { id:'g-1992note', text:'Theresa typed, dated, and signed a note on February 14, 1992' },
+    { id:'g-note-content', text:'Note stated Henry was to get the painting instead of Sis' },
+    { id:'g-note-secret', text:'Theresa never showed the note to anyone' },
+    { id:'g-1994codicil', text:'In 1994, Theresa hand wrote a codicil to her will' },
+    { id:'g-ibr-lang', text:'"The note I typed, signed, and dated on 2/14/92 is to become a part of my will"' },
+    { id:'g-codicil-valid', text:'The codicil was properly signed and witnessed' },
+    { id:'g-molly', text:'Molly — second child born in 1995 (after the will)' },
+    { id:'g-henry-left', text:'Henry left and joined a commune; Henry and Theresa never divorced' },
+    { id:'g-larry-love', text:'Theresa fell in love with Larry in 1999' },
+    { id:'g-insurance-sp', text:'With her separate property, purchased a $200,000 life insurance policy' },
+    { id:'g-larry-bene', text:'Named Larry as the sole beneficiary' },
+    { id:'g-survivors', text:'Survived by Henry, Craig, Molly, Sis, and Larry' },
+    { id:'g-cp-value', text:'Theresa\'s half of the community property was worth $50,000' },
+    { id:'g-painting-sp', text:'The painting was her separate property' },
+    { id:'g-painting-value', text:'When appraised, the painting was worth $1 million' },
+  ],
+  issues: [
+    { id:'will-valid', text:'1990 will is valid — all formalities satisfied', cat:'Q1 Community Property', real:true },
+    { id:'craig-omitted', text:'Omitted heir analysis — Craig (born before the will)', cat:'Q1 Community Property', real:true },
+    { id:'molly-omitted', text:'Omitted heir analysis — Molly (born after the will)', cat:'Q1 Community Property', real:true },
+    { id:'divorce-revoke', text:'Revocation by operation of law — did separation/divorce revoke Henry\'s interest?', cat:'Q1 Community Property', real:true },
+    { id:'cp-dist', text:'Distribution of community property — spouse\'s right to will away one-half of CP', cat:'Q1 Community Property', real:true },
+    { id:'sep-sp', text:'Separation creates separate property — property acquired after separation is SP', cat:'Q2 Life Insurance', real:true },
+    { id:'insurance-sub', text:'Life insurance as will substitute — no formalities; passes outside the will', cat:'Q2 Life Insurance', real:true },
+    { id:'larry-rights', text:'Larry\'s rights as named beneficiary of the life insurance policy', cat:'Q2 Life Insurance', real:true },
+    { id:'note-invalid', text:'1992 typed note — invalid as a codicil (no witnesses; typed not holographic)', cat:'Q3 The Painting', real:true },
+    { id:'codicil-valid', text:'1994 handwritten codicil — valid formal/holographic codicil', cat:'Q3 The Painting', real:true },
+    { id:'ibr', text:'Incorporation by reference — 1994 codicil incorporates the 1992 note', cat:'Q3 The Painting', real:true },
+    { id:'mistake', text:'Mistake — Theresa believed painting worth <$500; it was worth $1M', cat:'Q3 The Painting', real:true },
+    { id:'undue-larry', text:'Undue influence — Larry influenced Theresa to purchase the life insurance', cat:'Consider carefully', real:false },
+    { id:'lapse-sis', text:'Lapse — Sis predeceased Theresa and the painting gift lapses', cat:'Consider carefully', real:false },
+    { id:'holo-note', text:'1992 note qualifies as a valid holographic will/codicil', cat:'Consider carefully', real:false },
+  ],
+  elements: [
+    {
+      subq:'Q1 — Community Property',
+      issueTitle:'Omitted Heir — Molly (Born After the Will)',
+      element:'An omitted child born after the will takes an intestate share UNLESS: (1) omission was intentional, (2) provided for outside the will, OR (3) testator had a living child at execution AND left all or substantially all to the other parent of the omitted child, who survives and is entitled to take.',
+      sub:'Does the exception apply to Molly?',
+      keyFacts:['g-molly','g-1990will','g-craig','g-survivors'],
+      allFacts:['g-molly','g-1990will','g-craig','g-survivors','g-henry-left','g-painting-sis','g-cp-value'],
+      explain:'Molly was born in 1995 — AFTER the 1990 will. She is a potential omitted heir. BUT the exception applies: Theresa had a living child at execution (Craig); AND all or substantially all of her estate was left to Henry, the other parent of Molly, who survived Theresa. Molly does NOT take an intestate share. Craig was born BEFORE the 1990 will — he is never an omitted heir.'
+    },
+    {
+      subq:'Q1 — Community Property',
+      issueTitle:'Separation vs. Divorce — Revocation by Operation of Law',
+      element:'Under California law, a divorce or annulment revokes will provisions in favor of the former spouse. A legal SEPARATION alone does NOT revoke will provisions favoring the separated spouse.',
+      sub:'Did Henry and Theresa\'s separation revoke Henry\'s interest in her will?',
+      keyFacts:['g-henry-left'],
+      allFacts:['g-henry-left','g-larry-love','g-1990will','g-survivors','g-insurance-sp'],
+      explain:'"Henry and Theresa never divorced" is the critical fact. Henry left — they separated — but separation is NOT divorce. Henry\'s interest in Theresa\'s 1990 will is NOT revoked by operation of law. Henry retains his rights under the will, including Theresa\'s half of the community property ($50,000).'
+    },
+    {
+      subq:'Q2 — Life Insurance',
+      issueTitle:'Separation Creates Separate Property — Character of the Insurance Policy',
+      element:'In California, once spouses separate with no intent to reconcile, all property subsequently acquired is separate property. Each spouse has full management and control over their own separate property.',
+      sub:'What is the character of the life insurance policy Theresa purchased in 1999?',
+      keyFacts:['g-henry-left','g-insurance-sp','g-larry-love'],
+      allFacts:['g-henry-left','g-insurance-sp','g-larry-love','g-larry-bene','g-cp-value','g-painting-sp'],
+      explain:'Henry left in 1995. Theresa purchased the policy in 1999 — four years after separation — "with her separate property." This double confirmation (timing + funded with SP) makes the policy Theresa\'s separate property. She had full management and control, including the right to name any beneficiary.'
+    },
+    {
+      subq:'Q2 — Life Insurance',
+      issueTitle:'Life Insurance as Will Substitute',
+      element:'A life insurance policy is a will substitute — passes outside the will at death to the named beneficiary. No will formalities required. Named beneficiary takes regardless of what the will provides.',
+      sub:'Who takes the $200,000 proceeds — and why do Henry, Craig, Molly, and Sis have no rights?',
+      keyFacts:['g-larry-bene','g-insurance-sp','g-survivors'],
+      allFacts:['g-larry-bene','g-insurance-sp','g-survivors','g-larry-love','g-1990will','g-cp-value'],
+      explain:'Larry was named as the SOLE beneficiary. The policy passes to Larry outside the will as a will substitute — no formalities required. Henry, Craig, Molly, and Sis have no rights regardless of what the 1990 will provides. The will only controls probate property; life insurance is non-probate.'
+    },
+    {
+      subq:'Q3 — The Painting',
+      issueTitle:'1992 Typed Note — Invalid as a Codicil',
+      element:'A codicil must meet all the same formalities as a will: writing, signature, and two witnesses (or if holographic, all material portions in the testator\'s handwriting). A TYPED document with only the testator\'s signature and no witnesses is NOT a valid formal will or codicil.',
+      sub:'Is the February 14, 1992 typed note a valid codicil?',
+      keyFacts:['g-1992note','g-note-secret'],
+      allFacts:['g-1992note','g-note-secret','g-note-content','g-1994codicil','g-codicil-valid','g-ibr-lang'],
+      explain:'"Theresa typed, dated, and signed a note" — typed means NOT holographic. "Never showed the note to anyone" confirms there were no witnesses. The 1992 note fails as a codicil on both grounds: it is typed (not holographic) and has no witnesses. It cannot stand alone to change the gift of the painting.'
+    },
+    {
+      subq:'Q3 — The Painting',
+      issueTitle:'Incorporation by Reference — 1994 Codicil Incorporates the 1992 Note',
+      element:'Incorporation by reference: any writing in existence at the time of execution may be incorporated into a will if (1) the will manifests intent to incorporate it, AND (2) the will describes the writing sufficiently to permit identification.',
+      sub:'Does the 1994 codicil validly incorporate the 1992 note?',
+      keyFacts:['g-1994codicil','g-codicil-valid','g-ibr-lang','g-1992note'],
+      allFacts:['g-1994codicil','g-codicil-valid','g-ibr-lang','g-1992note','g-note-secret','g-note-content','g-painting-sis'],
+      explain:'The 1994 codicil is valid. It states: "The note I typed, signed, and dated on 2/14/92 is to become a part of my will." IBR satisfied: (1) the 1992 note existed before the 1994 codicil; (2) the codicil manifests intent to incorporate ("is to become a part of my will"); (3) the description is specific enough to identify the document. The painting changes from Sis to Henry.'
+    },
+    {
+      subq:'Q3 — The Painting',
+      issueTitle:'Mistake — Belief About the Painting\'s Value',
+      element:'A mistake as to VALUE only does not entitle the aggrieved party to relief. Courts will not reform a will simply because the testator underestimated the value of a gift. Relief requires a mistake about the NATURE of the property or a scrivener\'s error.',
+      sub:'Does Theresa\'s belief that the painting was worth less than $500 give anyone grounds to challenge the gift?',
+      keyFacts:['g-mistake-belief','g-painting-value','g-painting-sp'],
+      allFacts:['g-mistake-belief','g-painting-value','g-painting-sp','g-painting-sis','g-1990will','g-ibr-lang'],
+      explain:'"Theresa believed the painting was worth less than $500" — this is a mistake as to VALUE only. Courts do not grant relief for a mistake as to value — Theresa knew she was giving away a painting; she simply underestimated its worth. No relief will be granted. The painting passes to Henry via the valid 1994 codicil incorporating the 1992 note. Sis, Craig, Molly, and Larry have no rights.'
+    },
+  ]
+},
+
+// ─── Q3: TOM ─────────────────────────────────────────────────
+{
+  id: 'q3',
+  title: "Tom's Estate",
+  sub: "Codicil effect · Physical act revocation · DRR · Anti-lapse · Ademption",
+  hypoTitle: "Fact Pattern — Question #3 · Tom's Estate",
+  hypo: [
+    { id:'h-will-valid', text:'Tom executed a valid will in 1998' },
+    { id:'h-al-gift', text:'$100,000 to my friend, Al' },
+    { id:'h-beth-gift', text:'My residence on Elm St. to my sister Beth' },
+    { id:'h-carl-gift', text:'My OmegaCorp stock to my brother Carl' },
+    { id:'h-su-residue', text:'The residue of my estate to State University (SU)' },
+    { id:'h-codicil-valid', text:'Tom executed a valid codicil in 1999' },
+    { id:'h-codicil-revokes', text:'Codicil expressly revoked paragraph 1 of the will (Al\'s $100K gift)' },
+    { id:'h-reconciled', text:'Tom reconciled with Al in 2000' },
+    { id:'h-al-statement', text:'"Al doesn\'t need to worry; I\'ve provided for him"' },
+    { id:'h-beth-died', text:'Beth died intestate in 2001' },
+    { id:'h-beth-heirs', text:'Norm (Beth\'s child) and Deb and Eve (Beth\'s grandchildren, children of a predeceased child of Beth)' },
+    { id:'h-omega-sold', text:'Tom sold his OmegaCorp stock in 2001' },
+    { id:'h-alpha-bought', text:'Reinvested proceeds by purchasing AlphaCorp stock' },
+    { id:'h-null-void', text:'"Null and Void" written across the text of the codicil in Tom\'s handwriting' },
+    { id:'h-tom-sig', text:'Followed by Tom\'s signature' },
+    { id:'h-safe-box', text:'Codicil found in Tom\'s safe deposit box' },
+    { id:'h-survivors', text:'Survived by Al, Carl, Norm, Deb, and Eve' },
+    { id:'h-estate', text:'Estate: $100,000 cash, residence on Elm St., and AlphaCorp stock' },
+  ],
+  issues: [
+    { id:'will-valid', text:'Validity of 1998 will — all formalities satisfied', cat:'Validity', real:true },
+    { id:'codicil-effect', text:'Effect of 1999 codicil — expressly revokes Al\'s $100K; republishes will as of 1999', cat:'The 1999 Codicil', real:true },
+    { id:'phys-revoke', text:'Revocation of 1999 codicil by physical act — "Null and Void" + Tom\'s signature', cat:'Revocation of Codicil', real:true },
+    { id:'holo-revoke', text:'Alternative: "Null and Void" as holographic revocation instrument (weaker argument)', cat:'Revocation of Codicil', real:true },
+    { id:'drr', text:'Dependent Relative Revocation — Tom revoked codicil in reliance on mistaken belief', cat:'DRR & Revival', real:true },
+    { id:'revival-al', text:'Revival of Al\'s $100K gift if codicil is revoked and DRR applies', cat:'DRR & Revival', real:true },
+    { id:'beth-predecease', text:'Beth predeceased Tom — gift of Elm St. lapses', cat:'Anti-Lapse', real:true },
+    { id:'anti-lapse', text:'Anti-lapse statute — Beth is Tom\'s sister; gift passes to Beth\'s descendants', cat:'Anti-Lapse', real:true },
+    { id:'carl-specific', text:'Classification of OmegaCorp stock gift — specific devise ("my OmegaCorp stock")', cat:'Carl & Ademption', real:true },
+    { id:'ademption', text:'Ademption by extinction — Tom sold OmegaCorp stock before death; Carl takes nothing', cat:'Carl & Ademption', real:true },
+    { id:'alpha-residue', text:'AlphaCorp stock — after-acquired property passes as residue to SU', cat:'Residue & SU', real:true },
+    { id:'capacity', text:'Tom lacked testamentary capacity when writing "Null and Void"', cat:'Consider carefully', real:false },
+    { id:'lapse-al', text:'Al\'s gift lapses because Al predeceased Tom', cat:'Consider carefully', real:false },
+    { id:'satisfaction', text:'Tom\'s statement "Al doesn\'t need to worry" constitutes a satisfaction of the gift', cat:'Consider carefully', real:false },
+    { id:'accretion', text:'AlphaCorp stock passes to Carl as an accretion/increase of the OmegaCorp gift', cat:'Consider carefully', real:false },
+  ],
+  elements: [
+    {
+      subq:'Revocation of Codicil',
+      issueTitle:'Revocation by Physical Act — "Null and Void" + Tom\'s Signature',
+      element:'A codicil may be revoked by a physical act (burning, tearing, canceling, obliterating) coupled with simultaneous intent to revoke. When a codicil is last known in the testator\'s possession and the testator remained competent until death, any physical act on the codicil is presumed to have been done by the testator.',
+      sub:'Does writing "Null and Void" across the codicil constitute a valid physical act revocation?',
+      keyFacts:['h-null-void','h-tom-sig','h-safe-box'],
+      allFacts:['h-null-void','h-tom-sig','h-safe-box','h-codicil-valid','h-reconciled','h-al-statement'],
+      explain:'"Null and Void" written across the TEXT of the codicil = cancellation of a material part. Tom\'s signature resolves any ambiguity about who performed the act. Found in Tom\'s safe deposit box — last known in Tom\'s possession, supporting the presumption it was Tom who wrote it. Together: valid revocation by physical act with simultaneous intent to revoke.'
+    },
+    {
+      subq:'Revocation of Codicil — Alternative',
+      issueTitle:'Alternative: Holographic Revocation Instrument (Weaker)',
+      element:'A will or codicil may also be revoked by a subsequent holographic instrument if material provisions are in the testator\'s handwriting and signed. BUT "Null and Void" standing alone has no legal meaning — it does not identify what is being made null and void.',
+      sub:'Why is the holographic revocation argument the weaker argument?',
+      keyFacts:['h-null-void','h-tom-sig'],
+      allFacts:['h-null-void','h-tom-sig','h-safe-box','h-codicil-valid','h-will-valid'],
+      explain:'"Null and Void" was written in Tom\'s handwriting and signed by Tom — those elements are present. BUT "Null and Void" has no legal meaning standing alone. A holographic revocation instrument must have sufficient content to constitute a revocatory act. Courts may find the writing too ambiguous to serve as an independent instrument. The physical act argument is much stronger.'
+    },
+    {
+      subq:'DRR & Revival',
+      issueTitle:'Dependent Relative Revocation — Tom\'s Mistake About Al\'s Provision',
+      element:'DRR: A court may disregard a revocation if (1) the revocation was based on a mistake of law or fact; (2) the testator would not have revoked but for that mistake; AND (3) disregarding the revocation brings the result closer to testator\'s intent than the alternative.',
+      sub:'Did Tom revoke the codicil in reliance on a mistaken belief that Al was otherwise provided for?',
+      keyFacts:['h-reconciled','h-al-statement','h-null-void','h-codicil-revokes','h-al-gift'],
+      allFacts:['h-reconciled','h-al-statement','h-null-void','h-codicil-revokes','h-al-gift','h-codicil-valid','h-estate','h-survivors'],
+      explain:'"Al doesn\'t need to worry; I\'ve provided for him" told to SEVERAL PEOPLE — this shows Tom revoked the codicil based on a mistaken belief that Al was otherwise provided for. Al was NOT otherwise provided for. Tom would not have revoked the codicil if he knew Al had no other provision. Under DRR, the revocation of the codicil is disregarded → the codicil is treated as revoked → the original 1998 will provision ($100K to Al) is REVIVED. Result is closer to Tom\'s intent than letting SU take the $100K.'
+    },
+    {
+      subq:'Anti-Lapse',
+      issueTitle:'Beth Predeceased Tom — Anti-Lapse Saves the Elm St. Residence',
+      element:'Anti-lapse statute: if a predeceasing beneficiary was a qualifying relative of the testator AND left descendants who survived the testator, those descendants take the gift by substitution. Under California, a sister qualifies. Descendants take by representation.',
+      sub:'Beth died before Tom. Does her gift lapse, or does anti-lapse save it for her descendants?',
+      keyFacts:['h-beth-died','h-beth-heirs','h-beth-gift','h-survivors'],
+      allFacts:['h-beth-died','h-beth-heirs','h-beth-gift','h-survivors','h-will-valid','h-estate','h-su-residue'],
+      explain:'Beth (Tom\'s sister) predeceased Tom — qualifying relative under California anti-lapse. She left Norm (her child) and Deb and Eve (grandchildren, children of a predeceased child of Beth). Anti-lapse saves the gift. Distribution by representation: Norm takes 1/2. The predeceased child\'s 1/2 passes to Deb and Eve — each takes 1/4. Norm = 1/2, Deb = 1/4, Eve = 1/4.'
+    },
+    {
+      subq:'Carl & Ademption',
+      issueTitle:'"My OmegaCorp Stock" — Classification as Specific Devise',
+      element:'A specific devise is a testamentary disposition of a specifically identified asset. The word "my" signals a specific devise — the testator is referring to a particular, identified piece of property he currently owns.',
+      sub:'Is "My OmegaCorp stock to my brother Carl" a specific, general, or demonstrative devise?',
+      keyFacts:['h-carl-gift'],
+      allFacts:['h-carl-gift','h-omega-sold','h-alpha-bought','h-su-residue','h-estate','h-al-gift'],
+      explain:'"My OmegaCorp stock" — the possessive "my" is the signal. Tom referred to the specific OmegaCorp stock he owned at execution. This is a specific devise. Classification matters critically: only specific devises are subject to ademption by extinction.'
+    },
+    {
+      subq:'Carl & Ademption',
+      issueTitle:'Ademption by Extinction — OmegaCorp Stock Sold Before Death',
+      element:'When a testator disposes of specifically devised property during lifetime, the gift is adeemed by extinction — the beneficiary takes nothing. Under the common law identity rule, the testator\'s motive or intent is irrelevant.',
+      sub:'Tom sold the OmegaCorp stock in 2001 and bought AlphaCorp stock. Does Carl get anything?',
+      keyFacts:['h-omega-sold','h-alpha-bought','h-carl-gift','h-estate'],
+      allFacts:['h-omega-sold','h-alpha-bought','h-carl-gift','h-estate','h-su-residue','h-survivors'],
+      explain:'Tom sold ALL of his OmegaCorp stock in 2001 — before his death in 2002. The estate contains AlphaCorp stock, NOT OmegaCorp stock. The specifically devised property is not in the estate. The gift is adeemed by extinction. Carl receives nothing. The AlphaCorp stock is NOT an accretion of the OmegaCorp gift — it is a completely different corporate entity, a substantive change, not a mere change in form.'
+    },
+    {
+      subq:'Residue & SU',
+      issueTitle:'AlphaCorp Stock — After-Acquired Property Passes as Residue',
+      element:'Property not otherwise disposed of by the will passes through the residuary clause. After-acquired property — purchased after will execution — is not specifically devised and falls into the residue.',
+      sub:'Who gets the AlphaCorp stock?',
+      keyFacts:['h-alpha-bought','h-su-residue','h-estate'],
+      allFacts:['h-alpha-bought','h-su-residue','h-estate','h-omega-sold','h-carl-gift','h-will-valid'],
+      explain:'Tom purchased AlphaCorp stock in 2001 — after the 1998 will. The will does not dispose of AlphaCorp stock specifically. It is after-acquired property that falls into the residue. The residuary clause gives "the residue of my estate to State University." SU takes the AlphaCorp stock. Carl has no claim to it.'
+    },
+  ]
+}
+
+]; // end QUESTIONS
+
+// ═══════════════════════════════════════════════════════════════
+// STATE & ENGINE
+// ═══════════════════════════════════════════════════════════════
+
+var completedQ = {};
+var currentQ = null;
+var state = {};
+
+function g(id){ return document.getElementById(id); }
+
+// BUILD SELECTOR
+function buildSelector(){
+  var cards = g('q-cards');
+  cards.innerHTML = '';
+  QUESTIONS.forEach(function(q){
+    var card = document.createElement('div');
+    var isDone = !!completedQ[q.id];
+    card.className = 'q-card' + (isDone ? ' done' : '');
+    card.innerHTML =
+      '<div class="q-card-left">' +
+        '<div class="q-card-num">Question ' + (QUESTIONS.indexOf(q)+1) + '</div>' +
+        '<div class="q-card-title">' + q.title + '</div>' +
+        '<div class="q-card-sub">' + q.sub + '</div>' +
+      '</div>' +
+      '<span class="q-card-badge ' + (isDone ? 'badge-done' : 'badge-new') + '">' + (isDone ? '✓ Done' : 'Play →') + '</span>';
+    (function(qdata){ card.addEventListener('click', function(){ startQuestion(qdata); }); })(q);
+    cards.appendChild(card);
+  });
+}
+
+function startQuestion(q){
+  currentQ = q;
+  state = { phase:'l1', selected:{}, l1Correct:0, l1Missed:0, l1Wrong:0, l2Idx:0, l2FactSel:{}, totalFactsCorrect:0, totalFactsTotal:0 };
+
+  g('selector').style.display = 'none';
+  g('hypo-box').style.display = 'block';
+  g('panel').style.display = 'block';
+  g('level1').style.display = 'block';
+  g('level2').style.display = 'none';
+  g('results').style.display = 'none';
+  g('score-bar').style.display = 'none';
+  g('l1-btn-wrap').style.display = 'block';
+  g('l1-next-wrap').style.display = 'none';
+
+  g('pip1').className = 'level-pip active';
+  g('pip2').className = 'level-pip';
+  g('level-label').textContent = 'Level 1';
+  g('header-sub').textContent = 'Wills · ' + q.title;
+
+  // Build hypo
+  g('hypo-title').textContent = q.hypoTitle;
+  var hypoEl = g('hypo-text');
+  hypoEl.innerHTML = '';
+  // Clear old fact elements
+  q.hypo.forEach(function(f){
+    var span = document.createElement('span');
+    span.className = 'fact'; span.id = f.id; span.textContent = f.text;
+    // store in a lookup
+  });
+  // Build readable hypo text with embedded fact spans
+  buildHypoText(q);
+
+  buildL1(q);
+}
+
+function buildHypoText(q){
+  var hypoEl = g('hypo-text');
+  hypoEl.innerHTML = '';
+  // Create a hidden container for all fact spans so getElementById works
+  var hidden = document.createElement('div');
+  hidden.style.display = 'none';
+  hidden.id = 'fact-store-' + q.id;
+  q.hypo.forEach(function(f){
+    var span = document.createElement('span');
+    span.className='fact'; span.id=f.id; span.textContent=f.text;
+    hidden.appendChild(span);
+  });
+  hypoEl.appendChild(hidden);
+  // Build visible hypo as paragraphs of fact tiles
+  var visible = document.createElement('div');
+  var row = document.createElement('div');
+  row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+  q.hypo.forEach(function(f, i){
+    var span = document.createElement('span');
+    span.className='fact'; span.textContent=f.text;
+    row.appendChild(span);
+    if((i+1)%5===0 && i < q.hypo.length-1){
+      visible.appendChild(row);
+      var br = document.createElement('div'); br.style.height='8px';
+      visible.appendChild(br);
+      row = document.createElement('div');
+      row.style.cssText='display:flex;flex-wrap:wrap;gap:6px;';
+    }
+  });
+  visible.appendChild(row);
+  hypoEl.appendChild(visible);
+}
+
+function buildL1(q){
+  var grid = g('issue-grid');
+  grid.innerHTML = '';
+  var lastCat = '';
+  q.issues.forEach(function(issue){
+    if(issue.cat !== lastCat){
+      var label = document.createElement('div');
+      label.className='cat-label'; label.textContent=issue.cat;
+      grid.appendChild(label);
+      lastCat = issue.cat;
+    }
+    var div = document.createElement('div');
+    div.className='issue-item'; div.id='iss-'+issue.id;
+    div.innerHTML='<div class="issue-check"><span class="check-mark">✓</span></div><div class="issue-text">'+issue.text+'</div>';
+    div.addEventListener('click', function(){
+      if(state.phase!=='l1') return;
+      state.selected[issue.id]=!state.selected[issue.id];
+      div.classList.toggle('selected',!!state.selected[issue.id]);
+    });
+    grid.appendChild(div);
+  });
+}
+
+g('l1-submit').addEventListener('click', function(){
+  if(!currentQ || state.phase!=='l1') return;
+  state.phase='l1-result';
+  var correct=0, missed=0, wrong=0;
+  currentQ.issues.forEach(function(issue){
+    var el=g('iss-'+issue.id);
+    var sel=!!state.selected[issue.id];
+    if(issue.real&&sel){ correct++; el.classList.add('correct'); var t=document.createElement('span'); t.className='result-tag tag-correct'; t.textContent='✓ Spotted'; el.appendChild(t); }
+    else if(issue.real&&!sel){ missed++; el.classList.add('missed'); var t=document.createElement('span'); t.className='result-tag tag-missed'; t.textContent='⚠ Missed'; el.appendChild(t); }
+    else if(!issue.real&&sel){ wrong++; el.classList.add('wrong'); var t=document.createElement('span'); t.className='result-tag tag-wrong'; t.textContent='✗ False alarm'; el.appendChild(t); }
+  });
+  state.l1Correct=correct; state.l1Missed=missed; state.l1Wrong=wrong;
+  var realCount=currentQ.issues.filter(function(i){return i.real;}).length;
+  var pct=Math.round(correct/realCount*100);
+  g('l1-correct-n').textContent=correct; g('l1-missed-n').textContent=missed; g('l1-wrong-n').textContent=wrong; g('l1-pct').textContent=pct+'%';
+  g('score-bar').style.display='block'; g('l1-btn-wrap').style.display='none'; g('l1-next-wrap').style.display='block';
+  g('pip1').className='level-pip done'; g('pip2').className='level-pip active'; g('level-label').textContent='Level 2 ready';
+});
+
+g('l1-next').addEventListener('click', function(){
+  g('level1').style.display='none'; g('level2').style.display='block';
+  state.phase='l2'; state.l2Idx=0; g('level-label').textContent='Level 2';
+  buildDots(); renderL2();
+});
+
+function buildDots(){
+  var wrap=g('l2-progress'); wrap.innerHTML='';
+  currentQ.elements.forEach(function(el,i){
+    var dot=document.createElement('div');
+    dot.className='issue-dot'+(i===0?' active':''); dot.id='dot-'+i; dot.textContent=(i+1);
+    wrap.appendChild(dot);
+  });
+}
+
+function renderL2(){
+  var el=currentQ.elements[state.l2Idx];
+  state.l2FactSel={};
+  g('l2-subq').textContent=el.subq;
+  g('l2-issue-title').textContent=el.issueTitle;
+  g('l2-element-text').textContent=el.element;
+  g('l2-element-sub').textContent=el.sub;
+  g('l2-explain').style.display='none';
+  g('l2-check').textContent='Check Facts →';
+  g('prog-text').textContent='Element '+(state.l2Idx+1)+' of '+currentQ.elements.length;
+  var tilesWrap=g('fact-tiles'); tilesWrap.innerHTML='';
+  el.allFacts.forEach(function(fid){
+    var factObj=currentQ.hypo.filter(function(f){return f.id===fid;})[0];
+    var text=factObj?factObj.text:fid;
+    var tile=document.createElement('div');
+    tile.className='fact-tile'; tile.textContent=text; tile.id='tile-'+fid;
+    tile.addEventListener('click',function(){
+      if(state.l2FactSel._locked)return;
+      state.l2FactSel[fid]=!state.l2FactSel[fid];
+      tile.classList.toggle('selected',!!state.l2FactSel[fid]);
+    });
+    tilesWrap.appendChild(tile);
+  });
+  currentQ.elements.forEach(function(e,i){
+    var dot=g('dot-'+i);
+    if(dot) dot.className='issue-dot'+(i===state.l2Idx?' active':i<state.l2Idx?' done':'');
+  });
+}
+
+g('l2-check').addEventListener('click',function(){
+  if(!currentQ||state.phase!=='l2')return;
+  var el=currentQ.elements[state.l2Idx];
+  if(!state.l2FactSel._locked){
+    state.l2FactSel._locked=true;
+    var correct=0;
+    el.allFacts.forEach(function(fid){
+      var isKey=el.keyFacts.indexOf(fid)>=0;
+      var sel=!!state.l2FactSel[fid];
+      var tile=g('tile-'+fid);
+      tile.classList.remove('selected');
+      if(isKey&&sel){correct++;tile.className='fact-tile correct';}
+      else if(isKey&&!sel){tile.className='fact-tile missed-fact';}
+      else if(!isKey&&sel){tile.className='fact-tile wrong-fact';}
+      else{tile.className='fact-tile neutral';}
+    });
+    state.totalFactsCorrect+=correct; state.totalFactsTotal+=el.keyFacts.length;
+    g('l2-explain-text').textContent=el.explain;
+    g('l2-explain').style.display='block';
+    g('l2-check').textContent=state.l2Idx<currentQ.elements.length-1?'Next Element →':'See Results →';
+  } else {
+    if(state.l2Idx<currentQ.elements.length-1){
+      g('dot-'+state.l2Idx).className='issue-dot done';
+      state.l2Idx++; state.l2FactSel={}; renderL2();
+    } else { showResults(); }
+  }
+});
+
+function showResults(){
+  g('level2').style.display='none'; g('results').style.display='block';
+  g('pip2').className='level-pip done'; g('level-label').textContent='Complete';
+  completedQ[currentQ.id]=true;
+  var realCount=currentQ.issues.filter(function(i){return i.real;}).length;
+  var issuePct=Math.round(state.l1Correct/realCount*100);
+  var factPct=state.totalFactsTotal>0?Math.round(state.totalFactsCorrect/state.totalFactsTotal*100):0;
+  var combined=Math.round((issuePct+factPct)/2);
+  g('results-score').textContent=combined+'%';
+  g('results-sub').textContent=combined>=85?'No fact left behind, Counselor.':combined>=65?'Solid — a few facts slipped through.':'Keep drilling — the facts are all there.';
+  g('r-issues').textContent=state.l1Correct+'/'+realCount;
+  g('r-facts').textContent=state.totalFactsCorrect+'/'+state.totalFactsTotal;
+  g('r-total').textContent=combined+'%';
+}
+
+g('replay-btn').addEventListener('click',function(){
+  startQuestion(currentQ);
+});
+
+g('back-btn').addEventListener('click',function(){
+  currentQ=null;
+  g('selector').style.display='block';
+  g('hypo-box').style.display='none';
+  g('panel').style.display='none';
+  g('pip1').className='level-pip';
+  g('pip2').className='level-pip';
+  g('level-label').style.color='#6b8aaa';
+  g('level-label').textContent='Select a question';
+  g('header-sub').textContent='Wills · Issue Spotting & Fact Analysis';
+  buildSelector();
+});
+
+// INIT
+buildSelector();
+})();
+</script>
+</body>
+</html>

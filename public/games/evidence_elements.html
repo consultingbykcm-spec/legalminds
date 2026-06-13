@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evidence Elements Drill — Bar Prep</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 20px; }
+#w { background: #0f1e35; border-radius: 12px; overflow: hidden; width: 100%; max-width: 760px; }
+</style>
+</head>
+<body>
+<div id="w">
+  <div style="padding:16px 20px 12px;border-bottom:1px solid rgba(29,158,117,0.3);display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div style="font-size:17px;font-weight:500;color:#f5f0e8;letter-spacing:0.04em;">Evidence <span style="color:#1d9e75;font-style:italic;">Elements Drill</span></div>
+      <div style="font-size:10px;color:#6b8aaa;margin-top:2px;">Bar Prep · Federal Rules of Evidence</div>
+    </div>
+    <div style="display:flex;gap:18px;">
+      <div style="text-align:center;"><div style="font-size:16px;font-weight:500;color:#1d9e75;" id="got">0</div><div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;">Got it</div></div>
+      <div style="text-align:center;"><div style="font-size:16px;font-weight:500;color:#e24b4a;" id="missed">0</div><div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;">Missed</div></div>
+    </div>
+  </div>
+
+  <div style="padding:18px 20px;" id="main">
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px;" id="tabs"></div>
+    <div style="background:#1a2f4a;border-radius:10px;padding:16px 18px;margin-bottom:14px;border:1px solid rgba(29,158,117,0.2);">
+      <div style="font-size:10px;color:#1d9e75;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;" id="cat"></div>
+      <div style="font-size:17px;font-weight:500;color:#f5f0e8;margin-bottom:4px;" id="doctrine"></div>
+      <div style="font-size:12px;color:#6b8aaa;font-style:italic;" id="hint"></div>
+    </div>
+    <div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">Say it — then tap each tile to reveal</div>
+    <div id="elements" style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;"></div>
+    <div id="actions" style="display:flex;gap:8px;margin-bottom:14px;">
+      <button id="reveal-all" style="flex:1;background:#1a2f4a;border:1px solid #2a4a6a;border-radius:8px;padding:11px;font-size:13px;color:#a0b8cc;cursor:pointer;font-family:inherit;">Reveal all</button>
+    </div>
+    <div id="scorebtns" style="display:none;gap:8px;margin-bottom:14px;">
+      <button id="got-btn" style="flex:1;background:#0f3d2a;border:1.5px solid #1d9e75;border-radius:8px;padding:13px;font-size:14px;font-weight:500;color:#9fe1cb;cursor:pointer;font-family:inherit;">Got it</button>
+      <button id="missed-btn" style="flex:1;background:#3d1515;border:1.5px solid #e24b4a;border-radius:8px;padding:13px;font-size:14px;font-weight:500;color:#f09595;cursor:pointer;font-family:inherit;">Missed it</button>
+    </div>
+    <div style="text-align:center;font-size:11px;color:#6b8aaa;" id="prog"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+var DATA={
+  "Relevance":[
+    {name:"Rule 401 — test for relevant evidence",hint:"Two elements",elements:["Any tendency to make a fact more or less probable","Fact is of consequence in determining the action"]},
+    {name:"Rule 403 — exclusion of relevant evidence",hint:"Balancing test",elements:["Unfair prejudice","Confusion of the issues","Misleading the jury","Undue delay / waste of time","Must SUBSTANTIALLY outweigh probative value"]},
+    {name:"Rule 105 — limiting instruction",hint:"When must the judge give one?",elements:["Evidence admissible for one purpose but not another","Party makes timely request","Judge MUST give the instruction (no discretion)"]},
+    {name:"Rule 104 — preliminary questions",hint:"Who decides admissibility?",elements:["Judge decides all admissibility questions","Judge not bound by FRE (except privilege rules)","Preponderance standard for conditional relevance"]},
+  ],
+  "Exclusions (407–411)":[
+    {name:"Rule 407 — subsequent remedial measures",hint:"What is excluded and why?",elements:["Evidence of measures taken AFTER the event","Not admissible to prove: negligence, culpable conduct, defect, or need for warning","Policy: encourage prompt repairs","Allowed for: ownership, control, feasibility, impeachment"]},
+    {name:"Rule 408 — settlement offers",hint:"What is protected?",elements:["Offers to compromise or settle","Statements and conduct during negotiations","Applies in BOTH civil and criminal cases","Allowed for: proving bias, negating contention, obstruction"]},
+    {name:"Rule 409 — medical expenses",hint:"What is protected vs. what is not?",elements:["Offer, promise, or payment of medical expenses — protected","Accompanying statements — NOT protected (still admissible)"]},
+    {name:"Rule 410 — plea bargaining",hint:"What is excluded and who is protected?",elements:["Withdrawn guilty pleas","Nolo contendere pleas","Statements during plea discussions","ONLY defendant is protected","Finalized guilty pleas are NOT protected"]},
+    {name:"Rule 411 — liability insurance",hint:"What is excluded and why?",elements:["Not admissible to prove negligence or wrongful conduct","Policy: prevent jury bias against insured defendants","Allowed for: agency, ownership, control, bias, or motive"]},
+  ],
+  "Witnesses (601–615)":[
+    {name:"Rule 601 — witness competency",hint:"Default rule",elements:["Every person is competent to be a witness","Exception: state law governs competency in diversity cases"]},
+    {name:"Rule 602 — personal knowledge",hint:"Two requirements",elements:["Witness must have personal knowledge of the matter","Proponent must lay the foundation"]},
+    {name:"Rules 605 & 606 — judges and jurors as witnesses",hint:"Who is barred?",elements:["Rule 605: presiding judge CANNOT testify","Rule 606: juror CANNOT testify about deliberations (narrow exceptions)"]},
+    {name:"Rule 603 — oath or affirmation",hint:"What is required?",elements:["Witness must declare they will testify truthfully","Can be an oath OR an affirmation (no religious requirement)"]},
+    {name:"Rule 611 — mode and order of examining witnesses",hint:"Three key provisions",elements:["Court controls examination for truth-finding and efficiency","Cross-examination limited to scope of direct + credibility","Leading questions: NOT on direct (unless hostile); ALLOWED on cross"]},
+    {name:"Rule 615 — excluding witnesses",hint:"When must the court exclude?",elements:["Court MUST exclude witnesses upon request","Exceptions: parties, party representatives, essential persons, persons authorized by statute"]},
+    {name:"Rule 612 — refreshing recollection",hint:"Three rights of adverse party",elements:["Right to inspect the writing used","Right to cross-examine witness about it","Right to introduce relevant portions into evidence"]},
+  ],
+  "Impeachment":[
+    {name:"Rule 607 — who may impeach",hint:"One word answer",elements:["Any party (including the party who called the witness)"]},
+    {name:"Rule 608(a) — reputation/opinion for truthfulness",hint:"Two limits",elements:["Limited to character for truthfulness or untruthfulness only","Evidence of TRUTHFUL character only admissible AFTER character has been attacked"]},
+    {name:"Rule 608(b) — specific instances of conduct",hint:"Cross-exam vs. extrinsic evidence",elements:["On cross-examination: may ask about specific instances probative of truthfulness","Good faith belief required","Extrinsic evidence is PROHIBITED"]},
+    {name:"Rule 609 — prior criminal convictions",hint:"Three categories",elements:["Crimes involving dishonesty or false statement: automatically admissible","Felony (non-dishonesty, non-defendant witness): Rule 403 standard","Felony (criminal defendant): prejudice must substantially outweigh probative value","10-year limit: older convictions require probative value to substantially outweigh prejudice"]},
+    {name:"Rule 610 — religious beliefs",hint:"What is prohibited vs. permitted?",elements:["CANNOT use religious beliefs to impeach or bolster credibility","CAN introduce for other relevant purposes (bias, motive, interest)"]},
+    {name:"Rule 613 — prior inconsistent statements",hint:"Two rules",elements:["Can question witness about prior inconsistent statement without showing it first","Must disclose to opposing counsel on request","Extrinsic evidence allowed only if witness has opportunity to explain or deny"]},
+  ],
+  "Character Evidence":[
+    {name:"Rule 404(a)(1) — general bar on propensity evidence",hint:"What is prohibited?",elements:["Character evidence NOT admissible to prove person acted in conformity on a particular occasion","Applies to any person","Both good AND bad character evidence barred for propensity purposes"]},
+    {name:"Rule 404(a)(2) — criminal case exceptions (Mercy Rule)",hint:"Three exceptions",elements:["Defendant may offer own pertinent character traits (prosecution may rebut)","Defendant may offer victim's pertinent traits (prosecution may rebut + show defendant's same trait)","Homicide: prosecutor may offer victim's peaceful character if defendant claims first aggressor"]},
+    {name:"Rule 404(b) — other crimes, wrongs, or acts",hint:"Non-propensity purposes",elements:["Not admissible to prove propensity","ALLOWED for: motive, opportunity, intent, preparation, plan, knowledge, identity, absence of mistake","Rule 403 still applies","Applies to both civil and criminal cases"]},
+    {name:"Rule 405 — methods of proving character",hint:"Two methods and when each applies",elements:["Always allowed: reputation or opinion testimony","When character is an ELEMENT: specific instances of conduct also allowed","Cross-examiner may ask about specific incidents if good faith belief exists","No extrinsic evidence to prove specific instances (unless character is an element)"]},
+    {name:"Rule 406 — habit evidence",hint:"How is habit different from character?",elements:["Habit: specific, repeated conduct in response to particular situations","Admissible to show action on a particular occasion","Corroboration NOT required","Proof by any means; habit alone may support a verdict"]},
+    {name:"Rule 412 — rape shield law",hint:"What is barred and what are the exceptions?",elements:["Bars evidence of alleged victim's prior sexual acts or sexual reputation","Criminal exceptions: (1) explains physical evidence; (2) prior acts with defendant; (3) constitutional requirement","Civil exception: probative value substantially outweighs harm (reverse-403 standard)"]},
+    {name:"Rules 413–415 — propensity in sexual assault / child molestation",hint:"How do these override Rule 404?",elements:["Prior sexual assault or child molestation acts ARE admissible for propensity","Overrides Rule 404's general bar on propensity evidence","Rule 403 still applies"]},
+  ],
+  "Hearsay":[
+    {name:"Hearsay checklist — 3 steps",hint:"In order",elements:["Step 1: Is it hearsay?","Step 2: Does an exception apply?","Step 3 (criminal cases): Are there constitutional issues (Confrontation Clause)?"]},
+    {name:"Rule 801 — definition of hearsay",hint:"Two requirements",elements:["Out-of-court statement","Offered to prove the TRUTH OF THE MATTER ASSERTED","Statement = oral, written, or assertive conduct"]},
+    {name:"Rule 801(d)(1) — prior statements by witnesses (exemptions)",hint:"Three types",elements:["Inconsistent prior statements (given under oath at prior proceeding)","Consistent prior statements (to rebut charge of recent fabrication)","Prior identification of a person","Witness must be subject to cross-examination"]},
+    {name:"Rule 801(d)(2) — opposing party statements (exemptions)",hint:"Five types",elements:["Party's own statement","Adopted statement","Authorized statement","Agent or employee statement (within scope of employment)","Co-conspirator statement (in furtherance of conspiracy)"]},
+    {name:"Rule 803(1) & (2) — present sense impression & excited utterance",hint:"Compare the two",elements:["PSI: statement made while perceiving the event OR immediately after","EU: statement made while under stress of excitement caused by the event","Both: declarant availability irrelevant","EU allows more time to pass than PSI"]},
+    {name:"Rule 803(3) — state of mind exception",hint:"What is included and excluded?",elements:["Admissible: then-existing mental, emotional, or physical condition","Admissible: statement of intent to do something in the future (Hillmon doctrine)","NOT admissible: statements of memory or belief to prove a past fact (unless will case)"]},
+    {name:"Rule 803(4) — medical treatment/diagnosis",hint:"Three requirements",elements:["Statement about symptoms, pain, or cause of medical condition","Made for purposes of medical diagnosis or treatment","Reasonably pertinent to diagnosis or treatment","Statements attributing blame or fault generally NOT admissible"]},
+    {name:"Rule 803(6) — business records",hint:"Five requirements",elements:["Record of act, event, condition, opinion, or diagnosis","Made at or near the time of the event","By someone with knowledge","Regular practice to keep such records","Custodian or qualified witness testifies (or certification)","Records made in anticipation of litigation: excluded"]},
+    {name:"Rule 803(8) — public records",hint:"Three categories",elements:["Activities of a public office","Observations by a public official (matters within duty to observe)","Findings from official investigations","Some records inadmissible against criminal defendants","Trustworthiness requirement applies"]},
+    {name:"Rule 804 — unavailability (5 types)",hint:"Name all five",elements:["Privilege (witness invokes and court sustains)","Refusal to testify despite court order","Lack of memory of the subject matter","Death or then-existing illness","Absence — cannot be found by reasonable means","Proponent must show unavailability (cannot cause it)"]},
+    {name:"Rule 804(b)(1) — former testimony",hint:"Four requirements",elements:["Declarant unavailable","Testimony under oath at prior trial, hearing, or deposition","Opportunity and similar motive to develop testimony","Same party or predecessor in interest"]},
+    {name:"Rule 804(b)(2) — dying declarations",hint:"Four requirements",elements:["Declarant unavailable","Believes death is imminent at time of statement","Statement concerns circumstances of the death","Admissible in civil cases and criminal homicide prosecutions only"]},
+    {name:"Rule 804(b)(3) — statement against interest",hint:"Three requirements",elements:["Declarant unavailable","Statement so contrary to declarant's interest a reasonable person would not have made it unless true","Criminal cases: must be supported by corroborating circumstances"]},
+    {name:"Rule 801(d)(2)(E) — co-conspirator statements",hint:"Three requirements",elements:["Statement by a co-conspirator","Made during the course of the conspiracy","Made in furtherance of the conspiracy"]},
+    {name:"Rule 807 — residual exception",hint:"Three requirements",elements:["Sufficient guarantees of trustworthiness","More probative on the point than other reasonably obtainable evidence","Proponent gives notice to adverse party","Courts use very rarely"]},
+  ],
+  "Privileges":[
+    {name:"Attorney-client privilege",hint:"What is protected?",elements:["Confidential communication","Between attorney and client","For the purpose of seeking or providing legal advice","Client holds the privilege (can waive)","Crime-fraud exception: not protected if used to plan future crime/fraud","Work product: protects attorney's mental impressions and trial prep"]},
+    {name:"Two types of spousal privilege",hint:"Key distinction",elements:["Spousal testimonial privilege: spouse cannot be compelled to testify against other spouse in criminal cases","Marital communications privilege: protects confidential communications made during marriage; both spouses hold it; survives divorce"]},
+    {name:"Other key privileges",hint:"Name them",elements:["Psychotherapist-patient privilege","Clergy-communicant privilege","Executive/governmental privilege","Privilege against self-incrimination (5th Amendment)"]},
+    {name:"Rule 501 — federal privilege rule",hint:"Two key points",elements:["Federal privilege law develops through common law (no codified FRE privilege rules)","State law governs privilege in diversity cases"]},
+  ],
+  "Experts & Opinions":[
+    {name:"Rule 701 — lay opinion",hint:"Three requirements",elements:["Based on personal observation (not specialized knowledge)","Rationally based on witness's perception","Helpful to understanding testimony or determining a fact in issue"]},
+    {name:"Rule 702 — expert testimony (Daubert standard)",hint:"Judge's role + requirements",elements:["Judge acts as gatekeeper","Expert must have sufficient knowledge, skill, experience, training, or education","Testimony based on sufficient facts or data","Testimony product of reliable principles and methods","Applied reliably to the facts of the case","Daubert factors (non-exclusive): tested, peer review, error rate, general acceptance"]},
+    {name:"Rule 703 — basis of expert opinion",hint:"Key rule",elements:["Expert can rely on facts/data not personally observed","Data need not be admissible if experts in the field reasonably rely on it","Underlying inadmissible data may NOT be disclosed to jury unless probative value substantially outweighs prejudice"]},
+    {name:"Rule 704 — opinion on ultimate issue",hint:"General rule and exception",elements:["Opinion on ultimate issue is generally admissible","EXCEPTION: expert in criminal case cannot opine on whether defendant had the mental state required for the crime"]},
+  ],
+  "Authentication & Best Evidence":[
+    {name:"Rule 901 — authentication",hint:"What standard must be met?",elements:["Evidence sufficient to support a finding that the item is what the proponent claims","Jury ultimately decides authentication as a factual matter","Non-exhaustive list of methods: testimony, distinctive characteristics, chain of custody, comparison, public records"]},
+    {name:"Rule 902 — self-authenticating documents",hint:"Examples",elements:["Domestic public documents under seal","Official publications","Certified copies of public records","Newspapers and periodicals","Trade inscriptions and labels","Certified business records"]},
+    {name:"Best evidence rule (Article X)",hint:"What does it require and what are the exceptions?",elements:["Original writing, recording, or photograph required to prove content","Duplicates generally admissible unless genuine question of authenticity or unfair","Exceptions: original lost/destroyed (not by proponent's bad faith); original not obtainable; original in possession of opponent; collateral matters"]},
+  ],
+};
+
+var cats=Object.keys(DATA);
+var catIdx=0,docIdx=0,revealed=[],allRevealed=false,gotCount=0,missedCount=0,docs=[];
+function g(id){return document.getElementById(id);}
+
+var tabs=g('tabs');
+cats.forEach(function(c,i){
+  var btn=document.createElement('button');
+  btn.textContent=c;
+  btn.style.cssText='padding:4px 11px;font-size:11px;border-radius:20px;border:1px solid;cursor:pointer;font-family:inherit;white-space:nowrap;';
+  if(i===0){btn.style.background='#1d9e75';btn.style.borderColor='#1d9e75';btn.style.color='#0f1e35';btn.style.fontWeight='500';}
+  else{btn.style.background='transparent';btn.style.borderColor='#2a4a6a';btn.style.color='#6b8aaa';}
+  (function(idx,b){
+    b.addEventListener('click',function(){
+      catIdx=idx;docIdx=0;
+      tabs.querySelectorAll('button').forEach(function(x){x.style.background='transparent';x.style.borderColor='#2a4a6a';x.style.color='#6b8aaa';x.style.fontWeight='400';});
+      b.style.background='#1d9e75';b.style.borderColor='#1d9e75';b.style.color='#0f1e35';b.style.fontWeight='500';
+      loadCat();
+    });
+  })(i,btn);
+  tabs.appendChild(btn);
+});
+
+g('reveal-all').addEventListener('click',function(){
+  revealed=revealed.map(function(){return true;});
+  allRevealed=true;
+  g('actions').style.display='none';
+  g('scorebtns').style.display='flex';
+  renderEls();
+});
+
+g('got-btn').addEventListener('click',function(){
+  gotCount++;g('got').textContent=gotCount;
+  docIdx=(docIdx+1)%docs.length;renderDoc();
+});
+
+g('missed-btn').addEventListener('click',function(){
+  missedCount++;g('missed').textContent=missedCount;
+  docIdx=(docIdx+1)%docs.length;renderDoc();
+});
+
+function loadCat(){
+  docs=DATA[cats[catIdx]];
+  docIdx=Math.min(docIdx,docs.length-1);
+  renderDoc();
+}
+
+function renderDoc(){
+  var d=docs[docIdx];
+  revealed=new Array(d.elements.length).fill(false);
+  allRevealed=false;
+  g('cat').textContent=cats[catIdx];
+  g('doctrine').textContent=d.name;
+  g('hint').textContent=d.hint?'Hint: '+d.hint:'';
+  g('prog').textContent=(docIdx+1)+' of '+docs.length;
+  g('actions').style.display='flex';
+  g('scorebtns').style.display='none';
+  renderEls();
+}
+
+function renderEls(){
+  var d=docs[docIdx];
+  var el=g('elements');
+  el.innerHTML='';
+  d.elements.forEach(function(e,i){
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px;';
+    var num=document.createElement('div');
+    num.style.cssText='width:22px;height:22px;border-radius:50%;background:#243d5c;display:flex;align-items:center;justify-content:center;font-size:10px;color:#6b8aaa;flex-shrink:0;font-weight:500;';
+    num.textContent=i+1;
+    var tile=document.createElement('button');
+    tile.style.cssText='flex:1;text-align:left;border-radius:8px;padding:12px 14px;font-size:13px;font-family:inherit;cursor:pointer;border:1px solid;line-height:1.4;';
+    if(revealed[i]){
+      tile.style.background='#0f3d2a';tile.style.borderColor='#1d9e75';tile.style.color='#9fe1cb';
+      tile.textContent=e;
+    } else {
+      tile.style.background='#1a2f4a';tile.style.borderColor='#2a4a6a';tile.style.color='#2a4a6a';
+      tile.textContent='Tap to reveal';
+      (function(idx){
+        tile.addEventListener('click',function(){
+          revealed[idx]=true;
+          var allDone=revealed.every(function(r){return r;});
+          if(allDone&&!allRevealed){
+            allRevealed=true;
+            g('actions').style.display='none';
+            g('scorebtns').style.display='flex';
+          }
+          renderEls();
+        });
+      })(i);
+    }
+    row.appendChild(num);row.appendChild(tile);el.appendChild(row);
+  });
+}
+
+loadCat();
+})();
+</script>
+</body>
+</html>

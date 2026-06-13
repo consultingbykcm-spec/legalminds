@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LegalMinds — MBE Practice</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 20px; }
+#w { background: #0f1e35; border-radius: 12px; overflow: hidden; width: 100%; max-width: 760px; }
+</style>
+</head>
+<body>
+<div id="w">
+  <div style="padding:16px 20px 12px;border-bottom:1px solid rgba(201,151,58,0.25);display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-size:17px;font-weight:500;color:#f5f0e8;">LEGAL<span style="color:#c9973a;font-style:italic;">MINDS</span> <span style="font-size:11px;color:#6b8aaa;font-weight:400;">MBE Practice</span></div>
+    <div style="display:flex;gap:18px;">
+      <div style="text-align:center;"><div style="font-size:16px;font-weight:500;color:#c9973a;" id="sc">0</div><div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;">Score</div></div>
+      <div style="text-align:center;"><div style="font-size:16px;font-weight:500;color:#c9973a;" id="st">0</div><div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;">Streak</div></div>
+      <div style="text-align:center;"><div style="font-size:16px;font-weight:500;color:#c9973a;" id="qn">-</div><div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;">Round</div></div>
+    </div>
+  </div>
+  <div style="height:3px;background:#1a2f4a;"><div id="pb" style="height:3px;background:#c9973a;width:0%;transition:width 0.4s;"></div></div>
+
+  <div style="padding:18px 20px;" id="game">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;" id="frow"></div>
+    <div id="badge" style="margin-bottom:10px;min-height:24px;"></div>
+    <div id="prompt" style="background:#1a2f4a;border-radius:10px;padding:16px 18px;margin-bottom:16px;font-size:14px;color:#f5f0e8;line-height:1.65;border:1px solid rgba(201,151,58,0.15);min-height:60px;"></div>
+    <div id="choices" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+    <div id="reveal" style="display:none;background:#1a2f4a;border-radius:10px;padding:16px;margin-bottom:14px;border:1px solid rgba(201,151,58,0.3);">
+      <div style="font-size:10px;color:#1d9e75;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">Correct — why</div>
+      <div id="rv-c" style="font-size:13px;color:#9fe1cb;line-height:1.55;margin-bottom:10px;"></div>
+      <div id="rv-ww" style="display:none;">
+        <div style="font-size:10px;color:#e24b4a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">Your answer — why wrong</div>
+        <div id="rv-w" style="font-size:13px;color:#f09595;line-height:1.55;"></div>
+      </div>
+    </div>
+    <button id="nxt" style="display:none;width:100%;background:#c9973a;border:none;border-radius:8px;padding:14px;font-size:14px;font-weight:500;color:#0f1e35;cursor:pointer;font-family:inherit;"></button>
+    <div style="text-align:center;margin-top:12px;font-size:11px;color:#6b8aaa;" id="prog"></div>
+  </div>
+
+  <div id="results" style="display:none;text-align:center;padding:32px 20px;">
+    <div style="font-size:20px;font-weight:500;color:#f5f0e8;margin-bottom:8px;">Round complete.</div>
+    <div style="font-size:46px;font-weight:500;color:#c9973a;line-height:1;margin-bottom:4px;" id="fscore"></div>
+    <div style="font-size:13px;color:#6b8aaa;margin-bottom:22px;" id="fsub"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px;">
+      <div style="background:#1a2f4a;border-radius:8px;padding:12px;"><div style="font-size:19px;font-weight:500;color:#c9973a;" id="fcorr"></div><div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;margin-top:3px;">Correct</div></div>
+      <div style="background:#1a2f4a;border-radius:8px;padding:12px;"><div style="font-size:19px;font-weight:500;color:#c9973a;" id="facc"></div><div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;margin-top:3px;">Accuracy</div></div>
+      <div style="background:#1a2f4a;border-radius:8px;padding:12px;"><div style="font-size:19px;font-weight:500;color:#c9973a;" id="fbst"></div><div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;margin-top:3px;">Best streak</div></div>
+    </div>
+    <button id="play-again" style="background:#c9973a;border:none;border-radius:8px;padding:13px 32px;font-size:14px;font-weight:500;color:#0f1e35;cursor:pointer;font-family:inherit;">Play again</button>
+  </div>
+</div>
+
+<script>
+(function(){
+var Q=[
+  {ch:'4',h:0,q:'Which statement is correct regarding codicils and will formalities?',ci:0,opts:[
+    {t:'A codicil is a will — it amends an existing will and must meet all the same execution formalities.',e:'Correct. A codicil is treated as a will for all formality purposes.'},
+    {t:'Oral wills are valid if there is clear and convincing evidence of testator\'s intent.',e:'Wrong. Oral wills are not valid. They are too unreliable and pose too many uncertainties.'},
+    {t:'A valid will must be acknowledged by at least one witness.',e:'Wrong. Most states require TWO witnesses, not one.'},
+    {t:'Courts generally reform a will to correct mistakes in execution.',e:'Wrong. Courts generally refuse to reform wills due to fraud concerns.'}
+  ]},
+  {ch:'4',h:0,q:'Hamid acknowledged his will to Miguel alone (Lydia upstairs) then to Lydia alone (Miguel in the basement). In a strict compliance jurisdiction — valid?',ci:3,opts:[
+    {t:'Valid — it was in writing, signed, and witnessed by two individuals.',e:'Wrong. Both witnesses must be present simultaneously when testator acknowledges.'},
+    {t:'Valid — each witness was present when Hamid acknowledged.',e:'Wrong. They were not present at the same time. Strict compliance requires one simultaneous moment.'},
+    {t:'Invalid — the witnesses did not sign at the same time.',e:'Wrong. Witnesses do not need to sign simultaneously. The issue is acknowledgment presence.'},
+    {t:'Invalid — Lydia and Miguel were not both present when Hamid acknowledged.',e:'Correct. Strict compliance requires the testator to acknowledge in the presence of BOTH witnesses at the SAME TIME.'}
+  ]},
+  {ch:'4',h:0,q:'Shantay signed in front of Ray and Jay, then left. Ray signed and left; then Jay signed. Under the modern trend / UPC — valid?',ci:3,opts:[
+    {t:'Invalid — Ray and Jay did not sign at the same time.',e:'Wrong. No requirement that witnesses sign simultaneously.'},
+    {t:'Invalid — witnesses did not sign in the presence of Shantay.',e:'Wrong. Modern trend eliminates the requirement that witnesses sign in the testator\'s presence.'},
+    {t:'Invalid — witnesses were not in Shantay\'s line of sight or conscious presence.',e:'Wrong. Modern trend eliminates these presence tests for witnesses entirely.'},
+    {t:'Valid — the modern trend only requires the testator to sign or acknowledge in the presence of the witnesses.',e:'Correct. Shantay signed before leaving. Under modern trend, that is sufficient.'}
+  ]},
+  {ch:'4',h:0,q:'Vivian signed a draft will and had it notarized but got no witnesses. Under UPC § 2-503 harmless error — admitted to probate?',ci:2,opts:[
+    {t:'No — her estate can sue for malpractice instead.',e:'Wrong. The draft is admitted under harmless error because her intent was clear.'},
+    {t:'Yes — because she had the draft notarized.',e:'Wrong. Notarization does not substitute for two witnesses. The draft is admitted because of her clear intent.'},
+    {t:'Yes — because there is clear and convincing evidence of her intent.',e:'Correct. Harmless error allows probate when there is C&C evidence testator intended the instrument to be her will.'},
+    {t:'Yes — because she relied on her attorney\'s mistaken advice.',e:'Wrong. Courts do not correct execution mistakes due to attorney error. Intent drives the analysis.'}
+  ]},
+  {ch:'4',h:0,q:'Roman burned his 2016 codicil. Alexa tore up her 2014 will (destroying her 2016 codicil too). Which wills can be probated?',ci:0,opts:[
+    {t:'Roman\'s 2014 will.',e:'Correct. Revoking a codicil does not revoke the prior will. Roman only burned the codicil — 2014 will survives. Alexa\'s revocation of her 2014 will also destroyed her 2016 codicil.'},
+    {t:'Alexa\'s 2016 will.',e:'Wrong. Alexa\'s revocation of her 2014 will also revoked her 2016 codicil.'},
+    {t:'Both Roman\'s 2014 and Alexa\'s 2016.',e:'Wrong. Alexa\'s 2016 codicil was destroyed when she revoked her 2014 will.'},
+    {t:'None.',e:'Wrong. Roman\'s 2014 will survives — he only revoked the codicil, not the underlying will.'}
+  ]},
+  {ch:'5',h:1,q:'Wyatt died intestate, possibly murdered by wife Zoe. She was found NOT GUILTY criminally. Under the majority slayer rule, what happens?',ci:1,opts:[
+    {t:'Zoe inherits because she was found not guilty.',e:'Wrong. Inheritance is civil. Burden is preponderance of evidence — lower than beyond a reasonable doubt. Not guilty does not equal inherits.'},
+    {t:'Zoe is barred if determined by preponderance of evidence to have feloniously and intentionally killed Wyatt.',e:'Correct. Majority and UPC bar a killer from inheriting if by preponderance of evidence the killing was felonious and intentional. Killer treated as predeceasing the victim.'},
+    {t:'Zoe is barred because there is significant evidence she was the murderer.',e:'Wrong. Significant evidence is not the standard. Must be preponderance of evidence of intentional and felonious killing.'},
+    {t:'Zoe is barred if convicted of manslaughter.',e:'Wrong. Involuntary manslaughter is unintentional and would not qualify. Type of manslaughter matters critically.'}
+  ]},
+  {ch:'5',h:1,q:'Abe disclaims his interest. Modern per stirpes applies. Abe has 4 children; Betty (predeceased) has 1 child Gary. How is the estate distributed?',ci:2,opts:[
+    {t:'Abe receives the entire estate regardless of his disclaimer.',e:'Wrong. A disclaimant is treated as having predeceased the decedent.'},
+    {t:'Gary receives nothing because his mother Betty predeceased Oliver.',e:'Wrong. Gary takes by representation even though Betty predeceased.'},
+    {t:'Gary gets 1/5 and each of Abe\'s four children gets 1/5.',e:'Correct. Abe is treated as predeceased. Modern per stirpes divides at first generation with living heirs — the grandchild level. All 5 grandchildren share equally: 1/5 each.'},
+    {t:'Gary gets 1/2 and Abe\'s children get 1/8 each.',e:'Wrong. Modern per stirpes treats Abe as predeceased, putting all grandchildren on equal footing at the first living generation.'}
+  ]},
+  {ch:'5',h:1,q:'Which is NOT a benefit of disclaiming under the majority approach?',ci:0,opts:[
+    {t:'It allows an heir to evade claims of the federal government as a creditor.',e:'Correct — this is NOT a benefit. Disclaimed property remains subject to federal claims including tax liens and Medicaid eligibility calculations.'},
+    {t:'It allows an heir to evade claims of private creditors.',e:'Wrong — this IS a benefit. Disclaimer statutes relate back to date of death; disclaimant never had an interest, bypassing private creditors.'},
+    {t:'It allows an heir to avoid gift and estate tax consequences.',e:'Wrong — this IS a benefit. Property passes directly to others, avoiding tax consequences of a subsequent transfer.'},
+    {t:'It allows an heir to affect the distribution of the estate.',e:'Wrong — this IS a benefit. A disclaimer can modify who receives what — post-mortem estate planning.'}
+  ]},
+  {ch:'5',h:1,q:'Wilma\'s will stated "I hereby change the primary beneficiary of my life insurance to my son Sam." After death, who gets the policy proceeds?',ci:0,opts:[
+    {t:'Harry — the ex-spouse originally named as beneficiary.',e:'Correct. In most states: (a) divorce does not automatically revoke a life insurance beneficiary designation, and (b) a will cannot change a life insurance beneficiary. The policy contract controls.'},
+    {t:'Mildred — the contingent beneficiary.',e:'Wrong. Harry remains primary. Divorce did not automatically revoke the designation.'},
+    {t:'Dora — named residuary beneficiary in the will.',e:'Wrong. Life insurance is non-probate. The residuary clause in a will does not reach it.'},
+    {t:'Sam — named in the will as new beneficiary.',e:'Wrong. A will cannot change a life insurance beneficiary. Must follow the policy\'s specific change-of-beneficiary procedure.'}
+  ]},
+  {ch:'5',h:1,q:'Which is correct regarding revocation by operation of law in most jurisdictions?',ci:1,opts:[
+    {t:'Divorce does not automatically revoke provisions favoring the former spouse.',e:'Wrong. Most states treat will provisions favoring a divorced spouse as revoked by operation of law.'},
+    {t:'Birth of a child can result in partial revocation of the testator\'s will.',e:'Correct. Birth of a child after will execution leads to partial revocation under most pretermission statutes.'},
+    {t:'These revocation statutes apply to wills and nonprobate transfers like life insurance.',e:'Wrong. These statutes generally apply only to wills. UPC 2-804 extends them to nonprobate transfers, but only a few states adopted that.'},
+    {t:'All will provisions are enforced even if testator marries after executing the will.',e:'Wrong. The spouse generally receives an intestate share if marriage occurs after will execution.'}
+  ]},
+  {ch:'6',h:1,q:'Alexa died intestate with $600K estate. She gave Nora a $100K home and Mustafa $50K. Under COMMON LAW advancements, how is the estate distributed?',ci:2,opts:[
+    {t:'Each child receives $200,000.',e:'Wrong. Common law requires all lifetime gifts included in a hotchpot calculation.'},
+    {t:'Nora $100K, Mustafa $150K, Denzel $350K.',e:'Wrong. Fails to create a hotchpot. Simply subtracting gifts from equal shares unfairly rewards Denzel.'},
+    {t:'Nora $150K, Mustafa $200K, Denzel $250K.',e:'Correct. Hotchpot = $750K. Equal share = $250K. Nora\'s $100K advancement reduces her to $150K. Mustafa\'s $50K reduces him to $200K. Denzel gets $250K.'},
+    {t:'Denzel receives the entire $600,000.',e:'Wrong. Advancement recipients are not excluded entirely — their gift is subtracted from their equal share.'}
+  ]},
+  {ch:'6',h:1,q:'Lucy\'s $50K estate. Claire received $40K in lifetime gifts. Three daughters are heirs. Under common law advancements, how is the $50K distributed?',ci:3,opts:[
+    {t:'Each daughter receives an equal share.',e:'Wrong. Common law requires a hotchpot calculation including all lifetime gifts.'},
+    {t:'Claire $10K, Violet $20K, Stella $20K.',e:'Wrong. No basis for this — it would give Claire a combined $50K total, which is inequitable.'},
+    {t:'Claire must pay estate $10K; Violet and Stella get $30K each.',e:'Wrong. When an heir\'s advancement exceeds her hotchpot share, she takes nothing but RETURNS NOTHING.'},
+    {t:'Violet and Stella divide the $50K equally ($25K each).',e:'Correct. Hotchpot = $90K. Equal share = $30K. Claire\'s $40K exceeds her $30K share — she takes nothing and returns nothing. Violet and Stella split the $50K.'}
+  ]},
+  {ch:'6',h:1,q:'Which is a correct statement about the doctrine of advancements?',ci:2,opts:[
+    {t:'Under common law, a lifetime gift creates an irrebuttable presumption of advancement.',e:'Wrong. The presumption is rebuttable — an heir can prove the gift was not intended as an advancement.'},
+    {t:'A gift deemed an advancement is placed in a hotchpot from which equal shares are distributed.',e:'Wrong. The hotchpot adds advancements to the estate — then each heir\'s advancement is SUBTRACTED from their equal share.'},
+    {t:'Under the modern trend, lifetime gifts are not advancements unless evidenced by a writing.',e:'Correct. The modern trend (and UPC) requires a writing showing the gift is intended as an advancement. This minimizes litigation.'},
+    {t:'The doctrine is based on reducing litigation between family members.',e:'Wrong. The doctrine is based on fairness in distribution. In practice it has actually increased litigation.'}
+  ]},
+  {ch:'6',h:1,q:'"I give Bill 100 shares of Google stock." What type of gift is this?',ci:2,opts:[
+    {t:'Residuary gift.',e:'Wrong. A residuary gift disposes of everything remaining after other gifts are satisfied.'},
+    {t:'Specific gift.',e:'Wrong. A specific gift is of a particular identified asset, usually signaled by the word "my."'},
+    {t:'General gift.',e:'Correct. This is a general gift meant to provide a general economic benefit. If no Google shares at death, the executor purchases them from general estate assets.'},
+    {t:'Demonstrative gift.',e:'Wrong. A demonstrative gift is a general amount payable from a specific source, e.g., "$2,500 from my Wells Fargo account."'}
+  ]},
+  {ch:'6',h:1,q:'Brent\'s will gives Dan "my 100 shares of Netflix stock." At death, estate has only 80 shares. What does Dan receive?',ci:0,opts:[
+    {t:'Only the 80 shares.',e:'Correct. "My" makes this a specific gift. Any portion not in the estate is adeemed pro tanto — Dan gets only what remains.'},
+    {t:'100 shares — executor purchases the missing 20 from general assets.',e:'Wrong. "My" makes this specific, not general. Executor does not purchase missing shares for a specific gift.'},
+    {t:'80 shares plus cash value of 20 shares.',e:'Wrong. Specific gifts adeem pro tanto — no cash compensation for the missing portion.'},
+    {t:'Dan receives nothing.',e:'Wrong. Only the missing portion is adeemed. Dan still gets the 80 shares that remain in the estate.'}
+  ]},
+  {ch:'6',h:1,q:'Monica\'s holograph gave Hector "250 shares of GE stock." Estate has only 100 shares. What does Hector receive?',ci:1,opts:[
+    {t:'Only 100 shares — specific gift adeemed pro tanto.',e:'Wrong. No possessive "my" — this is a GENERAL gift, not specific. Ademption does not apply to general gifts.'},
+    {t:'100 shares, with executor purchasing additional 150 from general assets.',e:'Correct. General gift (no "my"). Executor has a legal duty to purchase any additional shares needed to fulfill a general bequest.'},
+    {t:'100 shares plus cash equivalent of 150 shares.',e:'Wrong. For a general gift, the executor purchases the actual shares, not a cash substitute — unless purchasing is impossible.'},
+    {t:'Nothing — the gift is adeemed by extinction.',e:'Wrong. Ademption only applies to SPECIFIC gifts. This is a general gift and cannot adeem.'}
+  ]},
+  {ch:'7',h:0,q:'Emma dies intestate. Noah and Liam both predeceased. Noah has Ava; Liam has Olivia and Sophia; Olivia has Mason and Ethan. Under STRICT PER STIRPES — how distributed?',ci:1,opts:[
+    {t:'Equal 1/4 to Ava, Sophia, Mason, Ethan.',e:'Wrong. Per stirpes divides at the first generation — not equally among all living descendants.'},
+    {t:'1/2 to Ava, 1/4 to Sophia, 1/8 each to Mason and Ethan.',e:'Correct. First generation: Noah 1/2, Liam 1/2. Ava takes Noah\'s 1/2. Liam\'s 1/2 splits: Sophia 1/4, Olivia 1/4. Olivia\'s 1/4 splits: Mason 1/8, Ethan 1/8.'},
+    {t:'1/2 to Ava, 1/6 each to Sophia, Mason, Ethan.',e:'Wrong. Sophia gets 1/4 — half of Liam\'s 1/2 branch — not 1/6.'},
+    {t:'Estate escheats to the state.',e:'Wrong. Emma is survived by issue — no escheat.'}
+  ]},
+  {ch:'7',h:1,q:'Same family. Under MODERN PER STIRPES (per capita with representation) — how distributed?',ci:3,opts:[
+    {t:'1/2 to Ava, 1/2 to Sophia.',e:'Wrong. Descendants of deceased issue ALSO take by representation — Mason and Ethan take Olivia\'s share.'},
+    {t:'Equal 1/4 to Ava, Sophia, Mason, Ethan.',e:'Wrong. Modern per stirpes does not divide equally among all living descendants.'},
+    {t:'1/2 to Ava, 1/4 to Sophia, 1/8 each to Mason and Ethan.',e:'Wrong. This is strict per stirpes. Modern per stirpes divides at the first generation WITH LIVING ISSUE: Ava, Olivia, Sophia.'},
+    {t:'1/3 to Ava, 1/3 to Sophia, 1/6 each to Mason and Ethan.',e:'Correct. Modern per stirpes divides at first generation with living issue: Ava, Olivia, Sophia — three 1/3 shares. Sophia 1/3. Olivia\'s 1/3 splits: Mason and Ethan 1/6 each.'}
+  ]},
+  {ch:'7',h:1,q:'Under PER CAPITA AT EACH GENERATION (UPC 2-106), with Ava, Sophia, Ethan, Fred, Jacob, Joshua surviving — how distributed?',ci:2,opts:[
+    {t:'1/4 to Ava, Sophia, Fred; 1/8 to Ethan; 1/16 each to Jacob and Joshua.',e:'Wrong. This is modern per stirpes. Per capita at each generation POOLS undistributed shares and redistributes equally at the next level.'},
+    {t:'1/3 to Ava, 1/3 to Fred, 1/6 to Sophia, 1/12 to Ethan, 1/24 each to Jacob and Joshua.',e:'Wrong. This is strict per stirpes.'},
+    {t:'1/4 to Ava and Sophia; 1/6 each to Ethan and Fred; 1/12 each to Jacob and Joshua.',e:'Correct. First living generation (grandchildren): Ava and Sophia 1/4 each. Remaining 1/2 pools and divides equally among next level (Ethan and Fred): 1/6 each. Remaining 1/6 pools for Jacob and Joshua: 1/12 each.'},
+    {t:'Equal 1/6 to each of the six survivors.',e:'Wrong. Per capita at each generation does not simply divide equally among all survivors.'}
+  ]}
+];
+
+var chMap={'4':'Ch. 4 — Formalities','5':'Ch. 5 — Lapse / Intestacy','6':'Ch. 6 — Ademption','7':'Ch. 7 — Distribution'};
+var chCol={'4':'#5DCAA5','5':'#f09595','6':'#f09595','7':'#c9973a'};
+var filter='all', deck=[], cur=0, score=0, streak=0, best=0, corr=0, answered=false;
+
+function sh(a){var b=a.slice();for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}return b;}
+function g(id){return document.getElementById(id);}
+
+var frow=g('frow');
+var filterDefs=[['all','All'],['4','Ch.4 Formalities'],['5','Ch.5 ⚠'],['6','Ch.6 ⚠⚠'],['7','Ch.7']];
+filterDefs.forEach(function(fd){
+  var btn=document.createElement('button');
+  btn.textContent=fd[1];
+  btn.style.cssText='padding:5px 12px;font-size:11px;border-radius:20px;border:1.5px solid #2a4a6a;background:transparent;color:#6b8aaa;cursor:pointer;font-family:inherit;';
+  if(fd[0]==='all'){btn.style.background='#c9973a';btn.style.borderColor='#c9973a';btn.style.color='#0f1e35';btn.style.fontWeight='500';}
+  (function(f,b){
+    b.addEventListener('click',function(){
+      filter=f;
+      frow.querySelectorAll('button').forEach(function(x){x.style.background='transparent';x.style.borderColor='#2a4a6a';x.style.color='#6b8aaa';x.style.fontWeight='400';});
+      b.style.background='#c9973a';b.style.borderColor='#c9973a';b.style.color='#0f1e35';b.style.fontWeight='500';
+      init();
+    });
+  })(fd[0],btn);
+  frow.appendChild(btn);
+});
+
+g('nxt').addEventListener('click',function(){cur++;render();});
+g('play-again').addEventListener('click',function(){init();});
+
+function init(){
+  cur=0;score=0;streak=0;best=0;corr=0;answered=false;
+  var pool=filter==='all'?Q:Q.filter(function(q){return q.ch===filter;});
+  deck=sh(pool);
+  g('results').style.display='none';
+  g('game').style.display='block';
+  g('sc').textContent='0';
+  g('st').textContent='0';
+  render();
+}
+
+function render(){
+  if(cur>=deck.length){showResults();return;}
+  var q=deck[cur];
+  answered=false;
+  g('qn').textContent=(cur+1)+'/'+deck.length;
+  g('pb').style.width=(cur/deck.length*100)+'%';
+  g('badge').innerHTML='<span style="display:inline-block;font-size:10px;padding:3px 10px;border-radius:10px;background:rgba(201,151,58,0.15);color:'+chCol[q.ch]+';font-weight:500;">'+chMap[q.ch]+'</span>'+(q.h?'<span style="display:inline-block;font-size:10px;padding:3px 10px;border-radius:10px;background:rgba(226,75,74,0.2);color:#f09595;font-weight:500;margin-left:6px;">You missed this type</span>':'');
+  g('prompt').textContent=q.q;
+
+  var opts=sh(q.opts.map(function(o,i){return{t:o.t,e:o.e,correct:(i===q.ci)};}));
+  var letters=['A','B','C','D'];
+  var ch=g('choices');
+  ch.innerHTML='';
+  opts.forEach(function(opt,i){
+    var btn=document.createElement('button');
+    btn.style.cssText='display:block;width:100%;text-align:left;border-radius:8px;padding:15px 16px;font-size:13px;font-family:inherit;cursor:pointer;border:2px solid #2a4a6a;background:#1e3a58;color:#f5f0e8;line-height:1.5;';
+    btn.innerHTML='<strong style="color:#c9973a;margin-right:8px;">'+letters[i]+'.</strong>'+opt.t;
+    (function(o,b){
+      b.addEventListener('click',function(){
+        if(answered)return;
+        answered=true;
+        ch.querySelectorAll('button').forEach(function(x){x.style.cursor='default';});
+        opts.forEach(function(oo,ii){
+          var xb=ch.querySelectorAll('button')[ii];
+          if(oo.correct){xb.style.background='#0f3d2a';xb.style.borderColor='#1d9e75';xb.style.color='#9fe1cb';}
+        });
+        if(!o.correct){b.style.background='#3d1515';b.style.borderColor='#e24b4a';b.style.color='#f09595';}
+        if(o.correct){corr++;streak++;if(streak>best)best=streak;score+=100+(streak>1?(streak-1)*20:0);}
+        else{streak=0;}
+        g('sc').textContent=score;
+        g('st').textContent=streak;
+        var correctOpt=opts.filter(function(x){return x.correct;})[0];
+        g('rv-c').textContent=correctOpt.e;
+        var ww=g('rv-ww');
+        if(!o.correct){ww.style.display='block';g('rv-w').textContent=o.e;}
+        else{ww.style.display='none';}
+        g('reveal').style.display='block';
+        var nxt=g('nxt');
+        nxt.textContent=cur<deck.length-1?'Next question':'See results';
+        nxt.style.display='block';
+      });
+    })(opt,btn);
+    ch.appendChild(btn);
+  });
+
+  g('reveal').style.display='none';
+  g('nxt').style.display='none';
+  g('prog').textContent=(cur+1)+' of '+deck.length;
+}
+
+function showResults(){
+  g('game').style.display='none';
+  g('results').style.display='block';
+  g('pb').style.width='100%';
+  var pct=Math.round(corr/deck.length*100);
+  g('fscore').textContent=score;
+  g('fsub').textContent=pct>=80?'Counselor.':pct>=60?'Getting there.':'Ch. 6 is waiting.';
+  g('fcorr').textContent=corr+'/'+deck.length;
+  g('facc').textContent=pct+'%';
+  g('fbst').textContent=best;
+}
+
+init();
+})();
+</script>
+</body>
+</html>

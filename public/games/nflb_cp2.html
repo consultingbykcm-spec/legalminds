@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Fact Left Behind — CP Q2</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 860px; }
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(29,158,117,0.3); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; }
+#header h1 span { color: #1d9e75; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#level-indicator { display: flex; gap: 8px; align-items: center; }
+.level-pip { width: 32px; height: 6px; border-radius: 3px; background: #1a2f4a; transition: background 0.3s; }
+.level-pip.active { background: #1d9e75; }
+.level-pip.done { background: #c9973a; }
+#level-label { font-size: 12px; color: #1d9e75; font-weight: 500; margin-left: 4px; }
+#hypo-box { background: #0f1e35; border-radius: 12px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.15); }
+#hypo-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#hypo-text { font-size: 13px; color: #d0dce8; line-height: 1.75; }
+.fact { background: rgba(29,158,117,0.15); border-radius: 3px; padding: 1px 4px; }
+#panel { background: #0f1e35; border-radius: 12px; padding: 20px; }
+#l1-question { font-size: 14px; font-weight: 500; color: #f5f0e8; margin-bottom: 4px; }
+#l1-sub { font-size: 11px; color: #6b8aaa; margin-bottom: 18px; line-height: 1.5; }
+#issue-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.cat-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 0 2px; font-weight: 500; }
+.issue-item { display: flex; align-items: flex-start; gap: 12px; background: #1a2f4a; border-radius: 8px; padding: 13px 15px; cursor: pointer; border: 1.5px solid #1a2f4a; transition: all 0.15s; }
+.issue-item:hover { border-color: #2a4a6a; }
+.issue-item.selected { background: #1a3a2a; border-color: #1d9e75; }
+.issue-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #2a4a6a; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+.issue-item.selected .issue-check { background: #1d9e75; border-color: #1d9e75; }
+.check-mark { font-size: 12px; color: #0f1e35; display: none; }
+.issue-item.selected .check-mark { display: block; }
+.issue-text { font-size: 13px; color: #a0b8cc; line-height: 1.4; }
+.issue-item.selected .issue-text { color: #f5f0e8; }
+.issue-item.correct { background: #0f3d2a; border-color: #1d9e75; }
+.issue-item.correct .issue-text { color: #9fe1cb; }
+.issue-item.correct .issue-check { background: #1d9e75; border-color: #1d9e75; }
+.issue-item.missed { background: #2a1a0a; border-color: #c9973a; }
+.issue-item.missed .issue-text { color: #f5d06a; }
+.issue-item.wrong { background: #3d1515; border-color: #e24b4a; }
+.issue-item.wrong .issue-text { color: #f09595; }
+.result-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
+.tag-correct { background: rgba(29,158,117,0.2); color: #1d9e75; }
+.tag-missed { background: rgba(201,151,58,0.2); color: #c9973a; }
+.tag-wrong { background: rgba(226,75,74,0.2); color: #e24b4a; }
+#score-bar { background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; display: none; }
+#score-cells { display: flex; gap: 10px; }
+.score-cell { flex: 1; text-align: center; background: #0f1e35; border-radius: 6px; padding: 10px 6px; }
+.score-cell-n { font-size: 18px; font-weight: 500; color: #1d9e75; }
+.score-cell-l { font-size: 9px; color: #6b8aaa; text-transform: uppercase; margin-top: 2px; }
+#l2-progress { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.issue-dot { width: 28px; height: 28px; border-radius: 50%; background: #1a2f4a; border: 2px solid #2a4a6a; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #6b8aaa; }
+.issue-dot.active { border-color: #1d9e75; background: rgba(29,158,117,0.15); color: #9fe1cb; }
+.issue-dot.done { border-color: #c9973a; background: rgba(201,151,58,0.15); color: #f5d06a; }
+#l2-subq { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+#l2-issue-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#l2-element-box { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(29,158,117,0.2); }
+#l2-element-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+#l2-element-text { font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.5; }
+#l2-element-sub { font-size: 12px; color: #6b8aaa; margin-top: 5px; }
+#l2-instruction { font-size: 11px; color: #6b8aaa; margin-bottom: 10px; }
+#fact-tiles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.fact-tile { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #2a4a6a; background: #1a2f4a; color: #a0b8cc; font-size: 12px; cursor: pointer; transition: all 0.15s; line-height: 1.4; }
+.fact-tile:hover { border-color: #1d9e75; color: #f5f0e8; }
+.fact-tile.selected { background: #1a3a2a; border-color: #1d9e75; color: #f5f0e8; }
+.fact-tile.correct { background: #0f3d2a; border-color: #1d9e75; color: #9fe1cb; cursor: default; }
+.fact-tile.missed-fact { background: #3d2f0a; border-color: #c9973a; color: #f5d06a; cursor: default; }
+.fact-tile.wrong-fact { background: #3d1515; border-color: #e24b4a; color: #f09595; cursor: default; }
+.fact-tile.neutral { background: #1a2f4a; border-color: #1a2f4a; color: #4a6a8a; cursor: default; }
+#l2-explain { display: none; background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(29,158,117,0.3); }
+#l2-explain-text { font-size: 13px; color: #a0b8cc; line-height: 1.6; }
+.btn-primary { width: 100%; background: #1d9e75; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; margin-bottom: 8px; }
+.btn-secondary { width: 100%; background: #1a2f4a; border: 1.5px solid #2a4a6a; border-radius: 8px; padding: 12px; font-size: 13px; color: #a0b8cc; cursor: pointer; font-family: inherit; }
+#prog-text { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 12px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 22px; font-weight: 500; color: #f5f0e8; margin-bottom: 6px; }
+#results-score { font-size: 54px; font-weight: 500; color: #1d9e75; line-height: 1; margin-bottom: 4px; }
+#results-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-cell-n { font-size: 20px; font-weight: 500; color: #1d9e75; }
+.r-cell-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="header">
+  <div>
+    <h1>No Fact <span>Left Behind</span></h1>
+    <p>Community Property · Cal Bar July 2007 · H &amp; W</p>
+  </div>
+  <div id="level-indicator">
+    <div class="level-pip active" id="pip1"></div>
+    <div class="level-pip" id="pip2"></div>
+    <span id="level-label">Level 1</span>
+  </div>
+</div>
+
+<div id="hypo-box">
+  <div id="hypo-title">Fact Pattern — Cal Bar July 2007</div>
+  <div id="hypo-text">
+    <span class="fact" id="f-married">Husband and Wife married in 1997 in California</span>. <span class="fact" id="f-no-assets">Neither brought any significant assets to the marriage</span>, and <span class="fact" id="f-both-employed">they were both employed</span>. <span class="fact" id="f-agreement">H and W agreed that H should go to law school after they had saved up some money</span>.<br><br>
+    <span class="fact" id="f-h-savings">H put his earnings in a savings account in his name alone</span>. <span class="fact" id="f-w-checking">W deposited her earnings into a joint checking account in both their names</span>, which was used for their living expenses. <span class="fact" id="f-child-support">H had a child support obligation from a previous marriage</span>. <span class="fact" id="f-cs-paid">Every month, H paid his child support by check from the joint checking account</span>.<br><br>
+    <span class="fact" id="f-law-school">H began law school in 1998. W continued to support the couple</span>. <span class="fact" id="f-student-loan">H took out a student loan to pay his tuition</span>. <span class="fact" id="f-graduated">H graduated in 2001 and obtained his law degree. He passed the bar and got a position with a large law firm</span>.<br><br>
+    In 2004, <span class="fact" id="f-partner">H became a partner in the firm. H's partnership earnings were substantial</span>. <span class="fact" id="f-loan-paid">He paid off his student loan with these earnings</span>. Although the actual value of H's share was substantially greater, <span class="fact" id="f-goodwill-agreement">the partnership agreement provided that its value was $3,000 for purposes of valuation as marital property in the event of dissolution of a partner's marriage</span>.<br><br>
+    <span class="fact" id="f-dissolution">In 2006, H and W filed for dissolution of marriage</span>.
+  </div>
+</div>
+
+<div id="panel">
+  <div id="level1">
+    <div id="l1-question">Spot the Issues — Four Sub-Questions</div>
+    <div id="l1-sub">Check every legal issue raised across all four questions: (a) child support reimbursement, (b) student loan reimbursement, (c) community interest in law degree, (d) goodwill and partnership valuation.</div>
+    <div id="issue-grid"></div>
+    <div id="score-bar">
+      <div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Level 1 Results</div>
+      <div id="score-cells">
+        <div class="score-cell"><div class="score-cell-n" id="l1-correct-n">0</div><div class="score-cell-l">Spotted</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-missed-n">0</div><div class="score-cell-l">Missed</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-wrong-n">0</div><div class="score-cell-l">False alarms</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-pct">0%</div><div class="score-cell-l">Accuracy</div></div>
+      </div>
+    </div>
+    <div id="l1-btn-wrap"><button class="btn-primary" id="l1-submit">Check My Issues →</button></div>
+    <div id="l1-next-wrap" style="display:none;"><button class="btn-primary" id="l1-next">Level 2 — No Fact Left Behind →</button></div>
+  </div>
+
+  <div id="level2" style="display:none;">
+    <div id="l2-progress"></div>
+    <div id="l2-subq"></div>
+    <div id="l2-issue-title"></div>
+    <div id="l2-element-box">
+      <div id="l2-element-label">Element / Rule</div>
+      <div id="l2-element-text"></div>
+      <div id="l2-element-sub"></div>
+    </div>
+    <div id="l2-instruction">Tap every fact from the hypo that is legally operative for this element.</div>
+    <div id="fact-tiles"></div>
+    <div id="l2-explain"><div id="l2-explain-text"></div></div>
+    <button class="btn-primary" id="l2-check">Check Facts →</button>
+    <div id="prog-text"></div>
+  </div>
+
+  <div id="results">
+    <h2>No Fact Left Behind.</h2>
+    <div id="results-score"></div>
+    <div id="results-sub"></div>
+    <div id="results-grid">
+      <div class="r-cell"><div class="r-cell-n" id="r-issues"></div><div class="r-cell-l">Issues spotted</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-facts"></div><div class="r-cell-l">Facts deployed</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-total"></div><div class="r-cell-l">Combined %</div></div>
+    </div>
+    <button class="btn-primary" id="replay-btn">Play again</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+
+var ISSUES = [
+  // (a) CHILD SUPPORT
+  { id:'cs-cp', text:'Child support — paid from joint checking account funded with W\'s earnings (CP)', cat:'(a) Child Support Reimbursement', real:true },
+  { id:'cs-sp-avail', text:'Child support — reimbursement only if H\'s SP was available at the time of payments', cat:'(a) Child Support Reimbursement', real:true },
+  { id:'cs-no-sp', text:'Child support — neither brought significant assets to marriage → no SP available → no reimbursement', cat:'(a) Child Support Reimbursement', real:true },
+  { id:'cs-savings-transmute', text:'Savings account — H\'s account in his name alone: does title alone transmute CP to H\'s SP?', cat:'(a) Child Support Reimbursement', real:true },
+  // (b) STUDENT LOAN
+  { id:'loan-cp-debt', text:'Student loan — debt incurred during marriage; lender relied on community → CP debt', cat:'(b) Student Loan Reimbursement', real:true },
+  { id:'loan-paid-cp', text:'Student loan — paid off with H\'s partnership earnings during marriage → paid with CP', cat:'(b) Student Loan Reimbursement', real:true },
+  { id:'edu-reimburse', text:'Education — community entitled to reimbursement when CP used to fund education that substantially enhanced earning capacity', cat:'(b) Student Loan Reimbursement', real:true },
+  { id:'ten-year', text:'10-year presumption — if community benefited from education for 10+ years, reimbursement presumed satisfied', cat:'(b) Student Loan Reimbursement', real:true },
+  { id:'other-edu', text:'Exception — other spouse also received community-funded education? (does not apply here)', cat:'(b) Student Loan Reimbursement', real:true },
+  // (c) LAW DEGREE
+  { id:'degree-sp', text:'Law degree — education acquired during marriage is SP of the acquiring spouse; no community interest in the degree itself', cat:'(c) Community Interest in Law Degree', real:true },
+  { id:'degree-reimburse-only', text:'Law degree — community\'s only right is reimbursement for costs; not a present-value interest in future earnings', cat:'(c) Community Interest in Law Degree', real:true },
+  // (d) GOODWILL
+  { id:'goodwill-cp', text:'Goodwill — earned by community labor during marriage → community property asset', cat:'(d) Goodwill & Partnership Valuation', real:true },
+  { id:'goodwill-valuation', text:'Goodwill — partnership agreement values H\'s share at $3,000 for dissolution purposes', cat:'(d) Goodwill & Partnership Valuation', real:true },
+  { id:'goodwill-not-binding', text:'Goodwill — partnership agreement valuation is NOT binding on the community; risk of spousal deprivation', cat:'(d) Goodwill & Partnership Valuation', real:true },
+  { id:'goodwill-pereira', text:'Goodwill — Pereira/Van Camp does NOT apply because H did not enter the marriage with a SP business interest', cat:'(d) Goodwill & Partnership Valuation', real:true },
+  // DECOYS
+  { id:'cs-transmute-written', text:'Transmutation — H\'s savings account was validly transmuted to SP by opening account in his name alone', cat:'Consider carefully', real:false },
+  { id:'loan-sp-debt', text:'Student loan — debt was H\'s SP obligation because lender only looked to H\'s future SP earnings', cat:'Consider carefully', real:false },
+  { id:'goodwill-personal', text:'Goodwill — firm\'s goodwill is H\'s SP because it derives entirely from his personal skill and reputation', cat:'Consider carefully', real:false },
+];
+
+var L2 = [
+  {
+    subq:'(a) Child Support Reimbursement',
+    issueTitle:'CP Used for Premarital Obligation — Reimbursement Requires SP Available',
+    element:'The community is entitled to reimbursement for child support payments made with CP only if the obligated spouse had SP available at the time the payments were made. If no SP was available, the CP payments were proper and no reimbursement is owed.',
+    sub:'Was H\'s SP available when the child support payments were made — and what facts resolve this?',
+    keyFacts:['f-no-assets','f-both-employed','f-cs-paid','f-w-checking','f-h-savings'],
+    allFacts:['f-no-assets','f-both-employed','f-cs-paid','f-w-checking','f-h-savings','f-married','f-child-support','f-agreement'],
+    explain:'"Neither brought any significant assets to the marriage" — this is the dispositive fact. H had no SP available when the payments were made. "Both employed" establishes their earnings were CP. "Joint checking account" funded with W\'s earnings = CP. H paid child support "by check from the joint checking account" = CP funds. H\'s savings account in his name alone does NOT become SP without a written transmutation signed by the adversely affected spouse (W). No SP was available → community not entitled to reimbursement.'
+  },
+  {
+    subq:'(a) Child Support — Savings Account',
+    issueTitle:'Title in One Spouse\'s Name Alone — Transmutation?',
+    element:'After 1985, a change in the character of community property (transmutation) requires: (1) a writing, (2) signed by the adversely affected spouse, (3) expressly stating the change in character. Title in one spouse\'s name alone is NOT sufficient to transmute CP to SP.',
+    sub:'Does H\'s savings account in his name alone constitute a transmutation of his CP earnings to his SP?',
+    keyFacts:['f-h-savings','f-no-assets','f-both-employed'],
+    allFacts:['f-h-savings','f-no-assets','f-both-employed','f-married','f-w-checking','f-child-support'],
+    explain:'"H put his earnings in a savings account in his name alone" — the title is in H\'s name. BUT title alone never transmutes CP. A valid transmutation requires a writing signed by W (the adversely affected spouse) expressly conveying the CP interest. No such writing is described in the facts. H\'s earnings remain CP regardless of account title. Therefore H had no SP in the savings account, confirming no SP was available to pay child support.'
+  },
+  {
+    subq:'(b) Student Loan Reimbursement',
+    issueTitle:'Education Paid with CP — Community Entitled to Reimbursement',
+    element:'The community is entitled to reimbursement when CP funds are used to pay for a spouse\'s education that substantially enhances earning capacity. Reimbursement is reduced or eliminated if: (1) the community has already substantially benefited (presumed at 10+ years); (2) the other spouse also received community-funded education; or (3) the education reduces the need for post-dissolution spousal support.',
+    sub:'What facts establish the reimbursement claim — and why doesn\'t the 10-year exception apply?',
+    keyFacts:['f-student-loan','f-loan-paid','f-partner','f-graduated','f-dissolution','f-law-school'],
+    allFacts:['f-student-loan','f-loan-paid','f-partner','f-graduated','f-dissolution','f-law-school','f-no-assets','f-w-checking','f-both-employed'],
+    explain:'"H took out a student loan to pay his tuition" — loan incurred during marriage = CP debt. "He paid off his student loan with these [partnership] earnings" — partnership earnings during marriage = CP. CP funds used to pay for education. "Got a position with a large law firm" and "became a partner" with "substantial" earnings = substantially enhanced earning capacity. Community entitled to reimbursement. BUT: "H graduated in 2001... dissolution in 2006" = only 5 years of benefit. 10-year presumption of substantial benefit does NOT apply. No other exceptions apply (W did not receive community-funded education; no spousal support offset shown).'
+  },
+  {
+    subq:'(c) Community Interest in Law Degree',
+    issueTitle:'Law Degree Is SP — No Community Interest in Future Earnings',
+    element:'A professional degree or license earned during marriage is the separate property of the acquiring spouse. The community\'s only right is reimbursement for the cost of acquiring the education — not an ownership interest in the degree or a present-value claim on the future earnings attributable to the degree.',
+    sub:'Does the community have a property interest in H\'s law degree itself?',
+    keyFacts:['f-graduated','f-student-loan','f-law-school'],
+    allFacts:['f-graduated','f-student-loan','f-law-school','f-partner','f-dissolution','f-w-checking'],
+    explain:'"H graduated in 2001 and obtained his law degree" — the degree itself is H\'s SP. The community is NOT entitled to a share of H\'s future earnings or the present discounted value of those future earnings attributable to the degree. That W "continued to support the couple" while H was in law school does not change this — it is the basis for the reimbursement claim, not an ownership interest. The community gets reimbursement for the student loan costs (as analyzed above), nothing more.'
+  },
+  {
+    subq:'(d) Goodwill — Community Interest',
+    issueTitle:'Goodwill Earned During Marriage = Community Property',
+    element:'Goodwill is the value of a business above the expected normal rate of return on capital invested — the intangible value of reputation and continued patronage. When goodwill is generated by community labor during marriage, it is a community property asset.',
+    sub:'What facts establish that the goodwill in H\'s law firm is a CP asset?',
+    keyFacts:['f-partner','f-married','f-graduated','f-dissolution'],
+    allFacts:['f-partner','f-married','f-graduated','f-dissolution','f-goodwill-agreement','f-loan-paid','f-h-savings'],
+    explain:'"H became a partner in the firm" in 2004 — during the marriage (married 1997, dissolution 2006). H\'s entire tenure at the firm — as associate and then partner — occurred during the marriage. His labor building the firm\'s goodwill was community labor. The goodwill of H\'s share in the firm is therefore entirely CP. Note: Pereira/Van Camp does NOT apply here because H did not enter the marriage with a SP business interest — he started with nothing and built the firm interest entirely with community labor.'
+  },
+  {
+    subq:'(d) Goodwill — Partnership Valuation',
+    issueTitle:'Partnership Agreement Valuation of $3,000 — Not Binding on the Community',
+    element:'A partnership agreement\'s valuation of a partner\'s interest for dissolution purposes may be considered by a court but is NOT conclusive. Courts will not allow partners to contract with each other to deprive the non-partner spouse of their rightful community share — especially where the valuation only applies in the event of divorce.',
+    sub:'Why is the $3,000 partnership valuation not binding on W?',
+    keyFacts:['f-goodwill-agreement','f-partner','f-dissolution'],
+    allFacts:['f-goodwill-agreement','f-partner','f-dissolution','f-married','f-graduated','f-loan-paid'],
+    explain:'"The partnership agreement provided that its value was $3,000 for purposes of valuation as marital property in the event of dissolution of a partner\'s marriage" — the language itself reveals the problem. The valuation only applies at divorce — creating an obvious risk of abuse. Partners could agree among themselves to deflate the value only for divorce purposes, depriving non-partner spouses of their rightful CP share. "Although the actual value of H\'s share was substantially greater" confirms the disparity. Courts will consider the agreement as evidence but will not be bound by it. The court will apply the capitalization method or another appropriate valuation.'
+  },
+];
+
+var FACTS = {
+  'f-married':'H and W married in 1997 in California',
+  'f-no-assets':'Neither brought any significant assets to the marriage',
+  'f-both-employed':'They were both employed',
+  'f-agreement':'H and W agreed H should go to law school after saving up',
+  'f-h-savings':'H put his earnings in a savings account in his name alone',
+  'f-w-checking':'W deposited her earnings into a joint checking account in both their names',
+  'f-child-support':'H had a child support obligation from a previous marriage',
+  'f-cs-paid':'Every month H paid child support by check from the joint checking account',
+  'f-law-school':'H began law school in 1998; W continued to support the couple',
+  'f-student-loan':'H took out a student loan to pay his tuition',
+  'f-graduated':'H graduated in 2001, passed the bar, and got a position with a large law firm',
+  'f-partner':'H became a partner in 2004; H\'s partnership earnings were substantial',
+  'f-loan-paid':'H paid off his student loan with his partnership earnings',
+  'f-goodwill-agreement':'Partnership agreement valued H\'s share at $3,000 for dissolution purposes',
+  'f-dissolution':'H and W filed for dissolution in 2006',
+};
+
+var state={phase:'l1',selected:{},l1Correct:0,l1Missed:0,l1Wrong:0,l2Idx:0,l2FactSel:{},totalFactsCorrect:0,totalFactsTotal:0};
+function g(id){return document.getElementById(id);}
+
+function buildL1(){
+  var grid=g('issue-grid');grid.innerHTML='';
+  var lastCat='';
+  ISSUES.forEach(function(issue){
+    if(issue.cat!==lastCat){
+      var label=document.createElement('div');label.className='cat-label';label.textContent=issue.cat;
+      grid.appendChild(label);lastCat=issue.cat;
+    }
+    var div=document.createElement('div');div.className='issue-item';div.id='iss-'+issue.id;
+    div.innerHTML='<div class="issue-check"><span class="check-mark">✓</span></div><div class="issue-text">'+issue.text+'</div>';
+    div.addEventListener('click',function(){
+      if(state.phase!=='l1')return;
+      state.selected[issue.id]=!state.selected[issue.id];
+      div.classList.toggle('selected',!!state.selected[issue.id]);
+    });
+    grid.appendChild(div);
+  });
+}
+
+g('l1-submit').addEventListener('click',function(){
+  if(state.phase!=='l1')return;
+  state.phase='l1-result';
+  var correct=0,missed=0,wrong=0;
+  ISSUES.forEach(function(issue){
+    var el=g('iss-'+issue.id);var sel=!!state.selected[issue.id];
+    if(issue.real&&sel){correct++;el.classList.add('correct');var t=document.createElement('span');t.className='result-tag tag-correct';t.textContent='✓ Spotted';el.appendChild(t);}
+    else if(issue.real&&!sel){missed++;el.classList.add('missed');var t=document.createElement('span');t.className='result-tag tag-missed';t.textContent='⚠ Missed';el.appendChild(t);}
+    else if(!issue.real&&sel){wrong++;el.classList.add('wrong');var t=document.createElement('span');t.className='result-tag tag-wrong';t.textContent='✗ False alarm';el.appendChild(t);}
+  });
+  state.l1Correct=correct;state.l1Missed=missed;state.l1Wrong=wrong;
+  var realCount=ISSUES.filter(function(i){return i.real;}).length;
+  var pct=Math.round(correct/realCount*100);
+  g('l1-correct-n').textContent=correct;g('l1-missed-n').textContent=missed;g('l1-wrong-n').textContent=wrong;g('l1-pct').textContent=pct+'%';
+  g('score-bar').style.display='block';g('l1-btn-wrap').style.display='none';g('l1-next-wrap').style.display='block';
+  g('pip1').className='level-pip done';g('pip2').className='level-pip active';g('level-label').textContent='Level 2 ready';
+});
+
+g('l1-next').addEventListener('click',function(){
+  g('level1').style.display='none';g('level2').style.display='block';
+  state.phase='l2';state.l2Idx=0;g('level-label').textContent='Level 2';
+  buildDots();renderL2();
+});
+
+function buildDots(){
+  var wrap=g('l2-progress');wrap.innerHTML='';
+  L2.forEach(function(el,i){
+    var dot=document.createElement('div');
+    dot.className='issue-dot'+(i===0?' active':'');dot.id='dot-'+i;dot.textContent=(i+1);
+    wrap.appendChild(dot);
+  });
+}
+
+function renderL2(){
+  var el=L2[state.l2Idx];
+  state.l2FactSel={};
+  g('l2-subq').textContent=el.subq;
+  g('l2-issue-title').textContent=el.issueTitle;
+  g('l2-element-text').textContent=el.element;
+  g('l2-element-sub').textContent=el.sub;
+  g('l2-explain').style.display='none';
+  g('l2-check').textContent='Check Facts →';
+  g('prog-text').textContent='Element '+(state.l2Idx+1)+' of '+L2.length;
+  var tilesWrap=g('fact-tiles');tilesWrap.innerHTML='';
+  el.allFacts.forEach(function(fid){
+    var text=FACTS[fid]||fid;
+    var tile=document.createElement('div');tile.className='fact-tile';tile.textContent=text;tile.id='tile-'+fid;
+    tile.addEventListener('click',function(){
+      if(state.l2FactSel._locked)return;
+      state.l2FactSel[fid]=!state.l2FactSel[fid];
+      tile.classList.toggle('selected',!!state.l2FactSel[fid]);
+    });
+    tilesWrap.appendChild(tile);
+  });
+  L2.forEach(function(e,i){var dot=g('dot-'+i);if(dot)dot.className='issue-dot'+(i===state.l2Idx?' active':i<state.l2Idx?' done':'');});
+}
+
+g('l2-check').addEventListener('click',function(){
+  if(state.phase!=='l2')return;
+  var el=L2[state.l2Idx];
+  if(!state.l2FactSel._locked){
+    state.l2FactSel._locked=true;
+    var correct=0;
+    el.allFacts.forEach(function(fid){
+      var isKey=el.keyFacts.indexOf(fid)>=0;var sel=!!state.l2FactSel[fid];
+      var tile=g('tile-'+fid);tile.classList.remove('selected');
+      if(isKey&&sel){correct++;tile.className='fact-tile correct';}
+      else if(isKey&&!sel){tile.className='fact-tile missed-fact';}
+      else if(!isKey&&sel){tile.className='fact-tile wrong-fact';}
+      else{tile.className='fact-tile neutral';}
+    });
+    state.totalFactsCorrect+=correct;state.totalFactsTotal+=el.keyFacts.length;
+    g('l2-explain-text').textContent=el.explain;
+    g('l2-explain').style.display='block';
+    g('l2-check').textContent=state.l2Idx<L2.length-1?'Next Element →':'See Results →';
+  } else {
+    if(state.l2Idx<L2.length-1){g('dot-'+state.l2Idx).className='issue-dot done';state.l2Idx++;state.l2FactSel={};renderL2();}
+    else{showResults();}
+  }
+});
+
+function showResults(){
+  g('level2').style.display='none';g('results').style.display='block';
+  g('pip2').className='level-pip done';g('level-label').textContent='Complete';
+  var realCount=ISSUES.filter(function(i){return i.real;}).length;
+  var issuePct=Math.round(state.l1Correct/realCount*100);
+  var factPct=state.totalFactsTotal>0?Math.round(state.totalFactsCorrect/state.totalFactsTotal*100):0;
+  var combined=Math.round((issuePct+factPct)/2);
+  g('results-score').textContent=combined+'%';
+  g('results-sub').textContent=combined>=85?'No fact left behind, Counselor.':combined>=65?'Solid — a few facts slipped through.':'Keep drilling — the facts are all there.';
+  g('r-issues').textContent=state.l1Correct+'/'+realCount;
+  g('r-facts').textContent=state.totalFactsCorrect+'/'+state.totalFactsTotal;
+  g('r-total').textContent=combined+'%';
+}
+
+g('replay-btn').addEventListener('click',function(){
+  state={phase:'l1',selected:{},l1Correct:0,l1Missed:0,l1Wrong:0,l2Idx:0,l2FactSel:{},totalFactsCorrect:0,totalFactsTotal:0};
+  g('results').style.display='none';g('level2').style.display='none';g('level1').style.display='block';
+  g('score-bar').style.display='none';g('l1-btn-wrap').style.display='block';g('l1-next-wrap').style.display='none';
+  g('pip1').className='level-pip active';g('pip2').className='level-pip';g('level-label').textContent='Level 1';
+  buildL1();
+});
+
+buildL1();
+})();
+</script>
+</body>
+</html>

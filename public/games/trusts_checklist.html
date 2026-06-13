@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trusts — Checklist + Buzz Words</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+:root{
+  --bg:#0a0f0d;--surface:#101510;--border:#1e2e24;
+  --teal:#3a8a7a;--teal-bright:#5abfaa;--teal-dim:#1e5a4a;
+  --cream:#e0ece8;--muted:#6a8a7a;--text:#c0d8cc;
+  --green:#2d6a4f;--green-bright:#52b788;--red:#7a2a2a;--red-bright:#c05555;
+  --policy:#4a2a6a;--policy-bright:#9b72cf;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;min-height:100vh;}
+header{padding:20px 32px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;justify-content:space-between;align-items:flex-end;}
+.brand{font-family:'Playfair Display',serif;font-size:10pt;color:var(--teal-bright);letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px;}
+.title{font-family:'Playfair Display',serif;font-size:22pt;font-weight:900;color:var(--cream);line-height:1;}
+.subtitle{font-size:8pt;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:4px;}
+.header-right{text-align:right;display:flex;gap:20px;align-items:center;}
+.score-item{text-align:center;}
+.score-num{font-family:'Playfair Display',serif;font-size:18pt;font-weight:700;display:block;line-height:1;}
+.score-num.got{color:var(--green-bright);}.score-num.again{color:var(--red-bright);}
+.score-lbl{font-size:7pt;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.controls{padding:10px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;}
+.ctrl-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Source Serif 4',serif;font-size:8pt;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:2px;cursor:pointer;transition:all .18s;}
+.ctrl-btn:hover{border-color:var(--teal-dim);color:var(--teal-bright);}
+.ctrl-btn.active{background:var(--teal);border-color:var(--teal);color:#0a0f0d;font-weight:600;}
+main{max-width:900px;margin:0 auto;padding:28px 24px;}
+.mental{display:flex;gap:0;margin-bottom:24px;border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.step{flex:1;text-align:center;padding:10px 8px;border-right:1px solid var(--border);cursor:pointer;transition:all .2s;}
+.step:last-child{border-right:none;}
+.step:hover{background:rgba(58,138,122,.08);}
+.step-num{font-family:'Playfair Display',serif;font-size:16pt;font-weight:900;color:var(--teal-bright);display:block;line-height:1;}
+.step-lbl{font-size:7pt;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.progress-wrap{width:100%;display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.progress-bar{flex:1;height:2px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .4s;}
+.progress-text{font-size:8pt;color:var(--muted);white-space:nowrap;}
+.section{margin-bottom:16px;}
+.section-header{font-family:'Playfair Display',serif;font-size:12pt;font-weight:900;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--teal);padding:8px 14px;border-radius:2px;margin-bottom:2px;color:var(--cream);}
+.row{display:flex;align-items:center;gap:10px;padding:5px 8px;border-bottom:1px solid rgba(30,46,36,.6);cursor:pointer;transition:background .15s;position:relative;}
+.row:hover{background:rgba(58,138,122,.05);}
+.row.revealed{background:rgba(30,80,60,.1);}
+.row.marked-got{background:rgba(45,106,79,.12);}
+.row.marked-again{background:rgba(122,42,42,.12);}
+.row-indent-0{padding-left:8px;}
+.row-indent-1{padding-left:24px;}
+.row-indent-2{padding-left:40px;}
+.row-indent-3{padding-left:56px;}
+.row-label{font-size:9.5pt;min-width:210px;flex-shrink:0;line-height:1.35;color:var(--text);}
+.row-label.l1{font-weight:600;}
+.row-label.l2{font-weight:400;}
+.row-label.l3{font-weight:400;font-style:italic;font-size:8.5pt;color:var(--muted);}
+.buzz-area{display:flex;flex-wrap:wrap;gap:5px;align-items:center;flex:1;}
+.buzz-hidden{color:var(--muted);font-size:8pt;font-style:italic;}
+.tag{display:inline-block;font-family:'Playfair Display',serif;font-size:9.5pt;font-weight:700;padding:3px 10px;border-radius:2px;letter-spacing:.03em;opacity:0;transition:opacity .3s;pointer-events:none;}
+.tag.show{opacity:1;pointer-events:auto;}
+.tag.standard{background:rgba(58,138,122,.1);border:1px solid var(--teal-dim);color:var(--teal-bright);}
+.tag.policy{background:rgba(155,114,207,.1);border:1px solid var(--policy);color:var(--policy-bright);}
+.tag.note{background:rgba(58,138,122,.05);border:1px solid var(--teal-dim);color:var(--muted);font-family:'Source Serif 4',serif;font-weight:400;font-style:italic;font-size:8pt;}
+.row-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s;flex-shrink:0;}
+.row:hover .row-actions,.row.revealed .row-actions{opacity:1;}
+.act-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:7.5pt;padding:3px 8px;border-radius:2px;cursor:pointer;transition:all .15s;font-family:'Source Serif 4',serif;letter-spacing:.08em;text-transform:uppercase;}
+.act-btn.got:hover,.act-btn.got.active{background:var(--green);border-color:var(--green);color:#fff;}
+.act-btn.again:hover,.act-btn.again.active{background:var(--red);border-color:var(--red);color:#fff;}
+.summary{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:16px 20px;margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.summary-title{font-family:'Playfair Display',serif;font-size:13pt;color:var(--cream);}
+.summary-scores{display:flex;gap:20px;}
+.sum-item{text-align:center;}
+.sum-num{font-family:'Playfair Display',serif;font-size:22pt;font-weight:700;display:block;line-height:1;}
+.sum-num.got{color:var(--green-bright);}.sum-num.again{color:var(--red-bright);}
+.sum-lbl{font-size:7.5pt;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.btn-reset{background:transparent;border:1px solid var(--teal-dim);color:var(--teal-bright);font-family:'Source Serif 4',serif;font-size:9pt;letter-spacing:.1em;text-transform:uppercase;padding:9px 20px;border-radius:2px;cursor:pointer;transition:all .18s;}
+.btn-reset:hover{background:var(--teal);color:#0a0f0d;}
+.btn-reveal-all{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Source Serif 4',serif;font-size:9pt;letter-spacing:.1em;text-transform:uppercase;padding:9px 20px;border-radius:2px;cursor:pointer;transition:all .18s;}
+.btn-reveal-all:hover{border-color:var(--muted);color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="brand">LegalMinds ⚖️</div>
+    <div class="title">TRUSTS — CHECKLIST DRILL</div>
+    <div class="subtitle">Click each issue to reveal buzz words · Colleges of Law · Class of 2026</div>
+  </div>
+  <div class="header-right">
+    <div class="score-item"><span class="score-num got" id="got-count">0</span><span class="score-lbl">Got It</span></div>
+    <div class="score-item"><span class="score-num again" id="again-count">0</span><span class="score-lbl">Again</span></div>
+  </div>
+</header>
+<div class="controls">
+  <button class="ctrl-btn active" onclick="setMode('hide',this)">Hide All</button>
+  <button class="ctrl-btn" onclick="setMode('show',this)">Show All</button>
+  <button class="ctrl-btn" onclick="resetAll()">Reset</button>
+</div>
+<main>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-text" id="progress-text">0 revealed</div>
+  </div>
+  <div class="mental">
+    <div class="step" onclick="scrollTo('s1')"><span class="step-num">I</span><span class="step-lbl">Creation</span></div>
+    <div class="step" onclick="scrollTo('s2')"><span class="step-num">II</span><span class="step-lbl">Type of Trust</span></div>
+    <div class="step" onclick="scrollTo('s3')"><span class="step-num">III</span><span class="step-lbl">Supervision</span></div>
+    <div class="step" onclick="scrollTo('s4')"><span class="step-num">IV</span><span class="step-lbl">Beny Rights</span></div>
+    <div class="step" onclick="scrollTo('s5')"><span class="step-num">V</span><span class="step-lbl">Mod / Term</span></div>
+  </div>
+  <div id="checklist"></div>
+  <div class="summary">
+    <div><div class="summary-title">Progress</div><div style="font-size:8.5pt;color:var(--muted);margin-top:4px;">Click rows to reveal · Mark Got It or Again</div></div>
+    <div class="summary-scores">
+      <div class="sum-item"><span class="sum-num got" id="sum-got">0</span><span class="sum-lbl">Got It</span></div>
+      <div class="sum-item"><span class="sum-num again" id="sum-again">0</span><span class="sum-lbl">Again</span></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-reveal-all" onclick="revealAll()">Reveal All</button>
+      <button class="btn-reset" onclick="resetAll()">Reset ↺</button>
+    </div>
+  </div>
+</main>
+<script>
+const CHECKLIST=[
+  {id:'s1',type:'section',label:'I. Creation of Trust'},
+  {id:'r1',type:'row',indent:1,label:'A. Express Private Trust',buzz:[]},
+  {id:'r2',type:'row',indent:2,label:'1. Inter Vivos Trust',buzz:[{t:'Lifetime'},{t:'Potentially Revocable'}]},
+  {id:'r3',type:'row',indent:3,label:'Will Substitutes',buzz:[{t:'Avoids Probate'},{t:'Passes Outside Will'}]},
+  {id:'r4',type:'row',indent:2,label:'2. Testamentary Trust',buzz:[{t:'Created in Will'},{t:'At Death'}]},
+  {id:'r5',type:'row',indent:1,label:'B. Elements — PIRAT',buzz:[{t:'PIRAT',c:'note'}]},
+  {id:'r6',type:'row',indent:2,label:'a. Purpose',buzz:[{t:'Legal'},{t:'Not Against Public Policy'},{t:'Intent'}]},
+  {id:'r7',type:'row',indent:2,label:'b. Intent',buzz:[{t:'Explicit'},{t:'Expressed'},{t:'Immediate'}]},
+  {id:'r8',type:'row',indent:3,label:'Precatory Words',buzz:[{t:'I Hope / I Wish'},{t:'May Be Insufficient'},{t:'Extrinsic Evidence In'}]},
+  {id:'r9',type:'row',indent:2,label:'c. Res (Corpus)',buzz:[{t:'ID'},{t:'Existing'},{t:'Delivered'},{t:'Funded'}]},
+  {id:'r10',type:'row',indent:2,label:'d. Trustee',buzz:[{t:'Named in Trust'},{t:'Court Can Appoint'},{t:'Duties'}]},
+  {id:'r11',type:'row',indent:3,label:'Merger Doctrine',buzz:[{t:'Sole Trustee = Sole Beny'},{t:'Trust Fails'},{t:'Takes Outright'}]},
+  {id:'r12',type:'row',indent:2,label:'e. Ascertainable Beneficiaries',buzz:[{t:'ID'},{t:'Human'}]},
+
+  {id:'s2',type:'section',label:'II. Type of Trust'},
+  {id:'r13',type:'row',indent:1,label:'Mnemonic — PATRON SAINT SAMMY',buzz:[{t:'Pour-Over'},{t:'Secret/Semi-Secret'},{t:'Spendthrift'},{t:'Support'},{t:'Discretionary'},{t:'Blended/Protective'},{t:'Charitable'},{t:'Honorary'},{t:'Operation of Law'}]},
+  {id:'r14',type:'row',indent:1,label:'A. Pour-Over Will',buzz:[{t:'Trust'},{t:'Leftover Will'}]},
+  {id:'r15',type:'row',indent:1,label:'B. Secret Trust',buzz:[{t:'Shhh'},{t:'Need Evidence'}]},
+  {id:'r16',type:'row',indent:1,label:'B. Semi-Secret Trust',buzz:[{t:'Trust Known'},{t:'Beny Unknown'},{t:'No Evidence Allowed'}]},
+  {id:'r17',type:'row',indent:1,label:'C. Spendthrift Trust',buzz:[{t:'Spending Limit'}]},
+  {id:'r18',type:'row',indent:1,label:'D. Support Trust',buzz:[{t:'Income & Principal'},{t:'Education or Support'},{t:'Necessary'}]},
+  {id:'r19',type:'row',indent:1,label:'D. Discretionary Trust',buzz:[{t:'Pay or Withhold'}]},
+  {id:'r20',type:'row',indent:1,label:'D. Blended / Protective Trust',buzz:[{t:'Group'}]},
+  {id:'r21',type:'row',indent:1,label:'E. Charitable Trust',buzz:[{t:'Welfare'},{t:'Public at Large'},{t:'Indefinite'}]},
+  {id:'r22',type:'row',indent:2,label:'Elements',buzz:[{t:'Intent'},{t:'Purpose'},{t:'Identifiable Beny'},{t:'AG Enforces'}]},
+  {id:'r23',type:'row',indent:2,label:'Cy Pres',buzz:[{t:'Impossible'},{t:'Impracticable'},{t:'Illegal'},{t:'As Near as Possible'}]},
+  {id:'r24',type:'row',indent:1,label:'F. Honorary Trust',buzz:[{t:'Non-Charitable'},{t:'No Living Beny'}]},
+  {id:'r25',type:'row',indent:1,label:'G. Trusts by Operation of Law',buzz:[{t:'Court Imposed'}]},
+  {id:'r26',type:'row',indent:2,label:'1. Resulting Trust',buzz:[{t:'Trust Failed'}]},
+  {id:'r27',type:'row',indent:2,label:'2. Constructive Trust',buzz:[{t:'Fraud'},{t:'Unjust Enrichment'}]},
+
+  {id:'s3',type:'section',label:'III. Trust Supervision — AOL'},
+  {id:'r28',type:'row',indent:1,label:'AOL',buzz:[{t:'Authority'},{t:'Obligations'},{t:'Liabilities'}]},
+  {id:'r29',type:'row',indent:1,label:'A. Authority',buzz:[{t:'Powers in Trust Doc'},{t:'Court Granted'},{t:'Statute'}]},
+  {id:'r30',type:'row',indent:1,label:'B. Obligations — Duty of Loyalty',buzz:[{t:'No Self-Dealing'},{t:'Beny Interest First'},{t:'Avoid Conflicts'}]},
+  {id:'r31',type:'row',indent:2,label:'Prudent Investor Standard',buzz:[{t:'Portfolio as Whole'},{t:'Diversification'},{t:'UPIA'}]},
+  {id:'r32',type:'row',indent:2,label:'Duty to Account & Inform',buzz:[{t:'Non-Waivable'},{t:'Keep Informed'},{t:'Affirmative'}]},
+  {id:'r33',type:'row',indent:2,label:'Duty Not to Commingle',buzz:[{t:'Keep Separate'},{t:'Earmarked'}]},
+  {id:'r34',type:'row',indent:2,label:'Duty of Impartiality',buzz:[{t:'Fair to All'},{t:'Income vs. Remainder'}]},
+  {id:'r35',type:'row',indent:1,label:'C. Liabilities',buzz:[{t:'Breach of Duty'},{t:'Appreciation Damages'},{t:'Not Punitive'}]},
+  {id:'r36',type:'row',indent:1,label:'D. Third Party Liability',buzz:[{t:'Co-Trustee'},{t:'Participate Fully'},{t:'Cannot Delegate Fiduciary'}]},
+  {id:'r37',type:'row',indent:1,label:'E. Allocation of Principal/Income/Expenses',buzz:[{t:'Impartiality'},{t:'Income to Current Beny'},{t:'Principal to Remainder'}]},
+
+  {id:'s4',type:'section',label:'IV. Beneficiaries\' Rights'},
+  {id:'r38',type:'row',indent:1,label:'A. Alienability',buzz:[{t:'Freely Transferable'},{t:'Writing if Real Property'},{t:'Exceptions: Spendthrift / Support / Protective'}]},
+  {id:'r39',type:'row',indent:1,label:'Creditor Attachment',buzz:[{t:'Can Attach'},{t:'Spendthrift: After Receipt'},{t:'Support: Exceeds Need or Support Debt'},{t:'Discretionary: Trustee Controls'}]},
+
+  {id:'s5',type:'section',label:'V. Modification / Termination'},
+  {id:'r40',type:'row',indent:1,label:'A. Amendment / Revocation',buzz:[]},
+  {id:'r41',type:'row',indent:2,label:'Modification',buzz:[{t:'Changed Circumstances'},{t:'Power Reserved'},{t:'Majority: Express'},{t:'Minority: Unless Irrevocable'}]},
+  {id:'r42',type:'row',indent:2,label:'Revocation',buzz:[{t:'Majority: Right Reserved'},{t:'Minority: Unless Irrevocable'},{t:'Joint Settlors: Each Revokes Own Portion'}]},
+  {id:'r43',type:'row',indent:1,label:'B. Termination of Trust',buzz:[]},
+  {id:'r44',type:'row',indent:2,label:'1. Trustee',buzz:[{t:'As Provided in Trust Doc'}]},
+  {id:'r45',type:'row',indent:2,label:'2. Beneficiary',buzz:[{t:'All Competent'},{t:'All Consent'},{t:"Doesn't Frustrate Material Purpose"}]},
+  {id:'r46',type:'row',indent:2,label:'3. Judicial',buzz:[{t:'Purpose Frustrated'},{t:'Impossible / Illegal'},{t:'Changed Circumstances'}]},
+  {id:'r47',type:'row',indent:2,label:'4. Operation of Law',buzz:[{t:'Merger Doctrine'},{t:'Illegal Purpose'}]},
+];
+
+let revealed={},marked={},mode='hide';
+
+function build(){
+  const container=document.getElementById('checklist');container.innerHTML='';
+  CHECKLIST.forEach(item=>{
+    if(item.type==='section'){
+      const sec=document.createElement('div');sec.className='section';sec.id=item.id;
+      const h=document.createElement('div');h.className='section-header';h.textContent=item.label;
+      sec.appendChild(h);container.appendChild(sec);return;
+    }
+    const lastSection=container.lastElementChild;
+    const row=document.createElement('div');
+    row.className=`row row-indent-${item.indent}`;row.id=item.id;
+    if(marked[item.id]==='got')row.classList.add('marked-got');
+    if(marked[item.id]==='again')row.classList.add('marked-again');
+    if(revealed[item.id]||mode==='show')row.classList.add('revealed');
+    const lbl=document.createElement('div');
+    lbl.className=`row-label l${Math.min(item.indent,3)}`;lbl.textContent=item.label;
+    row.appendChild(lbl);
+    const buzzArea=document.createElement('div');buzzArea.className='buzz-area';
+    if(item.buzz&&item.buzz.length>0){
+      if(!revealed[item.id]&&mode!=='show'){
+        const hint=document.createElement('span');hint.className='buzz-hidden';hint.textContent='— click to reveal';buzzArea.appendChild(hint);
+      }
+      item.buzz.forEach(b=>{
+        const tag=document.createElement('span');
+        tag.className=`tag ${b.c||'standard'}`;
+        if(revealed[item.id]||mode==='show')tag.classList.add('show');
+        tag.textContent=b.t;buzzArea.appendChild(tag);
+      });
+      if(revealed[item.id]||mode==='show'){
+        const actions=document.createElement('div');actions.className='row-actions';
+        const gotBtn=document.createElement('button');gotBtn.className='act-btn got'+(marked[item.id]==='got'?' active':'');gotBtn.textContent='✓ Got It';
+        gotBtn.onclick=(e)=>{e.stopPropagation();markRow(item.id,'got');};
+        const againBtn=document.createElement('button');againBtn.className='act-btn again'+(marked[item.id]==='again'?' active':'');againBtn.textContent='↺ Again';
+        againBtn.onclick=(e)=>{e.stopPropagation();markRow(item.id,'again');};
+        actions.appendChild(gotBtn);actions.appendChild(againBtn);row.appendChild(actions);
+      }
+      row.onclick=()=>revealRow(item.id);
+    }
+    row.appendChild(buzzArea);
+    if(lastSection)lastSection.appendChild(row);
+  });
+  updateProgress();
+}
+
+function revealRow(id){revealed[id]=true;build();}
+function markRow(id,mark){if(marked[id]===mark){delete marked[id];}else{marked[id]=mark;}updateProgress();build();}
+function revealAll(){CHECKLIST.forEach(item=>{if(item.type==='row'&&item.buzz&&item.buzz.length)revealed[item.id]=true;});build();}
+function resetAll(){revealed={};marked={};mode='hide';document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));document.querySelector('.ctrl-btn').classList.add('active');build();}
+function setMode(m,btn){mode=m;document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(m==='show')revealAll();else build();}
+function updateProgress(){
+  const rows=CHECKLIST.filter(i=>i.type==='row'&&i.buzz&&i.buzz.length>0);
+  const rev=rows.filter(i=>revealed[i.id]||mode==='show').length;
+  const got=Object.values(marked).filter(v=>v==='got').length;
+  const again=Object.values(marked).filter(v=>v==='again').length;
+  const pct=rows.length?(rev/rows.length*100):0;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-text').textContent=rev+' of '+rows.length+' revealed';
+  document.getElementById('got-count').textContent=got;document.getElementById('again-count').textContent=again;
+  document.getElementById('sum-got').textContent=got;document.getElementById('sum-again').textContent=again;
+}
+function scrollTo(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+build();
+</script>
+</body>
+</html>

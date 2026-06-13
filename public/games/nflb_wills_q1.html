@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Fact Left Behind — Wills</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 860px; }
+
+/* HEADER */
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(201,151,58,0.25); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header-left h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; letter-spacing: 0.04em; }
+#header-left h1 span { color: #c9973a; }
+#header-left p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#level-indicator { display: flex; gap: 8px; align-items: center; }
+.level-pip { width: 32px; height: 6px; border-radius: 3px; background: #1a2f4a; transition: background 0.3s; }
+.level-pip.active { background: #c9973a; }
+.level-pip.done { background: #1d9e75; }
+#level-label { font-size: 12px; color: #c9973a; font-weight: 500; margin-left: 4px; }
+
+/* HYPO */
+#hypo-box { background: #0f1e35; border-radius: 12px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(201,151,58,0.15); }
+#hypo-title { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#hypo-text { font-size: 13px; color: #d0dce8; line-height: 1.75; }
+#hypo-text .fact { background: rgba(201,151,58,0.15); border-radius: 3px; padding: 1px 4px; cursor: default; transition: background 0.2s; }
+#hypo-text .fact.highlight { background: rgba(201,151,58,0.45); color: #f5f0e8; }
+
+/* MAIN PANEL */
+#panel { background: #0f1e35; border-radius: 12px; padding: 20px; }
+
+/* LEVEL 1 */
+#l1-intro { font-size: 13px; color: #6b8aaa; margin-bottom: 16px; line-height: 1.5; }
+#l1-question { font-size: 14px; font-weight: 500; color: #f5f0e8; margin-bottom: 4px; }
+#l1-sub { font-size: 11px; color: #6b8aaa; margin-bottom: 18px; }
+#issue-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.issue-item { display: flex; align-items: flex-start; gap: 12px; background: #1a2f4a; border-radius: 8px; padding: 13px 15px; cursor: pointer; border: 1.5px solid #1a2f4a; transition: all 0.15s; }
+.issue-item:hover { border-color: #2a4a6a; }
+.issue-item.selected { background: #1e3a58; border-color: #c9973a; }
+.issue-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #2a4a6a; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.issue-item.selected .issue-check { background: #c9973a; border-color: #c9973a; }
+.issue-check-mark { font-size: 12px; color: #0f1e35; display: none; }
+.issue-item.selected .issue-check-mark { display: block; }
+.issue-text { font-size: 13px; color: #a0b8cc; line-height: 1.4; }
+.issue-item.selected .issue-text { color: #f5f0e8; }
+
+/* RESULTS STATES */
+.issue-item.correct { background: #0f3d2a; border-color: #1d9e75; }
+.issue-item.correct .issue-text { color: #9fe1cb; }
+.issue-item.correct .issue-check { background: #1d9e75; border-color: #1d9e75; }
+.issue-item.missed { background: #2a1a0a; border-color: #c9973a; }
+.issue-item.missed .issue-text { color: #f5d06a; }
+.issue-item.missed .issue-check { border-color: #c9973a; }
+.issue-item.wrong { background: #3d1515; border-color: #e24b4a; }
+.issue-item.wrong .issue-text { color: #f09595; }
+.result-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
+.tag-correct { background: rgba(29,158,117,0.2); color: #1d9e75; }
+.tag-missed { background: rgba(201,151,58,0.2); color: #c9973a; }
+.tag-wrong { background: rgba(226,75,74,0.2); color: #e24b4a; }
+
+/* LEVEL 2 */
+#l2-progress { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.issue-dot { width: 28px; height: 28px; border-radius: 50%; background: #1a2f4a; border: 2px solid #2a4a6a; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #6b8aaa; cursor: default; transition: all 0.2s; }
+.issue-dot.active { border-color: #c9973a; background: rgba(201,151,58,0.15); color: #c9973a; }
+.issue-dot.done { border-color: #1d9e75; background: rgba(29,158,117,0.15); color: #9fe1cb; }
+
+#l2-issue-title { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; }
+#l2-element-box { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(201,151,58,0.2); }
+#l2-element-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+#l2-element-text { font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.5; }
+#l2-element-sub { font-size: 12px; color: #6b8aaa; margin-top: 4px; }
+
+#l2-instruction { font-size: 11px; color: #6b8aaa; margin-bottom: 10px; }
+#fact-tiles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.fact-tile { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #2a4a6a; background: #1a2f4a; color: #a0b8cc; font-size: 12px; cursor: pointer; transition: all 0.15s; line-height: 1.4; }
+.fact-tile:hover { border-color: #c9973a; color: #f5f0e8; }
+.fact-tile.selected { background: #1e3a58; border-color: #c9973a; color: #f5f0e8; }
+.fact-tile.correct { background: #0f3d2a; border-color: #1d9e75; color: #9fe1cb; cursor: default; }
+.fact-tile.missed-fact { background: #3d2f0a; border-color: #c9973a; color: #f5d06a; cursor: default; }
+.fact-tile.wrong-fact { background: #3d1515; border-color: #e24b4a; color: #f09595; cursor: default; }
+.fact-tile.neutral { background: #1a2f4a; border-color: #2a4a6a; color: #6b8aaa; cursor: default; }
+
+#l2-explain { display: none; background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(201,151,58,0.3); }
+#l2-explain-text { font-size: 13px; color: #a0b8cc; line-height: 1.6; }
+
+/* SCORE BAR */
+#score-bar { background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; display: none; }
+#score-bar-title { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+#score-cells { display: flex; gap: 10px; }
+.score-cell { flex: 1; text-align: center; background: #0f1e35; border-radius: 6px; padding: 10px 6px; }
+.score-cell-n { font-size: 18px; font-weight: 500; color: #c9973a; }
+.score-cell-l { font-size: 9px; color: #6b8aaa; text-transform: uppercase; margin-top: 2px; }
+
+/* BUTTONS */
+.btn-primary { width: 100%; background: #c9973a; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; }
+.btn-secondary { width: 100%; background: #1a2f4a; border: 1.5px solid #2a4a6a; border-radius: 8px; padding: 12px; font-size: 14px; color: #a0b8cc; cursor: pointer; font-family: inherit; }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn-primary, .btn-row .btn-secondary { flex: 1; }
+
+/* RESULTS SCREEN */
+#results { display: none; text-align: center; padding: 32px 20px; background: #0f1e35; border-radius: 12px; }
+#results h2 { font-size: 22px; font-weight: 500; color: #f5f0e8; margin-bottom: 6px; }
+#results-score { font-size: 54px; font-weight: 500; color: #c9973a; line-height: 1; margin-bottom: 4px; }
+#results-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-cell-n { font-size: 20px; font-weight: 500; color: #c9973a; }
+.r-cell-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+
+#prog-text { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div id="header-left">
+      <h1>No Fact <span>Left Behind</span></h1>
+      <p>Wills · Question 1 · Tess's Estate</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div id="level-indicator">
+        <div class="level-pip active" id="pip1"></div>
+        <div class="level-pip" id="pip2"></div>
+        <span id="level-label">Level 1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HYPO -->
+  <div id="hypo-box">
+    <div id="hypo-title">Fact Pattern — Question #1</div>
+    <div id="hypo-text">Tess was a widow with two adult children: <span class="fact" id="f-sam">Sam, from whom Tess was estranged</span>, and <span class="fact" id="f-donna">Donna, to whom Tess was devoted</span>. In 1992, <span class="fact" id="f-1992will">Tess validly executed a typewritten will</span> containing: (A) <span class="fact" id="f-fred">My Bigco stock to my friend, Fred</span>; (B) <span class="fact" id="f-residue92">The residue of my estate to my daughter, Donna</span>.<br><br>
+    During the next few years Tess and Sam <span class="fact" id="f-reconciled">reconciled</span>. In 1995, Tess prepared another typewritten will containing: (A) <span class="fact" id="f-revoke">"I hereby revoke all prior wills"</span>; (B) <span class="fact" id="f-sam-stock">My Bigco stock to my son, Sam</span>; (C) <span class="fact" id="f-residue95">The residue of my estate to my daughter, Donna</span>.<br><br>
+    Tess took this will to the house of Wit. <span class="fact" id="f-wit-decl">Tess declared to Wit that it was her will</span>, and <span class="fact" id="f-wit-sign">signed the will in Wit's presence</span>. <span class="fact" id="f-wit-witness">Wit then signed the will as witness, although he did not know its contents</span>.<br><br>
+    Tess next took the will to the house of Ness. <span class="fact" id="f-ness-ask">Tess asked Ness to "witness this paper."</span> <span class="fact" id="f-ness-sign">Ness signed the will as witness</span>, <span class="fact" id="f-ness-nodont">although he did not understand that it was a will</span>.<br><br>
+    After Tess's death, both wills were found in her safe deposit box. <span class="fact" id="f-x">The 1992 will had a large "X" drawn across all of its pages</span>. <span class="fact" id="f-95unmarked">The 1995 will was unmarked</span>.<br><br>
+    Tess is survived by <span class="fact" id="f-survivors">Donna, Sam and Fred</span>. Her net estate: <span class="fact" id="f-estate">Bigco stock ($400,000) and $600,000 in cash</span>.</div>
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div id="panel">
+
+    <!-- LEVEL 1 -->
+    <div id="level1">
+      <div id="l1-question">Spot the Issues</div>
+      <div id="l1-sub">Check every legal issue raised by this fact pattern. Include all issues you would address in your essay — even ones that resolve quickly.</div>
+      <div id="issue-grid"></div>
+      <div id="score-bar">
+        <div id="score-bar-title">Level 1 Results</div>
+        <div id="score-cells">
+          <div class="score-cell"><div class="score-cell-n" id="l1-correct-n">0</div><div class="score-cell-l">Spotted</div></div>
+          <div class="score-cell"><div class="score-cell-n" id="l1-missed-n">0</div><div class="score-cell-l">Missed</div></div>
+          <div class="score-cell"><div class="score-cell-n" id="l1-wrong-n">0</div><div class="score-cell-l">False alarms</div></div>
+          <div class="score-cell"><div class="score-cell-n" id="l1-pct">0%</div><div class="score-cell-l">Accuracy</div></div>
+        </div>
+      </div>
+      <div id="l1-btn-wrap">
+        <button class="btn-primary" id="l1-submit">Check My Issues →</button>
+      </div>
+      <div id="l1-next-wrap" style="display:none;">
+        <button class="btn-primary" id="l1-next">Level 2 — No Fact Left Behind →</button>
+      </div>
+    </div>
+
+    <!-- LEVEL 2 -->
+    <div id="level2" style="display:none;">
+      <div id="l2-progress"></div>
+      <div id="l2-issue-title"></div>
+      <div id="l2-element-box">
+        <div id="l2-element-label">Element / Rule</div>
+        <div id="l2-element-text"></div>
+        <div id="l2-element-sub"></div>
+      </div>
+      <div id="l2-instruction">Tap every fact from the hypo that is legally operative for this element.</div>
+      <div id="fact-tiles"></div>
+      <div id="l2-explain">
+        <div id="l2-explain-text"></div>
+      </div>
+      <div class="btn-row" id="l2-btn-row">
+        <button class="btn-primary" id="l2-check">Check Facts →</button>
+      </div>
+      <div id="prog-text"></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results">
+      <h2>No Fact Left Behind.</h2>
+      <div id="results-score"></div>
+      <div id="results-sub"></div>
+      <div id="results-grid">
+        <div class="r-cell"><div class="r-cell-n" id="r-issues"></div><div class="r-cell-l">Issues spotted</div></div>
+        <div class="r-cell"><div class="r-cell-n" id="r-facts"></div><div class="r-cell-l">Facts deployed</div></div>
+        <div class="r-cell"><div class="r-cell-n" id="r-total"></div><div class="r-cell-l">Combined %</div></div>
+      </div>
+      <button class="btn-primary" id="restart-btn">Play again</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+var ISSUES = [
+  // REAL ISSUES
+  { id:'validity', text:'Validity of Tess\'s 1995 will — formal will requirements', real:true, seq:1 },
+  { id:'writing', text:'Writing requirement — 1995 will is a typewritten document', real:true, seq:2 },
+  { id:'signature', text:'Signature requirement — testator signed or acknowledged', real:true, seq:3 },
+  { id:'witnesses', text:'Witness requirement — two witnesses; understanding the instrument is a will', real:true, seq:4 },
+  { id:'ness', text:'Ness\'s competency — did Ness understand the instrument was Tess\'s will?', real:true, seq:5 },
+  { id:'revoke-expr', text:'Express revocation of 1992 will by subsequent testamentary instrument', real:true, seq:6 },
+  { id:'revoke-phys', text:'Revocation by physical act — "X" drawn across 1992 will', real:true, seq:7 },
+  { id:'drr', text:'Dependent Relative Revocation (DRR) — revival of 1992 will', real:true, seq:8 },
+  { id:'intestate', text:'Intestate succession — distribution if both wills fail', real:true, seq:9 },
+  // DECOYS
+  { id:'capacity', text:'Testamentary capacity — Tess lacked sound mind', real:false },
+  { id:'undue', text:'Undue influence — Sam influenced Tess to change the will', real:false },
+  { id:'fraud', text:'Fraud — Tess was deceived into signing the 1995 will', real:false },
+  { id:'ademption', text:'Ademption — the Bigco stock was no longer in the estate', real:false },
+  { id:'holographic', text:'Holographic will — 1995 will qualifies as a holographic will', real:false },
+];
+
+var L2_ELEMENTS = [
+  {
+    issueId: 'witnesses',
+    issueTitle: 'Validity of 1995 Will — Witness Requirement',
+    element: 'Two witnesses — each present at the same time must witness either the signing of the will or the testator\'s acknowledgment of the signature.',
+    sub: 'Were Wit and Ness present at the same time?',
+    keyFacts: ['f-wit-decl','f-wit-sign','f-wit-witness','f-ness-ask','f-ness-sign','f-ness-nodont'],
+    allFacts: ['f-wit-decl','f-wit-sign','f-wit-witness','f-ness-ask','f-ness-sign','f-ness-nodont','f-1992will','f-revoke','f-reconciled','f-x'],
+    explain: 'Wit witnessed Tess\'s acknowledgment ("declared to Wit that it was her will") and signing — Wit is satisfied. But Wit and Ness witnessed separately at different houses, so they were NOT present at the same time. This is the core validity problem for the 1995 will under California law.'
+  },
+  {
+    issueId: 'ness',
+    issueTitle: 'Ness — Does a Witness Need to Know the Instrument is a Will?',
+    element: 'Witnesses must understand that the instrument they are signing is the testator\'s will.',
+    sub: 'Ness was asked to "witness this paper" — did he understand it was a will?',
+    keyFacts: ['f-ness-ask','f-ness-nodont'],
+    allFacts: ['f-ness-ask','f-ness-sign','f-ness-nodont','f-wit-decl','f-wit-witness','f-1992will'],
+    explain: '"Witness this paper" is the critical phrase. Ness signed "although he did not understand that it was a will." Under California law, a witness must understand the instrument is the testator\'s will. Ness fails this requirement, making the 1995 will invalid on this basis alone — even before the simultaneous presence problem.'
+  },
+  {
+    issueId: 'revoke-expr',
+    issueTitle: 'Express Revocation — Subsequent Testamentary Instrument',
+    element: 'A valid subsequent testamentary instrument expressly revoking a prior will effectively revokes it. But if the subsequent instrument is itself invalid, the express revocation clause fails.',
+    sub: 'Does the "I hereby revoke all prior wills" clause in the invalid 1995 will revoke the 1992 will?',
+    keyFacts: ['f-revoke','f-ness-nodont','f-ness-ask'],
+    allFacts: ['f-revoke','f-1992will','f-ness-nodont','f-ness-ask','f-wit-witness','f-95unmarked','f-x'],
+    explain: 'The 1995 will contains an express revocation clause ("I hereby revoke all prior wills"). However, if the 1995 will is invalid — because Ness did not understand it was a will and the witnesses were not simultaneously present — the express revocation clause fails with it. An invalid instrument cannot effectively revoke a prior valid will.'
+  },
+  {
+    issueId: 'revoke-phys',
+    issueTitle: 'Revocation by Physical Act — The "X" on the 1992 Will',
+    element: 'A will may be revoked by a physical act (burning, tearing, canceling, obliterating, destroying) performed with the intent to revoke.',
+    sub: 'Does the "X" across the 1992 will constitute a valid revocation by physical act?',
+    keyFacts: ['f-x','f-95unmarked'],
+    allFacts: ['f-x','f-95unmarked','f-revoke','f-1992will','f-reconciled','f-sam-stock'],
+    explain: 'The large "X" drawn across ALL pages of the 1992 will is a valid revocation by physical act — it constitutes cancellation or obliteration with apparent intent to revoke. The 1995 will was found unmarked, confirming Tess did not intend to physically revoke it. So: 1992 will = physically revoked; 1995 will = not physically revoked but invalid.'
+  },
+  {
+    issueId: 'drr',
+    issueTitle: 'Dependent Relative Revocation (DRR)',
+    element: 'DRR: A court may disregard a revocation if (1) the revocation was based on a mistake of law or fact; (2) testator would not have revoked but for that mistake; AND (3) disregarding the revocation brings the result closer to testator\'s intent than intestacy.',
+    sub: 'Did Tess revoke the 1992 will in reliance on the 1995 will being valid? Would she have revoked if she knew it was invalid?',
+    keyFacts: ['f-x','f-reconciled','f-sam-stock','f-residue95','f-residue92'],
+    allFacts: ['f-x','f-reconciled','f-sam-stock','f-residue95','f-residue92','f-revoke','f-1992will','f-donna','f-survivors'],
+    explain: 'Tess drew the "X" on the 1992 will apparently in reliance on the 1995 will being valid. The fact that she "reconciled" with Sam and changed the Bigco stock gift to Sam (while keeping the residue to Donna) shows she likely would not have revoked the 1992 will if she knew the 1995 will was invalid. Under DRR, a court could reinstate the 1992 will — the result (Fred gets Bigco stock; Donna gets residue) is closer to Tess\'s intent than intestacy (Sam and Donna split everything).'
+  },
+  {
+    issueId: 'intestate',
+    issueTitle: 'Intestate Succession — Distribution if Both Wills Fail',
+    element: 'If both wills are invalid and DRR does not apply, the estate passes by intestate succession. Under California intestacy, an estate passes to the decedent\'s children in equal shares. Friends are not heirs.',
+    sub: 'Who takes under intestacy — and what happens to Fred?',
+    keyFacts: ['f-survivors','f-sam','f-donna','f-fred','f-estate'],
+    allFacts: ['f-survivors','f-sam','f-donna','f-fred','f-estate','f-reconciled','f-residue92','f-1992will'],
+    explain: '"Friend, Fred" is the critical fact here. Fred is not an heir under intestacy — only blood relatives and spouses inherit. Tess\'s two adult children — Sam and Donna — each take one-half of the estate: one-half of the Bigco stock ($200K each) and one-half of the cash ($300K each). Fred takes nothing. The estrangement and reconciliation are relevant to DRR but do not affect intestate shares.'
+  },
+];
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+var state = {
+  phase: 'l1', // 'l1', 'l1-result', 'l2', 'results'
+  selected: {},
+  l1Correct: 0, l1Missed: 0, l1Wrong: 0,
+  l2Idx: 0,
+  l2FactSel: {},
+  l2Scores: [], // array of {correct, missed, wrong} per element
+  totalFactsCorrect: 0, totalFactsTotal: 0,
+};
+
+function g(id){ return document.getElementById(id); }
+
+// ─── LEVEL 1 ─────────────────────────────────────────────────────────────────
+function buildL1(){
+  var grid = g('issue-grid');
+  grid.innerHTML = '';
+  ISSUES.forEach(function(issue){
+    var div = document.createElement('div');
+    div.className = 'issue-item';
+    div.id = 'issue-' + issue.id;
+    div.innerHTML = '<div class="issue-check"><span class="issue-check-mark">✓</span></div><div class="issue-text">'+issue.text+'</div>';
+    div.addEventListener('click', function(){
+      if(state.phase !== 'l1') return;
+      state.selected[issue.id] = !state.selected[issue.id];
+      div.classList.toggle('selected', !!state.selected[issue.id]);
+    });
+    grid.appendChild(div);
+  });
+}
+
+g('l1-submit').addEventListener('click', function(){
+  if(state.phase !== 'l1') return;
+  state.phase = 'l1-result';
+
+  var correct=0, missed=0, wrong=0;
+  ISSUES.forEach(function(issue){
+    var el = g('issue-' + issue.id);
+    var sel = !!state.selected[issue.id];
+    if(issue.real && sel){ correct++; el.classList.add('correct'); var t=document.createElement('span'); t.className='result-tag tag-correct'; t.textContent='✓ Spotted'; el.appendChild(t); }
+    else if(issue.real && !sel){ missed++; el.classList.add('missed'); var t=document.createElement('span'); t.className='result-tag tag-missed'; t.textContent='⚠ Missed'; el.appendChild(t); }
+    else if(!issue.real && sel){ wrong++; el.classList.add('wrong'); var t=document.createElement('span'); t.className='result-tag tag-wrong'; t.textContent='✗ False alarm'; el.appendChild(t); }
+  });
+
+  state.l1Correct = correct;
+  state.l1Missed = missed;
+  state.l1Wrong = wrong;
+
+  var realCount = ISSUES.filter(function(i){return i.real;}).length;
+  var pct = Math.round(correct/realCount*100);
+  g('l1-correct-n').textContent = correct;
+  g('l1-missed-n').textContent = missed;
+  g('l1-wrong-n').textContent = wrong;
+  g('l1-pct').textContent = pct + '%';
+  g('score-bar').style.display = 'block';
+  g('l1-btn-wrap').style.display = 'none';
+  g('l1-next-wrap').style.display = 'block';
+
+  g('pip1').classList.remove('active');
+  g('pip1').classList.add('done');
+  g('pip2').classList.add('active');
+  g('level-label').textContent = 'Level 2 ready';
+});
+
+g('l1-next').addEventListener('click', function(){
+  g('level1').style.display = 'none';
+  g('level2').style.display = 'block';
+  state.phase = 'l2';
+  state.l2Idx = 0;
+  g('level-label').textContent = 'Level 2';
+  buildL2Progress();
+  renderL2();
+});
+
+// ─── LEVEL 2 ─────────────────────────────────────────────────────────────────
+function buildL2Progress(){
+  var wrap = g('l2-progress');
+  wrap.innerHTML = '';
+  L2_ELEMENTS.forEach(function(el, i){
+    var dot = document.createElement('div');
+    dot.className = 'issue-dot' + (i===0?' active':'');
+    dot.id = 'dot-'+i;
+    dot.textContent = (i+1);
+    wrap.appendChild(dot);
+  });
+}
+
+function renderL2(){
+  var el = L2_ELEMENTS[state.l2Idx];
+  state.l2FactSel = {};
+  g('l2-issue-title').textContent = el.issueTitle;
+  g('l2-element-text').textContent = el.element;
+  g('l2-element-sub').textContent = el.sub;
+  g('l2-explain').style.display = 'none';
+  g('l2-check').style.display = 'block';
+  g('l2-check').textContent = 'Check Facts →';
+  g('prog-text').textContent = 'Element ' + (state.l2Idx+1) + ' of ' + L2_ELEMENTS.length;
+
+  // Build fact tiles
+  var tilesWrap = g('fact-tiles');
+  tilesWrap.innerHTML = '';
+  el.allFacts.forEach(function(fid){
+    var factEl = document.getElementById(fid);
+    var text = factEl ? factEl.textContent : fid;
+    var tile = document.createElement('div');
+    tile.className = 'fact-tile';
+    tile.textContent = text;
+    tile.id = 'tile-'+fid;
+    tile.addEventListener('click', function(){
+      if(state.l2FactSel._locked) return;
+      state.l2FactSel[fid] = !state.l2FactSel[fid];
+      tile.classList.toggle('selected', !!state.l2FactSel[fid]);
+    });
+    tilesWrap.appendChild(tile);
+  });
+
+  // Update dots
+  L2_ELEMENTS.forEach(function(e, i){
+    var dot = g('dot-'+i);
+    dot.className = 'issue-dot' + (i===state.l2Idx?' active':i<state.l2Idx?' done':'');
+  });
+}
+
+g('l2-check').addEventListener('click', function(){
+  if(state.phase !== 'l2') return;
+  var el = L2_ELEMENTS[state.l2Idx];
+  state.l2FactSel._locked = true;
+
+  var correct=0, missed=0, wrong=0;
+  el.allFacts.forEach(function(fid){
+    var isKey = el.keyFacts.indexOf(fid) >= 0;
+    var sel = !!state.l2FactSel[fid];
+    var tile = g('tile-'+fid);
+    tile.classList.remove('selected');
+    if(isKey && sel){ correct++; tile.className='fact-tile correct'; }
+    else if(isKey && !sel){ missed++; tile.className='fact-tile missed-fact'; }
+    else if(!isKey && sel){ wrong++; tile.className='fact-tile wrong-fact'; }
+    else{ tile.className='fact-tile neutral'; }
+  });
+
+  state.l2Scores.push({correct:correct, missed:missed, wrong:wrong, total:el.keyFacts.length});
+  state.totalFactsCorrect += correct;
+  state.totalFactsTotal += el.keyFacts.length;
+
+  g('l2-explain-text').textContent = el.explain;
+  g('l2-explain').style.display = 'block';
+
+  g('l2-check').textContent = state.l2Idx < L2_ELEMENTS.length-1 ? 'Next Element →' : 'See Results →';
+  g('l2-check').onclick = function(){
+    if(state.l2Idx < L2_ELEMENTS.length-1){
+      g('dot-'+state.l2Idx).className='issue-dot done';
+      state.l2Idx++;
+      state.l2FactSel = {};
+      renderL2();
+    } else {
+      showResults();
+    }
+  };
+});
+
+// ─── RESULTS ─────────────────────────────────────────────────────────────────
+function showResults(){
+  g('level2').style.display = 'none';
+  g('results').style.display = 'block';
+  g('pip2').classList.remove('active');
+  g('pip2').classList.add('done');
+  g('level-label').textContent = 'Complete';
+
+  var realCount = ISSUES.filter(function(i){return i.real;}).length;
+  var issuePct = Math.round(state.l1Correct/realCount*100);
+  var factPct = state.totalFactsTotal > 0 ? Math.round(state.totalFactsCorrect/state.totalFactsTotal*100) : 0;
+  var combined = Math.round((issuePct + factPct)/2);
+
+  g('results-score').textContent = combined + '%';
+  g('results-sub').textContent = combined>=85?'No fact left behind, Counselor.':combined>=65?'Solid — a few facts slipped through.':'Keep drilling — the facts are all there.';
+  g('r-issues').textContent = state.l1Correct + '/' + realCount;
+  g('r-facts').textContent = state.totalFactsCorrect + '/' + state.totalFactsTotal;
+  g('r-total').textContent = combined + '%';
+}
+
+g('restart-btn').addEventListener('click', function(){
+  state = { phase:'l1', selected:{}, l1Correct:0, l1Missed:0, l1Wrong:0, l2Idx:0, l2FactSel:{}, l2Scores:[], totalFactsCorrect:0, totalFactsTotal:0 };
+  g('results').style.display='none';
+  g('level2').style.display='none';
+  g('level1').style.display='block';
+  g('score-bar').style.display='none';
+  g('l1-btn-wrap').style.display='block';
+  g('l1-next-wrap').style.display='none';
+  g('pip1').className='level-pip active';
+  g('pip2').className='level-pip';
+  g('level-label').textContent='Level 1';
+  buildL1();
+});
+
+buildL1();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wills — Interactive Flashcard Drill</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 780px; }
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(201,151,58,0.25); display: flex; align-items: center; justify-content: space-between; }
+#header h1 { font-size: 17px; font-weight: 500; color: #f5f0e8; }
+#header h1 span { color: #c9973a; font-style: italic; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#stats { display: flex; gap: 20px; }
+.stat { text-align: center; }
+.stat-n { font-size: 16px; font-weight: 500; color: #c9973a; }
+.stat-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; }
+#main { background: #0f1e35; border-radius: 12px; padding: 20px; }
+#pb-wrap { height: 3px; background: #1a2f4a; border-radius: 2px; margin-bottom: 18px; }
+#pb { height: 3px; background: #c9973a; border-radius: 2px; transition: width 0.4s; width: 0%; }
+#tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.tab { padding: 4px 11px; font-size: 10px; border-radius: 20px; border: 1px solid #2a4a6a; background: transparent; color: #6b8aaa; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.tab.active { background: #c9973a; border-color: #c9973a; color: #0f1e35; font-weight: 500; }
+#cat-badge { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; min-height: 16px; }
+#card { background: #1a2f4a; border-radius: 10px; border: 1px solid rgba(201,151,58,0.15); overflow: hidden; margin-bottom: 14px; cursor: pointer; transition: border-color 0.2s; }
+#card:hover { border-color: rgba(201,151,58,0.4); }
+#card-q { padding: 18px 20px; font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.6; }
+#card-divider { height: 1px; background: rgba(201,151,58,0.15); display: none; }
+#card-a { padding: 16px 20px; font-size: 13px; color: #9fe1cb; line-height: 1.65; display: none; }
+#tap-hint { text-align: center; padding: 10px; font-size: 11px; color: #6b8aaa; }
+#scorebtns { display: none; gap: 8px; margin-bottom: 14px; }
+#got-btn { flex: 1; background: #0f3d2a; border: 1.5px solid #1d9e75; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #9fe1cb; cursor: pointer; font-family: inherit; }
+#missed-btn { flex: 1; background: #3d1515; border: 1.5px solid #e24b4a; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #f09595; cursor: pointer; font-family: inherit; }
+#prog { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 10px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 20px; font-weight: 500; color: #f5f0e8; margin-bottom: 8px; }
+#r-pct { font-size: 52px; font-weight: 500; color: #c9973a; line-height: 1; margin-bottom: 4px; }
+#r-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#r-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-n { font-size: 20px; font-weight: 500; color: #c9973a; }
+.r-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+#restart { background: #c9973a; border: none; border-radius: 8px; padding: 13px 32px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div>
+      <h1>LEGAL<span>MINDS</span> — Wills</h1>
+      <p>Flashcard Drill · Wills, Trusts &amp; Estates</p>
+    </div>
+    <div id="stats">
+      <div class="stat"><div class="stat-n" id="s-got">0</div><div class="stat-l">Got it</div></div>
+      <div class="stat"><div class="stat-n" id="s-missed">0</div><div class="stat-l">Missed</div></div>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="pb-wrap"><div id="pb"></div></div>
+    <div id="tabs"></div>
+    <div id="cat-badge"></div>
+
+    <div id="card">
+      <div id="card-q"></div>
+      <div id="card-divider"></div>
+      <div id="card-a"></div>
+      <div id="tap-hint">Tap to reveal answer</div>
+    </div>
+
+    <div id="scorebtns">
+      <button id="got-btn">Got it ✓</button>
+      <button id="missed-btn">Missed it ✗</button>
+    </div>
+
+    <div id="prog"></div>
+  </div>
+
+  <div id="results">
+    <h2>Round complete.</h2>
+    <div id="r-pct"></div>
+    <div id="r-sub"></div>
+    <div id="r-grid">
+      <div class="r-cell"><div class="r-n" id="r-got"></div><div class="r-l">Got it</div></div>
+      <div class="r-cell"><div class="r-n" id="r-missed"></div><div class="r-l">Missed</div></div>
+    </div>
+    <button id="restart">Shuffle &amp; Replay</button>
+  </div>
+</div>
+
+<script>
+(function(){
+var DATA = {
+"Probate Basics":[
+  {q:"What is probate property?",a:"Property owned solely by the decedent at death with no automatic transfer mechanism. Passes by will or intestacy."},
+  {q:"What is non-probate property?",a:"Property that transfers at death outside a will via will substitutes — joint tenancy, beneficiary designations, trusts, POD/TOD accounts."},
+  {q:"Three functions of probate?",a:"(1) Proves title transfer. (2) Protects creditors. (3) Identifies rightful takers."},
+  {q:"Executor vs. Administrator?",a:"Executor = named in a valid will. Administrator = court-appointed when there is no will or no named executor."},
+  {q:"Testate / intestate / partially intestate?",a:"Testate = valid will. Intestate = no will. Partially intestate = will doesn't dispose of all property."},
+  {q:"Escheat?",a:"No will + no heirs = property passes to the state."},
+  {q:"Self-proving affidavit?",a:"Notarized affidavit signed by testator and witnesses at execution. Will admitted to probate without live witness testimony — execution formalities presumed satisfied."},
+  {q:"Gift causa mortis?",a:"Gift made in contemplation of imminent death. Revocable. Automatically revoked if donor survives the anticipated peril."},
+],
+"Types of Gifts":[
+  {q:"Four types of testamentary gifts?",a:"Specific. General. Demonstrative. Residuary."},
+  {q:"Specific devise?",a:"A testamentary disposition of a specifically identified asset. The signal word is 'my' — e.g., 'I give my 100 shares of Apple to my daughter.'"},
+  {q:"General devise?",a:"A testamentary disposition of a specified amount payable from the general assets of the estate. No possessive qualifier — e.g., 'I give 100 shares of Apple to my daughter.'"},
+  {q:"Demonstrative devise?",a:"A hybrid — a specified amount intended to come from a specific source, but payable from general assets if that source is insufficient. These are rare. E.g., 'I give $10,000 to come first from my Chase savings account, but if insufficient, from my other funds.'"},
+  {q:"Residuary devise?",a:"Everything remaining after specific, general, and demonstrative gifts are satisfied. Signal language: 'rest and residue.'"},
+],
+"Capacity & Challenges":[
+  {q:"Two-prong capacity test?",a:"(1) Objective: age 18+. (2) Subjective: sound mind at time of execution."},
+  {q:"Four elements of sound mind?",a:"(1) Nature and extent of property. (2) Natural objects of bounty. (3) Nature of the testamentary act. (4) Ability to relate these elements and form an orderly desire."},
+  {q:"When is capacity tested?",a:"At the time of execution only. Loss or regain of capacity before or after is irrelevant."},
+  {q:"Threshold for capacity?",a:"Low. 'Capable of knowing,' not actual knowledge. Policy: prefer testacy over intestacy."},
+  {q:"Insane delusion — definition?",a:"A belief against evidence and reason that must be the product of derangement. The testator cannot be dissuaded even when confronted with the truth."},
+  {q:"Insane delusion vs. mistake — key distinction?",a:"Mistake: testator accepts the truth when presented with it. Delusion: testator refuses truth regardless of evidence."},
+  {q:"Effect of insane delusion on the will?",a:"Does not automatically invalidate the entire will. Only the gift(s) caused by the delusion fail."},
+  {q:"Undue influence — what does it affect?",a:"The testator's intent, not capacity. The influencer's will substitutes for the testator's."},
+  {q:"Undue influence — 4-part proof?",a:"(1) Testator susceptible. (2) Influencer had opportunity. (3) Influencer had disposition to exert it. (4) Will appears to be the result."},
+  {q:"Presumption of undue influence arises when?",a:"Confidential relationship + suspicious circumstances."},
+  {q:"Three categories of confidential relationship?",a:"Fiduciary (attorney-client). Reliant (physician, financial advisor). Dominant-subservient (caregiver + ill person)."},
+  {q:"Fraud — four elements?",a:"(1) False statement of fact or law. (2) Knowledge it is false. (3) Intent to induce a testamentary act. (4) Actually deceives testator and influences the act."},
+  {q:"Fraud in the inducement vs. fraud in the execution?",a:"Inducement: misrepresentation causes testator to execute the will or include/exclude certain provisions. Execution: misrepresentation about the character or contents of the document being signed."},
+  {q:"Menace — three threats?",a:"(1) Duress. (2) Unlawful and violent injury to person or property. (3) Injury to character."},
+],
+"Formalities & Execution":[
+  {q:"California standard for a valid will (use on exam)?",a:"(1) Writing. (2) Signed by testator (or by another in testator's presence and at testator's direction). (3) Witnessed by two competent witnesses who sign during testator's lifetime. (4) Testator signs or acknowledges the will or signature in the presence of the witnesses."},
+  {q:"Two presence tests?",a:"(1) Line of sight (CA): parties in each other's line of sight when signing — need not actually watch. (2) Conscious presence (majority): comprehends through sight, hearing, or general consciousness that signing is occurring."},
+  {q:"Witness competency rule?",a:"Must be competent at execution. Subsequent incompetency doesn't disqualify. Later competency doesn't validate a previously incompetent witness."},
+  {q:"Three curative doctrines?",a:"Reformation. Substantial compliance. Harmless error."},
+  {q:"Harmless error rule?",a:"A non-compliant document is treated as valid if the proponent proves by clear and convincing evidence that the decedent intended the document to be a will, revocation, or modification."},
+  {q:"Substantial compliance test?",a:"Does the non-complying document express testamentary intent AND conform sufficiently to the Wills Act to serve the Act's purpose?"},
+  {q:"Holographic will — four requirements?",a:"(1) Material portions in testator's handwriting. (2) Capacity. (3) Signed by testator (anywhere on document). (4) Testamentary intent."},
+  {q:"Integration rule?",a:"A writing must be (1) present at execution and (2) intended to be part of the will."},
+  {q:"Incorporation by reference?",a:"Any writing in existence at execution may be incorporated if the will manifests intent and describes the writing sufficiently to permit identification."},
+  {q:"Acts of independent significance?",a:"Courts give testamentary effect to facts/circumstances outside the will if the act has significance independent of its testamentary effect. Key question: was the testator's motive nontestamentary?"},
+  {q:"Republication by codicil?",a:"A codicil republishes and re-dates the will. The will is treated as executed at the time of the codicil."},
+],
+"Revocation & Revival":[
+  {q:"Two statutory methods of revocation?",a:"(1) Physical act upon the will. (2) Written instrument (express or implied)."},
+  {q:"Three requirements for revocation by physical act?",a:"(1) Burning, tearing, canceling, obliterating, or destroying. (2) Simultaneous present intent to revoke. (3) If done by another — must act in testator's presence and at testator's direction."},
+  {q:"Implied revocation?",a:"A later will makes inconsistent dispositions — the prior will is superseded to the extent of the inconsistency."},
+  {q:"Lost will — presumption?",a:"Rebuttable presumption that the testator destroyed it with intent to revoke. Three alternative explanations: (1) intentional destruction, (2) accidental loss, (3) wrongful destruction by a dissatisfied party."},
+  {q:"DRR — dependent relative revocation rule?",a:"Court may disregard a revocation if: (1) the revocation was based on a mistake of law or fact; (2) testator would not have revoked but for that mistake; AND (3) disregarding the revocation brings the result closer to testator's intent than intestacy would."},
+  {q:"Revival — minority rule?",a:"Revoking a subsequent will does NOT revive the prior will."},
+  {q:"Revival — majority rule (UPC / California)?",a:"Revoking a subsequent will MAY revive the prior will if testator intended revival — determined by surrounding circumstances."},
+  {q:"Three ways to revive a will (majority)?",a:"(1) Codicil incorporates prior will by reference. (2) Writing declares revival. (3) Republication by re-execution and re-attestation with statutory formalities."},
+],
+"Lapse, Anti-Lapse & Class Gifts":[
+  {q:"Lapse — what happens?",a:"Beneficiary predeceases testator → gift fails → falls into residue (or intestacy if no residue)."},
+  {q:"Anti-lapse statute — what it does?",a:"Saves the gift for the predeceasing beneficiary's issue if the beneficiary is a qualifying relative of the testator."},
+  {q:"Anti-lapse — two schools of thought on scope?",a:"Strict view: only descendants of the testator qualify. Broad view (UPC): stepchild, grandparent, or descendant of the testator's grandparent qualifies."},
+  {q:"Anti-lapse — words of survivorship (UPC)?",a:"Words of survivorship alone ('if she survives me') are INSUFFICIENT to prevent anti-lapse. There must also be an express alternate disposition if the beneficiary does not survive."},
+  {q:"Anti-lapse — words of survivorship (majority, non-UPC)?",a:"Words of survivorship ('if she survives me') ARE sufficient to prevent anti-lapse. The gift fails if the beneficiary does not survive."},
+  {q:"Anti-lapse is the _____ rule?",a:"Default rule. Anti-lapse applies only if the will does not provide an alternate disposition or expressly indicate beneficiary must survive."},
+  {q:"Lapse and the residuary — common law ('no residue of a residue')?",a:"When a residuary beneficiary predeceases the testator and anti-lapse does not save the gift, the lapsed residuary share passes by intestacy — NOT to the other residuary beneficiaries."},
+  {q:"Lapse and the residuary — majority rule ('surviving residuary beneficiary rule')?",a:"The surviving residuary beneficiaries take the deceased residuary beneficiary's share in proportion to their shares of the residue."},
+  {q:"Class gift — definition?",a:"A disposition to beneficiaries described by a group label, intended to take as a group. Membership can fluctuate."},
+  {q:"Class gift — what happens when a member predeceases?",a:"Surviving class members take the whole — the gift does not lapse until ALL class members have died. HOWEVER, most anti-lapse statutes apply to class gifts and treat each member's share as a separate individual gift."},
+  {q:"Individual gift vs. class gift?",a:"If testator names individuals specifically, it is an individual gift — not a class gift — even if the group feels like a class. Individual gifts lapse if the named beneficiary predeceases."},
+],
+"Ademption, Abatement & Advancements":[
+  {q:"Ademption — which gift type?",a:"Applies to specific devises only."},
+  {q:"Common law identity rule — ademption?",a:"If specifically devised property is not in the estate at death for any reason → gift adeems → beneficiary takes nothing. Testator's intent irrelevant."},
+  {q:"UPC approach to ademption?",a:"Intent is relevant. Court may substitute a cash legacy equal to the adeemed property's value if ademption would be inconsistent with the testator's plan."},
+  {q:"Abatement — definition?",a:"The reduction or elimination of testamentary gifts when the estate is insufficient to pay debts, taxes, expenses, or higher-priority gifts. Testator may override by providing a specific order in the will."},
+  {q:"General order of abatement?",a:"(1) Intestate property. (2) Residuary. (3) General. (4) Demonstrative. (5) Specific."},
+  {q:"Common law nuance on abatement?",a:"Personal property in each category is exhausted before real property. UPC makes no personal/real property distinction."},
+  {q:"Exoneration — majority / UPC rule?",a:"No exoneration unless the will specifically directs it. Beneficiary takes the property subject to the debt."},
+  {q:"Advancement (intestacy)?",a:"A lifetime gift intended to come out of an heir's intestate share. Modern rule: requires a writing stating the gift counts against the share. Common law presumed all lifetime gifts were advancements."},
+  {q:"Satisfaction (wills)?",a:"A lifetime gift intended to substitute for a gift in the will. Requires written acknowledgment. Only applies to inter vivos gifts made AFTER the will is executed."},
+],
+"Intestate Succession":[
+  {q:"When does intestacy apply?",a:"No will; invalid will; or will doesn't dispose of all property (partial intestacy). Intestacy statutes are default rules — they govern only when the decedent has not disposed of property by will or will substitute."},
+  {q:"120-hour survival rule (UPC)?",a:"Must survive decedent by 120 hours to inherit. Burden: clear and convincing evidence of survival. Fails to establish → deemed to have predeceased."},
+  {q:"UPC surviving spouse intestate share — four scenarios?",a:"(1) Entire estate: no descendants or parents survive, OR all descendants are also spouse's and spouse has no other descendants. (2) $300K + ¾: no surviving descendants but a parent survives. (3) $225K + ½: all descendants are also spouse's but spouse has other descendants. (4) $150K + ½: one or more descendants are NOT spouse's."},
+  {q:"UPC order of heirs after spouse?",a:"(1) Descendants by representation. (2) Parents equally. (3) Descendants of parents by representation. (4) Grandparents and their descendants (split paternal/maternal). (5) Surviving side only if no heirs on other side. (6) Descendants of deceased spouses."},
+  {q:"Three distribution methods?",a:"(1) Strict per stirpes. (2) Per capita with representation (modified per stirpes). (3) Per capita at each generation."},
+  {q:"Strict per stirpes?",a:"Divide always at the first generation, even if no survivors in that generation. California follows strict per stirpes."},
+  {q:"Per capita with representation (modified per stirpes)?",a:"Divide at the first generation with at least one living member. Each branch gets an equal share; descendants of a deceased member take their ancestor's share. New York follows this."},
+  {q:"Per capita at each generation (UPC)?",a:"Divide at the first living generation; pool undistributed shares of deceased members and redistribute equally among all takers at the next generation. Every taker in the same generation gets an identical share."},
+  {q:"Parentela — what is it?",a:"A line of descent from a common ancestor — a 'family bucket' searched in order until an heir is found."},
+  {q:"Three parentelas in order?",a:"First: decedent's own descendants. Second: decedent's parents + all their descendants (siblings, nieces, nephews). Third: decedent's grandparents + all their descendants (aunts, uncles, cousins)."},
+],
+"Non-Probate & Will Substitutes":[
+  {q:"Totten trust (ITF account)?",a:"Bank account titled in depositor's name 'as trustee for' beneficiary. Depositor retains full control during life; beneficiary takes at death. Revocable during lifetime."},
+  {q:"Joint tenancy — survivorship rule?",a:"Decedent's interest passes automatically to surviving joint tenant(s). Will cannot override."},
+  {q:"Severance of joint tenancy?",a:"A unilateral act by any joint tenant. Converts to tenancy in common — no survivorship right; share passes by will or intestacy."},
+  {q:"Changing a life insurance beneficiary via will?",a:"A will generally CANNOT change a life insurance or contract beneficiary. Must substantially comply with the policy's specific change procedure. Intent alone is insufficient."},
+  {q:"Divorce + beneficiary designation?",a:"Modern statutes often revoke ex-spouse beneficiary designations. Best practice: affirmatively update all designations after divorce."},
+  {q:"Pour-over will?",a:"Transfers (pours over) assets titled in testator's name at death into an existing trust. Cleanup device for assets not already in the trust."},
+  {q:"Non-probate transfers + creditors?",a:"Non-probate does NOT mean creditor-proof. Probate assets are used first; non-probate assets may be reached if the probate estate is insufficient."},
+],
+"Omitted Spouse & Children":[
+  {q:"Omitted spouse — three requirements (surviving spouse bears burden)?",a:"(1) The deceased spouse had a will or trust at the time of marriage. (2) The deceased spouse failed to update the testamentary instrument. (3) The deceased spouse did not otherwise provide for the surviving spouse."},
+  {q:"Omitted spouse — what share does the surviving spouse take?",a:"(1) One-half of community property belonging to the decedent. (2) One-half of quasi-community property belonging to the decedent. (3) A share of separate property equal to an intestate share — but NO MORE than one-half of the separate property in the estate."},
+  {q:"Exceptions to the omitted spouse share (beneficiaries bear burden)?",a:"(1) Intentional omission. (2) Provided for by transfer outside the will with clear intent. (3) Valid waiver agreement. (4) Care Custodian Spouse exception (CCS): marriage commenced during caregiving services or within 90 days AND decedent died within 6 months of marriage — unless CCS proves by C&C evidence the marriage was not the product of fraud or undue influence."},
+  {q:"Omitted children — no children at time of will execution?",a:"The afterborn/after-adopted child receives a share equal to what the child would have received had the testator died intestate — unless the will devised all or substantially all to the other parent who survives and is entitled to take."},
+  {q:"Omitted children — other children exist at execution?",a:"The afterborn child takes a pro rata share from the existing children's shares."},
+  {q:"Exceptions — omitted child does NOT take?",a:"(1) Express disinheritance. (2) Testator provided for child by transfer outside the will with clear intent that it is in lieu of testamentary provision. (3) Trust created for child."},
+],
+"Elective Share":[
+  {q:"What is the elective share (forced share)?",a:"A statutory minimum amount guaranteed to a surviving spouse who is omitted from a will or given a small portion of the deceased spouse's property. Sets a floor — the surviving spouse cannot be fully disinherited."},
+  {q:"Three policy justifications for the elective share?",a:"(1) Legal obligation of spousal support — no right to disinherit. (2) Marriage is a partnership — surviving spouse contributed to acquisition of wealth and deserves a share. (3) We do not want to leave the surviving spouse destitute."},
+  {q:"Elective share — separate property regime?",a:"Statutes give the surviving spouse some fixed share of the deceased spouse's property, irrespective of the length of the marriage."},
+  {q:"Elective share — community property regime?",a:"There is NO elective share under a community property regime. The surviving spouse already owns one-half of all community property — that half passes automatically at death or divorce, regardless of how property is titled. The surviving spouse cannot be disinherited."},
+  {q:"When can non-probate property be used to satisfy the elective share — four situations?",a:"(1) Testator's intent to defraud the surviving spouse. (2) Illusory revocable trust — testator retained so much control the transfer was not genuine. (3) Sullivan rule — inter vivos trust over which testator alone had a general power of appointment. (4) UPC augmented estate provisions."},
+  {q:"Sullivan rule — what factors show intent to defraud spouse of elective share?",a:"(1) Extent of control retained by decedent. (2) Decedent's motives. (3) Transferee's motives. (4) Degree to which transfer deprives spouse. (5) Whether decedent actually exercised retained control/enjoyed the property. (6) Relationship between decedent and the person benefiting."},
+  {q:"Illusory trust — what makes it illusory?",a:"The settlor retained such a high degree of control (revoke, amend, reclaim assets at will) that the transfer was not a genuine completed gift. Courts treat the assets as still belonging to the estate for elective share purposes."},
+],
+"Powers of Appointment":[
+  {q:"Professor's definition of a power of appointment?",a:"A power of appointment creates or reserves in a person (the donee/powerholder) designated by an owner of property (the donor) the authority to determine the manner — subject to limitations mandated in the power — in which the property (the appointive property) shall be distributed."},
+  {q:"General power of appointment?",a:"Donee can appoint to anyone, including self, estate, or creditors. Treated as ownership-equivalent. Creditors can reach it. Included in donee's estate for tax purposes."},
+  {q:"Non-general (special) power of appointment?",a:"Donee restricted to a specified class of permissible appointees. Not ownership-equivalent. Creditors cannot reach it. Not included in donee's estate for tax purposes."},
+  {q:"Taker in default?",a:"The person who receives the property if the donee does not effectively exercise the power."},
+  {q:"Residual clause exercising power — majority rule?",a:"A general power CANNOT be exercised through a generic residual clause in the donee's will."},
+  {q:"Residual clause exercising power — minority rule (Restatement + UPC)?",a:"A general power CAN be exercised through a will's residual clause."},
+],
+"Personal Property Set-Aside":[
+  {q:"Three family set-asides — names and purposes?",a:"(1) Homestead allowance: decedent's residence passes free from creditor claims; surviving spouse has preeminent right. (2) Family allowance: reasonable allowance in money for maintenance of surviving spouse and minor children during administration. (3) Personal property set-aside: surviving spouse or children entitled to decedent's tangible personal property — furniture, vehicles, clothing."},
+  {q:"Are the set-aside amounts uniform across jurisdictions?",a:"No. The value of set-asides is state-specific — always refer to the applicable jurisdiction."},
+  {q:"Who has the preeminent right to the homestead?",a:"The surviving spouse."},
+],
+"Slayer Rule & Disclaimer":[
+  {q:"Slayer rule?",a:"A person who kills the decedent cannot profit from the killing. Treated as having predeceased. Most jurisdictions have specific slayer statutes — also extends to non-probate transfers. In the absence of a statute, courts decide case by case."},
+  {q:"Disclaimer?",a:"A refusal to accept a gift. Does NOT avoid creditor liability or tax liability — a disclaimed benefit may still be counted for Medicaid eligibility."},
+],
+};
+
+var cats = Object.keys(DATA);
+var filter = 'all', deck = [], cur = 0, got = 0, missed = 0, revealed = false;
+
+function g(id){ return document.getElementById(id); }
+function shuffle(a){ var b=a.slice(); for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;} return b; }
+
+// Build tabs
+var tabsEl = g('tabs');
+var allTab = document.createElement('button');
+allTab.className='tab active'; allTab.textContent='All';
+allTab.addEventListener('click', function(){ setFilter('all', allTab); });
+tabsEl.appendChild(allTab);
+
+cats.forEach(function(c){
+  var btn = document.createElement('button');
+  btn.className='tab'; btn.textContent=c;
+  (function(cat, b){
+    b.addEventListener('click', function(){ setFilter(cat, b); });
+  })(c, btn);
+  tabsEl.appendChild(btn);
+});
+
+function setFilter(f, btn){
+  filter = f;
+  tabsEl.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  init();
+}
+
+function buildDeck(){
+  if(filter==='all'){
+    var all=[];
+    cats.forEach(function(c){ all=all.concat(DATA[c].map(function(card){ return {cat:c, q:card.q, a:card.a}; })); });
+    return shuffle(all);
+  } else {
+    return shuffle(DATA[filter].map(function(card){ return {cat:filter, q:card.q, a:card.a}; }));
+  }
+}
+
+function init(){
+  got=0; missed=0; cur=0;
+  g('s-got').textContent='0';
+  g('s-missed').textContent='0';
+  deck = buildDeck();
+  g('results').style.display='none';
+  g('main').style.display='block';
+  renderCard();
+}
+
+function renderCard(){
+  if(cur>=deck.length){ showResults(); return; }
+  revealed = false;
+  var card = deck[cur];
+  g('cat-badge').textContent = card.cat;
+  g('card-q').textContent = card.q;
+  g('card-a').textContent = card.a;
+  g('card-a').style.display='none';
+  g('card-divider').style.display='none';
+  g('tap-hint').style.display='block';
+  g('scorebtns').style.display='none';
+  g('pb').style.width = (cur/deck.length*100)+'%';
+  g('prog').textContent = (cur+1)+' of '+deck.length;
+}
+
+g('card').addEventListener('click', function(){
+  if(revealed) return;
+  revealed = true;
+  g('card-a').style.display='block';
+  g('card-divider').style.display='block';
+  g('tap-hint').style.display='none';
+  g('scorebtns').style.display='flex';
+});
+
+g('got-btn').addEventListener('click', function(){
+  got++; g('s-got').textContent=got; cur++; renderCard();
+});
+g('missed-btn').addEventListener('click', function(){
+  missed++; g('s-missed').textContent=missed; cur++; renderCard();
+});
+g('restart').addEventListener('click', init);
+
+function showResults(){
+  g('main').style.display='none';
+  g('results').style.display='block';
+  var pct = Math.round(got/(got+missed)*100)||0;
+  g('r-pct').textContent = pct+'%';
+  g('r-sub').textContent = pct>=80?'Counselor.':pct>=60?'Getting there.':'More reps needed.';
+  g('r-got').textContent = got;
+  g('r-missed').textContent = missed;
+}
+
+init();
+})();
+</script>
+</body>
+</html>

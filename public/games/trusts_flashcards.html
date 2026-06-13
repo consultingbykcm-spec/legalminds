@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trusts — Interactive Flashcard Drill</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 780px; }
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(201,151,58,0.25); display: flex; align-items: center; justify-content: space-between; }
+#header h1 { font-size: 17px; font-weight: 500; color: #f5f0e8; }
+#header h1 span { color: #c9973a; font-style: italic; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#stats { display: flex; gap: 20px; }
+.stat { text-align: center; }
+.stat-n { font-size: 16px; font-weight: 500; color: #c9973a; }
+.stat-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; }
+#main { background: #0f1e35; border-radius: 12px; padding: 20px; }
+#pb-wrap { height: 3px; background: #1a2f4a; border-radius: 2px; margin-bottom: 18px; }
+#pb { height: 3px; background: #c9973a; border-radius: 2px; transition: width 0.4s; width: 0%; }
+#tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.tab { padding: 4px 11px; font-size: 10px; border-radius: 20px; border: 1px solid #2a4a6a; background: transparent; color: #6b8aaa; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.tab.active { background: #c9973a; border-color: #c9973a; color: #0f1e35; font-weight: 500; }
+#cat-badge { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; min-height: 16px; }
+#card { background: #1a2f4a; border-radius: 10px; border: 1px solid rgba(201,151,58,0.15); overflow: hidden; margin-bottom: 14px; cursor: pointer; transition: border-color 0.2s; }
+#card:hover { border-color: rgba(201,151,58,0.4); }
+#card-q { padding: 18px 20px; font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.6; }
+#card-divider { height: 1px; background: rgba(201,151,58,0.15); display: none; }
+#card-a { padding: 16px 20px; font-size: 13px; color: #9fe1cb; line-height: 1.65; display: none; }
+#tap-hint { text-align: center; padding: 10px; font-size: 11px; color: #6b8aaa; }
+#scorebtns { display: none; gap: 8px; margin-bottom: 14px; }
+#got-btn { flex: 1; background: #0f3d2a; border: 1.5px solid #1d9e75; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #9fe1cb; cursor: pointer; font-family: inherit; }
+#missed-btn { flex: 1; background: #3d1515; border: 1.5px solid #e24b4a; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #f09595; cursor: pointer; font-family: inherit; }
+#prog { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 10px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 20px; font-weight: 500; color: #f5f0e8; margin-bottom: 8px; }
+#r-pct { font-size: 52px; font-weight: 500; color: #c9973a; line-height: 1; margin-bottom: 4px; }
+#r-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#r-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-n { font-size: 20px; font-weight: 500; color: #c9973a; }
+.r-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+#restart { background: #c9973a; border: none; border-radius: 8px; padding: 13px 32px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div>
+      <h1>LEGAL<span>MINDS</span> — Trusts</h1>
+      <p>Flashcard Drill · Wills, Trusts &amp; Estates</p>
+    </div>
+    <div id="stats">
+      <div class="stat"><div class="stat-n" id="s-got">0</div><div class="stat-l">Got it</div></div>
+      <div class="stat"><div class="stat-n" id="s-missed">0</div><div class="stat-l">Missed</div></div>
+    </div>
+  </div>
+  <div id="main">
+    <div id="pb-wrap"><div id="pb"></div></div>
+    <div id="tabs"></div>
+    <div id="cat-badge"></div>
+    <div id="card">
+      <div id="card-q"></div>
+      <div id="card-divider"></div>
+      <div id="card-a"></div>
+      <div id="tap-hint">Tap to reveal answer</div>
+    </div>
+    <div id="scorebtns">
+      <button id="got-btn">Got it ✓</button>
+      <button id="missed-btn">Missed it ✗</button>
+    </div>
+    <div id="prog"></div>
+    <div id="results">
+      <h2>Round complete.</h2>
+      <div id="r-pct"></div>
+      <div id="r-sub"></div>
+      <div id="r-grid">
+        <div class="r-cell"><div class="r-n" id="r-got"></div><div class="r-l">Got it</div></div>
+        <div class="r-cell"><div class="r-n" id="r-missed"></div><div class="r-l">Missed</div></div>
+      </div>
+      <button id="restart">Shuffle &amp; Replay</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+var DATA = {
+"Trust Classification":[
+  {q:"Two main categories of trusts?",a:"Express trusts. Trusts by operation of law."},
+  {q:"Express trusts divide into?",a:"Private trusts and charitable trusts."},
+  {q:"Private trusts divide into?",a:"Inter vivos (lifetime) and testamentary (through a will)."},
+  {q:"Trusts by operation of law — two types?",a:"Resulting trusts and constructive trusts."},
+  {q:"Constructive trust — what is it really?",a:"Not a true trust. An equitable remedy imposed by court to prevent unjust enrichment. Trustee is required only to convey title to the rightful beneficiary."},
+],
+"Inter Vivos & Testamentary":[
+  {q:"Inter vivos trust — key requirement?",a:"Present intent to transfer + effective delivery of res to trustee (if trustee is a third party)."},
+  {q:"Trust by declaration?",a:"Settlor is also trustee. No delivery required."},
+  {q:"Oral trust involving real property?",a:"Violates statute of frauds. Court may impose constructive trust to prevent unjust enrichment."},
+  {q:"Revocable inter vivos trust — three advantages?",a:"Avoids probate costs and delays. Maintains privacy. Passes outside statute of wills."},
+  {q:"Revocable inter vivos trust — default rule (majority)?",a:"Settlor can modify/revoke only if power is expressly reserved in the trust."},
+  {q:"Totten trust?",a:"Bank account in beneficiary's name; depositor retains passbook and control; beneficiary gets remainder at death. Depositor can revoke anytime during lifetime or in will."},
+  {q:"Life insurance trust — valid despite no res at creation?",a:"Yes. Res does not need to exist until settlor's death."},
+  {q:"Testamentary trust — when effective?",a:"At death. Created inside a will."},
+  {q:"Testamentary trust — what must be ascertainable from the will?",a:"Intent, beneficiaries, res, and purpose."},
+  {q:"Testamentary trust — delivery required?",a:"No. Will speaks at death."},
+],
+"Four Elements":[
+  {q:"Four elements of a valid express private trust?",a:"(1) Settlor's intent. (2) Valid trust purpose. (3) Res (corpus/property). (4) Trustee."},
+  {q:"Settlor's intent — what is required?",a:"Present intent, expressed verbally or through conduct, effective immediately. Precatory words ('I hope,' 'I wish') may be insufficient."},
+  {q:"Precatory words — can they be overcome?",a:"Yes. Beneficiary may introduce extrinsic evidence to prove settlor's actual intent."},
+  {q:"Valid trust purpose — three limits?",a:"Not illegal. Not tortious. Not against public policy."},
+  {q:"Res — three requirements?",a:"Identifiable property. Existing interest (not mere expectancy). Delivered to trustee if trustee is a third party."},
+  {q:"Three types of delivery?",a:"Actual delivery. Symbolic delivery (e.g., car keys). Constructive delivery (e.g., deed to agent)."},
+  {q:"Failure to deliver res — consequence?",a:"May defeat the trust. Property passes through estate to heirs."},
+  {q:"Trustee — what if unnamed?",a:"Court will appoint one. Trust does not fail for lack of trustee."},
+  {q:"Merger doctrine?",a:"If the sole trustee and sole beneficiary are the same person, interests merge and beneficiary takes outright. Trust fails."},
+  {q:"Trustee removal — grounds?",a:"Unfitness. Misconduct. Adverse interest."},
+],
+"Trustee Duties":[
+  {q:"Six core trustee duties?",a:"(1) Loyalty. (2) Prudent investment. (3) Account and inform. (4) Defend and enforce. (5) No commingling. (6) Impartiality."},
+  {q:"Duty of loyalty — core rule?",a:"Avoid conflicts of interest. No self-dealing. Place beneficiary's interest above own."},
+  {q:"Self-dealing transactions — void or voidable?",a:"Voidable, not void. If transaction benefits beneficiaries, they may allow it to stand."},
+  {q:"Cardozo's heightened standard — duty of loyalty?",a:"Trustee must place beneficiary's interest above own and avoid any position where personal interest conflicts with beneficiary's interest."},
+  {q:"Estate of Rothko — rule?",a:"Trustee must exercise diligence and prudence. Trustees with conflicts of interest violated duty of loyalty. Inattentive co-trustee also liable for failure to prevent breach. Appreciation damages — not punitive."},
+  {q:"Prudent investor standard — old vs. new?",a:"Old: prudent person managing own wealth. New (UPIA): evaluate investment strategy by viewing portfolio as a whole, not individual investments in isolation."},
+  {q:"UPIA — key principle?",a:"An investment imprudent standing alone can become prudent if undertaken in sensible relation to other trust assets. Diversification is key."},
+  {q:"Estate of Janes — rule?",a:"Holding excessive concentration in a single stock (Kodak) violated prudent investor rule. Trustee must evaluate relevant factors when assessing prudence."},
+  {q:"Duty to account and inform — waivable?",a:"No. Affirmative, non-waivable duty. Trustee must keep beneficiaries reasonably informed of trust and its administration."},
+  {q:"Duty not to commingle?",a:"Keep trust funds separate and earmarked from trustee's personal funds."},
+  {q:"Duty of impartiality?",a:"Be fair to all beneficiaries. Cannot favor income beneficiary over remainder beneficiary or vice versa."},
+  {q:"Delegation — what can trustee delegate?",a:"Ministerial acts. Cannot delegate fiduciary responsibilities. Must monitor the delegated party's performance."},
+  {q:"Anton — co-trustee liability rule?",a:"Each co-trustee must participate fully. Cannot delegate fiduciary duties to co-trustee. Inattentive co-trustee is liable for dishonest behavior of other co-trustee."},
+],
+"Termination & Modification":[
+  {q:"Four ways a trust can be terminated?",a:"(1) Trustee: only as provided in trust document. (2) Beneficiaries: if all competent, all consent, and termination does not frustrate trust's purpose. (3) Settlor: if power to terminate was reserved. (4) Court: if purpose becomes frustrated, impossible, illegal, or due to changed circumstances."},
+  {q:"Material purpose doctrine — termination by beneficiaries?",a:"Even if all beneficiaries consent, court will not allow termination if doing so would frustrate a material purpose of the trust."},
+  {q:"Reformation vs. modification?",a:"Reformation: corrects trust terms to match creator's original intent. Modification: adjusts terms due to ambiguity or unforeseen change while keeping trust consistent with intent."},
+  {q:"Equitable deviation?",a:"Court-authorized departure from trust terms when unforeseen change in circumstances would otherwise defeat or substantially impair the trust's purpose."},
+],
+"Charitable Trusts":[
+  {q:"Key difference — charitable vs. private trust?",a:"Charitable trust requires a charitable purpose. Can be indefinite in duration. Not subject to RAP in the same way."},
+  {q:"Charitable purpose — examples?",a:"Relief of poverty. Advancement of education. Promotion of health. Social interest of the community."},
+  {q:"Shenandoah rule — charitable purpose test?",a:"Valid only if it has a legally recognized, public-oriented charitable purpose. Looks benevolent but isn't legally charitable = no charitable trust."},
+  {q:"Marsh rule?",a:"Trust is not charitable merely because many individuals receive payments. Must promote social interest of the community — not broad private payouts."},
+  {q:"Charitable trust — who are the beneficiaries?",a:"The public or a segment thereof. Not specific ascertainable persons."},
+  {q:"Charitable trust — who enforces?",a:"Statutes vest enforcement in the Attorney General. No specific beneficiary with enforceable rights."},
+  {q:"Benevolent vs. charitable — key distinction in one line?",a:"Charitable = identifiable PUBLIC benefit + enforceable + perpetual. Benevolent = feels good but lacks true public benefit + often unenforceable. If the Attorney General would show up to enforce it, it's charitable."},
+],
+"Cy Pres":[
+  {q:"Cy pres — core rule?",a:"Court may modify/redirect charitable trust property to a different charitable purpose as near as possible to donor's intent when literal compliance becomes impossible, impracticable, or illegal."},
+  {q:"Cy pres — three traditional elements?",a:"(1) Valid charitable trust exists. (2) Specific purpose cannot be carried out. (3) Donor had general charitable intent."},
+  {q:"Buck — cy pres limit?",a:"Inefficiency or 'greater impact elsewhere' is NOT enough for cy pres. Standard is impossibility/impracticability/illegality — not efficiency."},
+  {q:"Policy constraint on cy pres?",a:"Courts protect settlor's right to dispose of property as written. Modification is a last resort."},
+  {q:"First Merit Bank — rule?",a:"When named charitable recipient becomes for-profit, specific purpose becomes impossible/impracticable. Cy pres applies."},
+],
+"Anti-Lapse & Omitted Child":[
+  {q:"Anti-lapse — applies to trusts?",a:"Yes. Same rules as wills apply."},
+  {q:"Gift to trust beneficiary lapses — what happens?",a:"Falls into residue or distributed via intestate succession if no residue — unless anti-lapse saves it for beneficiary's descendants."},
+  {q:"No children at time of trust execution — omitted child gets?",a:"Intestate share."},
+  {q:"Children present at execution — new child gets?",a:"Share proportionally from existing children's shares."},
+],
+};
+
+var cats = Object.keys(DATA);
+var filter = 'all', deck = [], cur = 0, got = 0, missed = 0, revealed = false;
+
+function g(id){ return document.getElementById(id); }
+function shuffle(a){ var b=a.slice(); for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;} return b; }
+
+// Build tabs
+var tabsEl = g('tabs');
+var allTab = document.createElement('button');
+allTab.className='tab active'; allTab.textContent='All';
+allTab.addEventListener('click', function(){ setFilter('all', allTab); });
+tabsEl.appendChild(allTab);
+cats.forEach(function(c){
+  var btn = document.createElement('button');
+  btn.className='tab'; btn.textContent=c;
+  (function(cat, b){ b.addEventListener('click', function(){ setFilter(cat, b); }); })(c, btn);
+  tabsEl.appendChild(btn);
+});
+
+function setFilter(f, btn){
+  filter = f;
+  tabsEl.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  init();
+}
+
+function buildDeck(){
+  if(filter==='all'){
+    var all=[];
+    cats.forEach(function(c){ all=all.concat(DATA[c].map(function(card){ return {cat:c, q:card.q, a:card.a}; })); });
+    return shuffle(all);
+  }
+  return shuffle(DATA[filter].map(function(card){ return {cat:filter, q:card.q, a:card.a}; }));
+}
+
+function init(){
+  got=0; missed=0; cur=0;
+  g('s-got').textContent='0'; g('s-missed').textContent='0';
+  deck = buildDeck();
+  g('results').style.display='none';
+  renderCard();
+}
+
+function renderCard(){
+  if(cur>=deck.length){ showResults(); return; }
+  revealed = false;
+  var card = deck[cur];
+  g('cat-badge').textContent = card.cat;
+  g('card-q').textContent = card.q;
+  g('card-a').textContent = card.a;
+  g('card-a').style.display='none';
+  g('card-divider').style.display='none';
+  g('tap-hint').style.display='block';
+  g('scorebtns').style.display='none';
+  g('pb').style.width = (cur/deck.length*100)+'%';
+  g('prog').textContent = (cur+1)+' of '+deck.length;
+}
+
+g('card').addEventListener('click', function(){
+  if(revealed) return;
+  revealed = true;
+  g('card-a').style.display='block';
+  g('card-divider').style.display='block';
+  g('tap-hint').style.display='none';
+  g('scorebtns').style.display='flex';
+});
+
+g('got-btn').addEventListener('click', function(){ got++; g('s-got').textContent=got; cur++; renderCard(); });
+g('missed-btn').addEventListener('click', function(){ missed++; g('s-missed').textContent=missed; cur++; renderCard(); });
+g('restart').addEventListener('click', init);
+
+function showResults(){
+  g('results').style.display='block';
+  var pct = Math.round(got/(got+missed)*100)||0;
+  g('r-pct').textContent = pct+'%';
+  g('r-sub').textContent = pct>=80?'Counselor.':pct>=60?'Getting there.':'More reps needed.';
+  g('r-got').textContent = got;
+  g('r-missed').textContent = missed;
+}
+
+init();
+})();
+</script>
+</body>
+</html>

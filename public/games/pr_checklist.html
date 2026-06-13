@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LegalMinds — PR Checklist Game</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 820px; }
+
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(181,69,62,0.35); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; letter-spacing: 0.04em; }
+#header h1 span { color: #d4655c; font-style: italic; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#hdr-stats { text-align: right; }
+#hdr-n { font-size: 16px; color: #d4655c; font-weight: 600; }
+#hdr-l { font-size: 9px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.08em; }
+
+#module-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.mod-tab { flex: 1; background: #0f1e35; border: 1.5px solid #1a2f4a; border-radius: 10px; padding: 11px; font-size: 12px; color: #a0b8cc; cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center; }
+.mod-tab:hover { border-color: #8a4a45; }
+.mod-tab.active { background: rgba(181,69,62,0.14); border-color: #b5453e; color: #f0a8a2; font-weight: 600; }
+
+#sec-nav { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+.sec-chip { background: #0f1e35; border: 1.5px solid #1a2f4a; border-radius: 16px; padding: 6px 12px; font-size: 10.5px; color: #a0b8cc; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.sec-chip:hover { border-color: #8a4a45; }
+
+#controls { display: flex; gap: 8px; margin-bottom: 14px; }
+.ctrl-btn { flex: 1; background: #0f1e35; border: 1.5px solid #1a2f4a; border-radius: 8px; padding: 9px; font-size: 11px; color: #a0b8cc; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.ctrl-btn:hover { border-color: #2a4a6a; color: #f5f0e8; }
+
+.section { background: #0f1e35; border-radius: 12px; margin-bottom: 10px; overflow: hidden; border: 1px solid rgba(181,69,62,0.12); }
+.sec-head { padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s; }
+.sec-head:hover { background: #16243d; }
+.sec-title { font-size: 14px; font-weight: 600; color: #f5f0e8; }
+.sec-title .roman { color: #d4655c; margin-right: 8px; }
+.sec-meta { display: flex; align-items: center; gap: 10px; }
+.sec-count { font-size: 10px; color: #6b8aaa; }
+.sec-arrow { color: #d4655c; font-size: 11px; transition: transform 0.2s; }
+.sec-arrow.open { transform: rotate(90deg); }
+.sec-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.sec-body.open { max-height: 4000px; }
+.sec-inner { padding: 4px 18px 16px; }
+
+.cl-item { display: flex; align-items: flex-start; gap: 11px; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; background: #16243d; border: 1.5px solid #16243d; transition: all 0.15s; }
+.cl-item.subitem { margin-left: 26px; }
+.cl-check { width: 19px; height: 19px; border-radius: 4px; border: 2px solid #2a4a6a; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; font-size: 11px; color: transparent; }
+.cl-item.marked .cl-check { background: #d4655c; border-color: #d4655c; color: #0a1628; }
+.cl-item.marked { border-color: rgba(212,101,92,0.4); }
+.cl-content { flex: 1; }
+.cl-label { font-size: 13px; color: #d0dce8; line-height: 1.5; cursor: pointer; }
+.cl-label b { color: #f5f0e8; font-weight: 600; }
+.cl-buzz { display: none; margin-top: 7px; }
+.cl-buzz.revealed { display: block; }
+.buzz { display: inline-block; background: rgba(237,138,127,0.1); border: 1px solid rgba(237,138,127,0.45); color: #ed8a7f; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 4px; margin: 2px 3px 2px 0; }
+.differs-tag { display: inline-block; background: rgba(201,151,58,0.16); border: 1px solid rgba(201,151,58,0.5); color: #e8b54f; font-size: 9.5px; font-weight: 700; padding: 3px 9px; border-radius: 4px; margin: 2px 3px 2px 0; letter-spacing: 0.05em; text-transform: uppercase; }
+.caonly-tag { display: inline-block; background: rgba(90,143,191,0.16); border: 1px solid rgba(90,143,191,0.5); color: #7fb3e0; font-size: 9.5px; font-weight: 700; padding: 3px 9px; border-radius: 4px; margin: 2px 3px 2px 0; letter-spacing: 0.05em; text-transform: uppercase; }
+.verify-tag { display: inline-block; background: rgba(226,75,74,0.12); border: 1px solid rgba(226,75,74,0.45); color: #f09595; font-size: 9.5px; font-weight: 700; padding: 3px 9px; border-radius: 4px; margin: 2px 3px 2px 0; letter-spacing: 0.05em; text-transform: uppercase; }
+.tap-hint { font-size: 10px; color: #4a6a8a; font-style: italic; margin-top: 5px; }
+.takeaway { background: rgba(212,101,92,0.08); border-left: 3px solid #d4655c; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 8px 0; font-size: 12px; color: #dcaba6; font-style: italic; line-height: 1.55; }
+
+#progress { background: #0f1e35; border-radius: 10px; padding: 12px 16px; display: flex; gap: 14px; align-items: center; position: sticky; bottom: 12px; border: 1px solid rgba(181,69,62,0.2); }
+.prog-cell { text-align: center; }
+.prog-n { font-size: 16px; font-weight: 600; color: #d4655c; }
+.prog-l { font-size: 8.5px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px; }
+#prog-track { flex: 1; height: 6px; background: #1a2f4a; border-radius: 3px; overflow: hidden; }
+#prog-fill { height: 100%; width: 0%; background: #d4655c; border-radius: 3px; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="header">
+  <div>
+    <h1>LEGAL<span>MINDS</span> ⚖️</h1>
+    <p>PR Checklist Game · Midterm · ABA &amp; Cal Bar</p>
+  </div>
+  <div id="hdr-stats">
+    <div id="hdr-n">0%</div>
+    <div id="hdr-l">checked off</div>
+  </div>
+</div>
+
+<div id="module-tabs">
+  <button class="mod-tab active" data-mod="A">Module A — Lawyer-Client Relationship</button>
+  <button class="mod-tab" data-mod="B">Module B — Integrity &amp; Regulation</button>
+</div>
+
+<div id="sec-nav"></div>
+
+<div id="controls">
+  <button class="ctrl-btn" id="btn-showall">Reveal All Buzz Words</button>
+  <button class="ctrl-btn" id="btn-reset">Reset ↺</button>
+</div>
+
+<div id="sections"></div>
+
+<div id="progress">
+  <div class="prog-cell"><div class="prog-n" id="p-marked">0</div><div class="prog-l">Marked</div></div>
+  <div id="prog-track"><div id="prog-fill"></div></div>
+  <div class="prog-cell"><div class="prog-n" id="p-total">0</div><div class="prog-l">Items</div></div>
+</div>
+
+</div>
+
+<script>
+(function(){
+
+// b = buzz pills, d = CA DIFFERS tag, c = CA ONLY tag, v = verify tag, sub = indented, take = takeaway
+var DATA = {
+A: {
+  name: 'Lawyer-Client Relationship',
+  sections: [
+    { roman:'I', title:'Formation & Scope', items:[
+      { label:'<b>Prospective clients</b> (1.18)', b:['Consultation Info Protected','Significantly Harmful Information','Same / Substantially Related','IWC or Timely Screening'] },
+      { label:'<b>Scope of representation / allocation</b> (1.2)', b:['Client: Objectives','Settle / Plea / Jury / Testify','Lawyer: Means After Consultation','Limit Scope: Reasonable + Informed Consent'] },
+      { label:'<b>Advising violation of law</b> (1.2.1)', b:['No Counsel / Assist Crime-Fraud','May Discuss Legal Consequences','Good-Faith Validity Determination'] },
+    ]},
+    { roman:'II', title:'Core Duties to the Client', items:[
+      { label:'<b>Competence</b> (1.1)', b:['Knowledge / Skill / Thoroughness / Preparation','Acquire: Study / Associate / Refer'] },
+      { label:'<b>Diligence</b> (1.3)', b:['Reasonable Diligence','Promptness','Despite Opposition','Manage Workload'] },
+      { label:'<b>Communication</b> (1.4)', b:['Promptly Inform (Consent Decisions)','Consult re Means','Status Updates','Comply with Info Requests','Explain for Informed Decisions'] },
+      { label:'<b>Settlement offers</b> (1.4.1)', b:['All Terms — Plea Bargains','All Written Settlement Offers'], c:'CA ONLY' },
+      { label:'<b>Liability insurance disclosure</b> (1.4.2)', b:['No Insurance → Inform in Writing','At Engagement / 30 Days'], c:'CA ONLY' },
+    ]},
+    { roman:'III', title:'Fees', items:[
+      { label:'<b>Fees</b> (1.5)', b:['No Unreasonable Fee','Basis / Rate Early, Preferably Writing','Contingent: Written + Signed + Method','No Criminal / Domestic Contingency'], v:'Verify: ABA \u201cunreasonable\u201d vs CA \u201cunconscionable\u201d' },
+      { label:'<b>Fee divisions</b> (1.5.1)', b:['Proportional OR Joint Responsibility','Client Agrees + Each Share in Writing','Total Fee Reasonable'], v:'Verify: CA referral-fee treatment' },
+    ]},
+    { roman:'IV', title:'The Confidentiality Triangle', items:[
+      { label:'<b>Duty of confidentiality</b> (1.6)', b:['Relating to Representation','Any Source / Anytime','ABA: Six Exceptions','Crime-Fraud Using Lawyer\u2019s Services'], d:'CA DIFFERS — Criminal Act + Death/SBH Only + Persuade First + Limited' },
+      { label:'<b>Attorney-client privilege</b> (Evidence)', b:['Confidential Communication','Lawyer \u2194 Client','For Legal Advice','Holder = Client','Crime-Fraud Exception'] },
+      { label:'<b>Work product</b> (FRCP 26(b)(3))', b:['Anticipation of Litigation','Substantial Need + Undue Hardship','Mental Impressions: Near-Absolute'] },
+      { label:'<b>The triangle</b> — which doctrine, which source', b:['Ethics / Evidence / CivPro','Broadest \u2192 Narrowest','Name the Source of Law'] },
+      { take:'\u2605 USE vs. REVEAL: revealing is 1.6\u2019s job; using info to the client\u2019s disadvantage is 1.8.2. Graders reward the distinction.' },
+    ]},
+    { roman:'V', title:'Conflicts — Current Clients (1.7 + 1.8 Series)', items:[
+      { label:'<b>Current-client conflict</b> (1.7) — Part I: conflict exists?', b:['Directly Adverse','Significant Risk Materially Limited','Personal Interest'] },
+      { label:'1.7 — Part II: consentable?', sub:true, b:['Reasonable Belief: Competent + Diligent','Not Prohibited by Law','Not Claim v. Claim Same Proceeding','Informed Written Consent'] },
+      { label:'<b>Business transactions with client</b> (1.8.1)', b:['Fair & Reasonable','Fully Disclosed in Writing','Advised: Independent Counsel','IWC + Lawyer\u2019s Role'] },
+      { label:'<b>Use of client information</b> (1.8.2)', b:['Use to Client\u2019s Disadvantage','Unless Informed Consent'] },
+      { label:'<b>Gifts from client</b> (1.8.3)', b:['No Soliciting Substantial Gift','No Drafting the Instrument','Relative Exception'], d:'CA DIFFERS — Certificate of Independent Review path' },
+      { label:'<b>Financial assistance</b> (1.8.5)', b:['No Financial Assistance re Litigation','Advance Costs, Contingent Repayment','Indigent: Pay Outright'], d:'CA DIFFERS — Loan for Any Purpose + Written Promise to Repay' },
+      { label:'<b>Third-party compensation</b> (1.8.6)', b:['Informed Consent','No Interference w/ Judgment','Confidentiality Protected'], d:'CA DIFFERS — Consent Must Be Written' },
+      { label:'<b>Aggregate settlements</b> (1.8.7)', b:['Each Client IWC','All Claims Disclosed','Each Person\u2019s Participation'] },
+      { label:'<b>Limiting malpractice liability</b> (1.8.8)', b:['Settle: Advise Independent Counsel in Writing','Reasonable Opportunity'], d:'CA DIFFERS — Prospective Limits: CA Flat Ban; ABA Allows if Independently Represented' },
+      { label:'<b>Sexual relations</b> (1.8.10)', b:['Current Client','Pre-Existing Relationship = Only Out','No Consent Defense'], d:'CA DIFFERS — Org Constituents Who Supervise / Direct / Consult' },
+      { label:'<b>Imputation of 1.8</b> (1.8.11)', b:['One Prohibited \u2192 All Prohibited','EXCEPT Sexual Relations — Personal'] },
+      { take:'\u2605 The exam trap IS the exception: the sex rule doesn\u2019t impute; everything else in 1.8 does.' },
+    ]},
+    { roman:'VI', title:'Conflicts — Former Clients, Imputation, Special', items:[
+      { label:'<b>Former clients</b> (1.9)', b:['Same / Substantially Related Matter','Materially Adverse','Informed Written Consent','Confidentiality Is Forever'] },
+      { label:'1.9 — substantially related test', sub:true, b:['Same Transaction / Dispute','Substantial Risk Confidential Info','Materially Advance New Client'] },
+      { label:'<b>Imputation general rule</b> (1.10)', b:['One Prohibited \u2192 Firm Prohibited (1.7 / 1.9)','Personal-Interest Exception','Lateral: Timely Screen + No Fee + Notice'], d:'CA DIFFERS — No Screen if Substantial Participation' },
+      { label:'<b>Government lawyers</b> (1.11)', b:['Personally & Substantially Participated','Agency Informed Written Consent','Screen + No Fee + Notice'] },
+      { label:'<b>Former judge / arbitrator / mediator / neutral</b> (1.12)', b:['Personally & Substantially Participated','ALL Parties IWC','Screening Cures Firm'] },
+      { label:'<b>Organization as client</b> (1.13)', b:['Org Is the Client','Up the Ladder \u2192 Board','Corporate Miranda'], d:'CA DIFFERS — ABA: May Report Out; CA: NEVER — Withdraw/Resign' },
+      { take:'\u2605 Gate check: 1.11/1.12 use \u201cpersonally and substantially participated\u201d — NOT the 1.9 substantial-relationship test. Different doors, different keys.' },
+    ]},
+    { roman:'VII', title:'Safekeeping & Exit', items:[
+      { label:'<b>Safekeeping property</b> (1.15)', b:['Separate / Client Trust Account','Records','Notify on Receipt','Promptly Deliver','Accounting on Request','Disputed Portion Stays'] },
+      { label:'<b>Withdrawal — mandatory</b> (1.16)', b:['Violation of Rules / Law','Materially Impaired','Discharged'] },
+      { label:'Withdrawal — permissive', sub:true, b:['No Material Adverse Effect','Client Crime / Fraud','Repugnant / Fundamental Disagreement','Nonpayment After Warning','Unreasonable Burden'] },
+      { label:'Duties on termination', sub:true, b:['Notice + Time for New Counsel','Surrender Papers & Property','Refund Unearned Fees'] },
+    ]},
+  ]
+},
+B: {
+  name: 'Integrity & Regulation',
+  sections: [
+    { roman:'I', title:'Regulation of the Profession', items:[
+      { label:'<b>Unauthorized practice / multijurisdictional</b> (5.5)', b:['No Practice Where Not Admitted','No Systematic Presence / Holding Out','Temporary: Local Counsel / Pro Hac / Arb / Related to Home Practice'], v:'Draft — verify vs Week 1 framing' },
+      { label:'<b>Bar admission & discipline</b> (8.1)', b:['No False Statement of Material Fact','Correct Misapprehension','Respond to Lawful Demands'] },
+      { label:'<b>Reporting misconduct</b> (8.3)', b:['Knows + Substantial Question','Honesty / Trustworthiness / Fitness','Inform Appropriate Authority','1.6 Exception'] },
+      { label:'<b>Misconduct</b> (8.4)', b:['Criminal Act Reflecting Adversely','Dishonesty / Fraud / Deceit','Prejudicial to Administration of Justice','Harassment / Discrimination (8.4(g) / 8.4.1)'] },
+      { label:'<b>Disciplinary authority / choice of law</b> (8.5)', b:['Admitted = Subject Anywhere','Tribunal: Where It Sits','Else: Predominant Effect','Safe Harbor'] },
+    ]},
+    { roman:'II', title:'Duties to Third Parties', items:[
+      { label:'<b>Truthfulness to others</b> (4.1)', b:['No False Statement Material Fact / Law','To a Third Person','Disclose to Avoid Assisting Crime-Fraud','UNLESS 1.6 Prohibits'] },
+      { label:'<b>Inadvertent writings</b> (4.4(b))', b:['Knows / Should Know Inadvertently Sent','Promptly Notify Sender','Follow Law / Court Order'] },
+      { take:'\u2605 The 1.6 trump: 4.1\u2019s disclosure duty yields to confidentiality. When they collide, 1.6 wins — and that collision is the essay.' },
+    ]},
+  ]
+}
+};
+
+var state = { mod:'A', revealed:{}, marked:{} };
+function g(id){ return document.getElementById(id); }
+function itemKey(mod, si, ii){ return mod+'-'+si+'-'+ii; }
+
+function build(){
+  var mod = DATA[state.mod];
+  var nav = g('sec-nav'); nav.innerHTML='';
+  mod.sections.forEach(function(sec, si){
+    var chip = document.createElement('button');
+    chip.className='sec-chip'; chip.textContent = sec.roman+' · '+sec.title.split(' — ')[0].split(' (')[0];
+    chip.addEventListener('click', function(){
+      var el = document.getElementById('sec-'+si);
+      el.querySelector('.sec-body').classList.add('open');
+      el.querySelector('.sec-arrow').classList.add('open');
+      el.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+    nav.appendChild(chip);
+  });
+
+  var wrap = g('sections'); wrap.innerHTML='';
+  mod.sections.forEach(function(sec, si){
+    var sdiv = document.createElement('div');
+    sdiv.className='section'; sdiv.id='sec-'+si;
+    var nItems = sec.items.filter(function(it){return !it.take;}).length;
+    var head = document.createElement('div');
+    head.className='sec-head';
+    head.innerHTML = '<div class="sec-title"><span class="roman">'+sec.roman+'.</span>'+sec.title+'</div><div class="sec-meta"><span class="sec-count">'+nItems+' items</span><span class="sec-arrow">\u25b6</span></div>';
+    var body = document.createElement('div');
+    body.className='sec-body';
+    var inner = document.createElement('div');
+    inner.className='sec-inner';
+    head.addEventListener('click', function(){
+      body.classList.toggle('open');
+      head.querySelector('.sec-arrow').classList.toggle('open');
+    });
+
+    sec.items.forEach(function(it, ii){
+      if(it.take){
+        var t = document.createElement('div');
+        t.className='takeaway'; t.textContent = it.take;
+        inner.appendChild(t);
+        return;
+      }
+      var key = itemKey(state.mod, si, ii);
+      var item = document.createElement('div');
+      item.className = 'cl-item'+(it.sub?' subitem':'')+(state.marked[key]?' marked':'');
+      var check = document.createElement('div');
+      check.className='cl-check'; check.textContent='\u2713';
+      check.addEventListener('click', function(e){
+        e.stopPropagation();
+        state.marked[key] = !state.marked[key];
+        item.classList.toggle('marked', !!state.marked[key]);
+        updateProgress();
+      });
+      var content = document.createElement('div');
+      content.className='cl-content';
+      var label = document.createElement('div');
+      label.className='cl-label'; label.innerHTML = it.label;
+      var buzzWrap = document.createElement('div');
+      buzzWrap.className='cl-buzz'+(state.revealed[key]?' revealed':'');
+      var bhtml = (it.b||[]).map(function(b){return '<span class="buzz">'+b+'</span>';}).join('');
+      if(it.d) bhtml += '<span class="differs-tag">\u26a0 '+it.d+'</span>';
+      if(it.c) bhtml += '<span class="caonly-tag">\u25c6 '+it.c+'</span>';
+      if(it.v) bhtml += '<span class="verify-tag">'+it.v+'</span>';
+      buzzWrap.innerHTML = bhtml;
+      var hint = document.createElement('div');
+      hint.className='tap-hint'; hint.textContent='Recite the elements + flag — tap to check yourself';
+      if(state.revealed[key]) hint.style.display='none';
+      label.addEventListener('click', function(){
+        state.revealed[key] = !state.revealed[key];
+        buzzWrap.classList.toggle('revealed', !!state.revealed[key]);
+        hint.style.display = state.revealed[key] ? 'none' : 'block';
+      });
+      content.appendChild(label);
+      content.appendChild(hint);
+      content.appendChild(buzzWrap);
+      item.appendChild(check);
+      item.appendChild(content);
+      inner.appendChild(item);
+    });
+
+    body.appendChild(inner);
+    sdiv.appendChild(head);
+    sdiv.appendChild(body);
+    wrap.appendChild(sdiv);
+  });
+  var first = wrap.querySelector('.section');
+  if(first){ first.querySelector('.sec-body').classList.add('open'); first.querySelector('.sec-arrow').classList.add('open'); }
+  updateProgress();
+}
+
+function totalItems(){
+  var n=0;
+  DATA[state.mod].sections.forEach(function(sec){ n += sec.items.filter(function(it){return !it.take;}).length; });
+  return n;
+}
+
+function updateProgress(){
+  var total = totalItems();
+  var marked = 0;
+  DATA[state.mod].sections.forEach(function(sec, si){
+    sec.items.forEach(function(it, ii){
+      if(!it.take && state.marked[itemKey(state.mod,si,ii)]) marked++;
+    });
+  });
+  g('p-marked').textContent = marked;
+  g('p-total').textContent = total;
+  var pct = total>0 ? Math.round(marked/total*100) : 0;
+  g('hdr-n').textContent = pct+'%';
+  g('prog-fill').style.width = pct+'%';
+}
+
+document.querySelectorAll('.mod-tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.mod-tab').forEach(function(t){ t.classList.remove('active'); });
+    tab.classList.add('active');
+    state.mod = tab.getAttribute('data-mod');
+    build();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+});
+
+g('btn-showall').addEventListener('click', function(){
+  DATA[state.mod].sections.forEach(function(sec, si){
+    sec.items.forEach(function(it, ii){
+      if(!it.take) state.revealed[itemKey(state.mod,si,ii)] = true;
+    });
+  });
+  build();
+  document.querySelectorAll('.sec-body').forEach(function(b){ b.classList.add('open'); });
+  document.querySelectorAll('.sec-arrow').forEach(function(a){ a.classList.add('open'); });
+});
+
+g('btn-reset').addEventListener('click', function(){
+  Object.keys(state.revealed).forEach(function(k){ if(k.indexOf(state.mod+'-')===0) delete state.revealed[k]; });
+  Object.keys(state.marked).forEach(function(k){ if(k.indexOf(state.mod+'-')===0) delete state.marked[k]; });
+  build();
+});
+
+build();
+})();
+</script>
+</body>
+</html>

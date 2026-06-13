@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Fact Left Behind — Community Property Q3</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 860px; }
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(29,158,117,0.3); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; letter-spacing: 0.04em; }
+#header h1 span { color: #1d9e75; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#level-indicator { display: flex; gap: 8px; align-items: center; }
+.level-pip { width: 32px; height: 6px; border-radius: 3px; background: #1a2f4a; transition: background 0.3s; }
+.level-pip.active { background: #1d9e75; }
+.level-pip.done { background: #c9973a; }
+#level-label { font-size: 12px; color: #1d9e75; font-weight: 500; margin-left: 4px; }
+#approach { background: #0f1e35; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.2); }
+#approach-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+#approach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.approach-col h4 { font-size: 11px; color: #f5f0e8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; border-bottom: 1px solid rgba(29,158,117,0.2); padding-bottom: 4px; }
+.approach-col ul { list-style: none; }
+.approach-col li { font-size: 11px; color: #a0b8cc; padding: 2px 0; line-height: 1.4; }
+.approach-col li strong { color: #1d9e75; }
+#mnemonic { grid-column: span 2; background: rgba(29,158,117,0.1); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #9fe1cb; text-align: center; border: 1px solid rgba(29,158,117,0.2); }
+#matrix-box { background: #0f1e35; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.15); }
+#matrix-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px; }
+#matrix-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+#matrix-table th { background: #1a2f4a; color: #6b8aaa; text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; padding: 8px 10px; text-align: center; }
+#matrix-table th:first-child { text-align: left; }
+#matrix-table td { padding: 9px 10px; border-bottom: 1px solid #1a2f4a; color: #a0b8cc; text-align: center; }
+#matrix-table td:first-child { text-align: left; color: #f5f0e8; font-weight: 500; }
+#matrix-table tr:last-child td { border-bottom: none; }
+.matrix-note { font-size: 10px; color: #6b8aaa; margin-top: 8px; }
+#hypo-box { background: #0f1e35; border-radius: 12px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(29,158,117,0.15); }
+#hypo-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#hypo-text { font-size: 13px; color: #d0dce8; line-height: 1.75; }
+.fact { background: rgba(29,158,117,0.15); border-radius: 3px; padding: 1px 4px; }
+#panel { background: #0f1e35; border-radius: 12px; padding: 20px; }
+#l1-question { font-size: 14px; font-weight: 500; color: #f5f0e8; margin-bottom: 4px; }
+#l1-sub { font-size: 11px; color: #6b8aaa; margin-bottom: 18px; line-height: 1.5; }
+#issue-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.asset-block { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; border: 1.5px solid #1a2f4a; }
+.asset-block-title { font-size: 12px; font-weight: 600; color: #f5f0e8; margin-bottom: 10px; }
+.checklist-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.check-item { display: flex; align-items: center; gap: 7px; background: #0f1e35; border: 1.5px solid #2a4a6a; border-radius: 7px; padding: 7px 11px; cursor: pointer; transition: all 0.15s; user-select: none; }
+.check-item:hover { border-color: #1d9e75; }
+.check-item.selected { background: #1a3a2a; border-color: #1d9e75; }
+.check-box { width: 16px; height: 16px; border-radius: 3px; border: 2px solid #2a4a6a; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #0f1e35; transition: all 0.15s; }
+.check-item.selected .check-box { background: #1d9e75; border-color: #1d9e75; }
+.check-label { font-size: 11px; font-weight: 500; color: #6b8aaa; }
+.check-item.selected .check-label { color: #9fe1cb; }
+.check-item.ans-yes { background: #0f3d2a; border-color: #1d9e75; pointer-events: none; }
+.check-item.ans-yes .check-box { background: #1d9e75; border-color: #1d9e75; }
+.check-item.ans-yes .check-label { color: #9fe1cb; }
+.check-item.ans-no { background: #1a2f4a; border-color: #1a2f4a; pointer-events: none; }
+.check-item.ans-no .check-label { color: #2a4a6a; }
+.check-item.missed-item { background: #3d2f0a; border-color: #c9973a; pointer-events: none; }
+.check-item.missed-item .check-box { border-color: #c9973a; }
+.check-item.missed-item .check-label { color: #f5d06a; }
+.check-item.wrong-item { background: #3d1515; border-color: #e24b4a; pointer-events: none; }
+.check-item.wrong-item .check-label { color: #f09595; }
+.reveal-asset-btn { background: transparent; border: 1px solid #2a4a6a; border-radius: 6px; padding: 5px 12px; font-size: 10px; color: #6b8aaa; cursor: pointer; font-family: inherit; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.08em; }
+.reveal-asset-btn:hover { border-color: #1d9e75; color: #9fe1cb; }
+.asset-answer { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #2a4a6a; font-size: 12px; color: #a0b8cc; line-height: 1.6; }
+.asset-answer.visible { display: block; }
+#score-bar { background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; display: none; }
+#score-cells { display: flex; gap: 10px; }
+.score-cell { flex: 1; text-align: center; background: #0f1e35; border-radius: 6px; padding: 10px 6px; }
+.score-cell-n { font-size: 18px; font-weight: 500; color: #1d9e75; }
+.score-cell-l { font-size: 9px; color: #6b8aaa; text-transform: uppercase; margin-top: 2px; }
+#l2-progress { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.issue-dot { width: 28px; height: 28px; border-radius: 50%; background: #1a2f4a; border: 2px solid #2a4a6a; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #6b8aaa; }
+.issue-dot.active { border-color: #1d9e75; background: rgba(29,158,117,0.15); color: #9fe1cb; }
+.issue-dot.done { border-color: #c9973a; background: rgba(201,151,58,0.15); color: #f5d06a; }
+#l2-subq { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+#l2-issue-title { font-size: 10px; color: #1d9e75; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#l2-element-box { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(29,158,117,0.2); }
+#l2-element-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+#l2-element-text { font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.5; }
+#l2-element-sub { font-size: 12px; color: #6b8aaa; margin-top: 5px; }
+#l2-instruction { font-size: 11px; color: #6b8aaa; margin-bottom: 10px; }
+#fact-tiles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.fact-tile { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #2a4a6a; background: #1a2f4a; color: #a0b8cc; font-size: 12px; cursor: pointer; transition: all 0.15s; line-height: 1.4; }
+.fact-tile:hover { border-color: #1d9e75; color: #f5f0e8; }
+.fact-tile.selected { background: #1a3a2a; border-color: #1d9e75; color: #f5f0e8; }
+.fact-tile.correct { background: #0f3d2a; border-color: #1d9e75; color: #9fe1cb; cursor: default; }
+.fact-tile.missed-fact { background: #3d2f0a; border-color: #c9973a; color: #f5d06a; cursor: default; }
+.fact-tile.wrong-fact { background: #3d1515; border-color: #e24b4a; color: #f09595; cursor: default; }
+.fact-tile.neutral { background: #1a2f4a; border-color: #1a2f4a; color: #4a6a8a; cursor: default; }
+#l2-explain { display: none; background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(29,158,117,0.3); }
+#l2-explain-text { font-size: 13px; color: #a0b8cc; line-height: 1.6; }
+.btn-primary { width: 100%; background: #1d9e75; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; margin-bottom: 8px; }
+#prog-text { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 12px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 22px; font-weight: 500; color: #f5f0e8; margin-bottom: 6px; }
+#results-score { font-size: 54px; font-weight: 500; color: #1d9e75; line-height: 1; margin-bottom: 4px; }
+#results-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-cell-n { font-size: 20px; font-weight: 500; color: #1d9e75; }
+.r-cell-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+<div id="header">
+  <div><h1>No Fact <span>Left Behind</span></h1><p>Community Property · Q3 · Herb, Wendy &amp; Ann · Feb 2004</p></div>
+  <div id="level-indicator">
+    <div class="level-pip active" id="pip1"></div>
+    <div class="level-pip" id="pip2"></div>
+    <span id="level-label">Level 1</span>
+  </div>
+</div>
+<div id="approach">
+  <div id="approach-title">CP Mental Checklist — Tap to expand ▼</div>
+  <div id="approach-grid" style="display:none;">
+    <div class="approach-col"><h4>Source</h4><ul><li>Before marriage? → <strong>SP</strong></li><li>During marriage? → <strong>CP</strong></li><li>Gift/inheritance? → <strong>SP</strong></li><li>Exchange Rule: SP in → SP out</li><li>QCP: earned in non-CP state</li></ul></div>
+    <div class="approach-col"><h4>Conduct</h4><ul><li><strong>S</strong>eparation</li><li><strong>I</strong>mprovements (Moore/Marsden)</li><li><strong>P</strong>ereira / Van Camp</li><li><strong>T</strong>ransmutation (writing post-1985)</li><li><strong>G</strong>ifts (writing if substantial)</li><li><strong>C</strong>ommingling</li></ul></div>
+    <div class="approach-col"><h4>Presumptions</h4><ul><li>General CP presumption</li><li>Married Woman Pre-1975</li><li>Title in joint form</li><li>Putative spouse / QMP</li></ul></div>
+    <div class="approach-col"><h4>Potential Rights / Debts</h4><ul><li>Type of property liable?</li><li>Who incurred the debt?</li><li>When incurred?</li><li>Premarital creditors</li><li>Common necessities</li></ul></div>
+    <div id="mnemonic">🧠 <strong>Source → Conduct → Presumptions → Potential Rights → Distribution</strong></div>
+  </div>
+</div>
+<div id="matrix-box">
+  <div id="matrix-title">Asset Matrix — Classify Each Asset</div>
+  <div style="font-size:11px;color:#6b8aaa;margin-bottom:12px;">Click each dot to cycle: ⚫ None → 🔴 SP → 🟢 CP → 🟡 Mixed. Then hit Reveal to check.</div>
+  <table id="matrix-table">
+    <tr><th>Asset</th><th>SP</th><th>CP</th><th>Mixed</th><th>Doctrine</th><th>Distribution</th></tr>
+    <tr><td>Montana Residence</td><td><span class="mdot" data-answer="mixed"></span></td><td><span class="mdot" data-answer="empty"></span></td><td><span class="mdot" data-answer="mixed"></span></td><td class="doctrine-cell" style="display:none;font-size:11px;color:#6b8aaa;">QCP / Joint form</td><td class="dist-cell" style="display:none;font-size:11px;color:#6b8aaa;">Equal (as CP)</td></tr>
+    <tr><td>Automobile</td><td><span class="mdot" data-answer="empty"></span></td><td><span class="mdot" data-answer="cp"></span></td><td><span class="mdot" data-answer="empty"></span></td><td class="doctrine-cell" style="display:none;font-size:11px;color:#6b8aaa;">Invalid gift/transmutation</td><td class="dist-cell" style="display:none;font-size:11px;color:#6b8aaa;">H &amp; W CP; Ann gets nothing</td></tr>
+    <tr><td>Ann's $15K Account</td><td><span class="mdot" data-answer="sp"></span></td><td><span class="mdot" data-answer="empty"></span></td><td><span class="mdot" data-answer="empty"></span></td><td class="doctrine-cell" style="display:none;font-size:11px;color:#6b8aaa;">Putative spouse fails</td><td class="dist-cell" style="display:none;font-size:11px;color:#6b8aaa;">Ann's SP only</td></tr>
+    <tr><td>Wendy's Note (Debt)</td><td><span class="mdot" data-answer="sp"></span></td><td><span class="mdot" data-answer="empty"></span></td><td><span class="mdot" data-answer="mixed"></span></td><td class="doctrine-cell" style="display:none;font-size:11px;color:#6b8aaa;">Premarital — W's SP debt</td><td class="dist-cell" style="display:none;font-size:11px;color:#6b8aaa;">W SP first; CP reachable</td></tr>
+  </table>
+  <div class="matrix-note">Click any dot: ⚫ None → 🔴 SP → 🟢 CP → 🟡 Mixed</div>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button id="matrix-reveal" style="flex:1;background:#1d9e75;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:500;color:#0f1e35;cursor:pointer;font-family:inherit;">Reveal Answers</button>
+    <button id="matrix-reset" style="flex:0 0 auto;background:#1a2f4a;border:1px solid #2a4a6a;border-radius:8px;padding:10px 16px;font-size:13px;color:#6b8aaa;cursor:pointer;font-family:inherit;">Reset</button>
+  </div>
+  <div id="matrix-score" style="font-size:12px;color:#9fe1cb;margin-top:10px;text-align:center;display:none;"></div>
+</div>
+<div id="hypo-box">
+  <div id="hypo-title">Fact Pattern — Q3 · Herb, Wendy &amp; Ann (California) · February 2004</div>
+  <div id="hypo-text">
+    In 1989, <span class="fact" id="f-marriage">Herb and Wendy married while domiciled in Montana, a non-community property state</span>. Prior to the marriage, <span class="fact" id="f-note">Wendy had borrowed $25,000 from a Montana bank and executed a promissory note</span>. <span class="fact" id="f-montana-house">Herb and Wendy, using savings from their salaries during their marriage, bought a Montana residence and took title as tenants in common</span>.<br><br>
+    In 1998, <span class="fact" id="f-ca-domicile">Herb and Wendy moved to California and became domiciled here</span>. They did not sell their Montana house.<br><br>
+    In 1999, <span class="fact" id="f-affair">Herb began having an affair with Ann</span>. <span class="fact" id="f-herb-told-ann">Herb told Ann he intended to divorce Wendy and marry her</span>. <span class="fact" id="f-herb-told-wendy">Herb told Wendy he was moving to his own apartment because he "needed some space."</span> <span class="fact" id="f-ann-name">Ann assumed Herb's last name; Herb introduced her to friends as his wife</span>. <span class="fact" id="f-auto">Herb and Ann bought an automobile with a loan, listed as husband and wife on the application, and took title as husband and wife</span>. <span class="fact" id="f-auto-paid">Herb paid off the automobile loan out of his earnings</span>.<br><br>
+    <span class="fact" id="f-weekends">Herb continued to spend occasional weekends with Wendy</span>, who was unaware of his relationship with Ann. <span class="fact" id="f-counseling">Wendy urged Herb to see a marriage counselor with her, which he did</span>, without disclosing Ann.<br><br>
+    In 2003, <span class="fact" id="f-filing">Wendy filed a petition for dissolution</span>. At filing, <span class="fact" id="f-note-balance">the Montana bank was demanding $8,000 as the past-due balance on Wendy's note, reduced to a judgment</span>. Also at filing, <span class="fact" id="f-ann-account">Ann had a $15,000 bank account in her name alone, solely from her earnings while living with Herb</span>.
+  </div>
+</div>
+<div id="panel">
+  <div id="level1">
+    <div id="l1-question">Level 1 — CP Mental Checklist</div>
+    <div id="l1-sub">For each asset, check every category of the CP framework that is implicated. Mark everything that needs analysis — even issues that resolve quickly. Reveal each asset individually or submit all at once.</div>
+    <div id="issue-grid"></div>
+    <div id="score-bar">
+      <div style="font-size:10px;color:#6b8aaa;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Level 1 Results</div>
+      <div id="score-cells">
+        <div class="score-cell"><div class="score-cell-n" id="l1-correct-n">0</div><div class="score-cell-l">Correct</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-missed-n">0</div><div class="score-cell-l">Missed</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-wrong-n">0</div><div class="score-cell-l">Over-checked</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-pct">0%</div><div class="score-cell-l">Accuracy</div></div>
+      </div>
+    </div>
+    <div id="l1-btn-wrap"><button class="btn-primary" id="l1-submit">Check My Checklist →</button></div>
+    <div id="l1-next-wrap" style="display:none;"><button class="btn-primary" id="l1-next">Level 2 — No Fact Left Behind →</button></div>
+  </div>
+  <div id="level2" style="display:none;">
+    <div id="l2-progress"></div>
+    <div id="l2-subq"></div>
+    <div id="l2-issue-title"></div>
+    <div id="l2-element-box">
+      <div id="l2-element-label">Rule / Element</div>
+      <div id="l2-element-text"></div>
+      <div id="l2-element-sub"></div>
+    </div>
+    <div id="l2-instruction">Tap every fact from the hypo that is legally operative for this element.</div>
+    <div id="fact-tiles"></div>
+    <div id="l2-explain"><div id="l2-explain-text"></div></div>
+    <button class="btn-primary" id="l2-check">Check Facts →</button>
+    <div id="prog-text"></div>
+  </div>
+  <div id="results">
+    <h2>No Fact Left Behind.</h2>
+    <div id="results-score"></div>
+    <div id="results-sub"></div>
+    <div id="results-grid">
+      <div class="r-cell"><div class="r-cell-n" id="r-issues"></div><div class="r-cell-l">Checklist score</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-facts"></div><div class="r-cell-l">Facts deployed</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-total"></div><div class="r-cell-l">Combined %</div></div>
+    </div>
+    <button class="btn-primary" id="restart-btn">Play again</button>
+  </div>
+</div>
+</div>
+<script>
+(function(){
+var ASSETS=[
+  {id:'threshold',title:'⚑ Threshold — State of the Marriages',cats:['Source','Conduct','Presumptions','Potential Rights','Distribution'],answers:[false,true,false,true,false],
+   explanation:'Conduct: Was there legal separation in 1999 (H moved out) or 2003 (W filed)? Two prongs required: unequivocal intent to end the marriage AND conduct consistent with that intent. H continued weekend visits, attended marriage counseling, never told W about Ann, never filed for divorce for 4 years → no separation until 2003. Potential Rights: Putative spouse doctrine (Ann) — she knew H was still married; belief not objectively reasonable → fails. Marvin doctrine — implied contract based on illicit relationship → unenforceable. These threshold determinations control all asset classifications.'},
+  {id:'montana',title:'1a — Montana Residence',cats:['Source','Conduct','Presumptions','Potential Rights','Distribution'],answers:[true,true,true,false,true],
+   explanation:'Source: Purchased during marriage with salary savings while domiciled in Montana (non-CP state) → Quasi-Community Property. Would have been CP if domiciled in CA. Conduct: Separation question — if separation occurred in 1999, post-1999 payments could be SP contributions creating reimbursement rights. Since no separation until 2003, all payments = QCP. Presumptions: Tenants in common = joint form → CP presumption under CA law reinforces QCP result. Distribution: QCP treated as CP at dissolution → divided equally between H and W. CA court has personal jurisdiction over W and can order transfer of out-of-state property.'},
+  {id:'auto',title:'1b — The Automobile',cats:['Source','Conduct','Presumptions','Potential Rights','Distribution'],answers:[true,true,true,true,true],
+   explanation:'Source: H paid off loan with earnings during marriage. No valid separation in 1999 → earnings = CP → car paid with CP. Conduct: H titled car in H & Ann\'s name = attempted gift of CP without W\'s written consent → invalid. Also invalid transmutation — no signed writing from W (required post-1985). Presumptions: Title as "husband and wife" — Ann is not H\'s spouse; title presumption gives her no valid interest. Potential Rights: Ann\'s theories — putative spouse fails (belief not objectively reasonable); Marvin contract fails (based on illicit relationship). Ann may have personal contract/fraud claim against H, but not from the marriage estate. Distribution: Car = H & W\'s CP, divided equally. Ann takes nothing.'},
+  {id:'bank',title:'1c — Ann\'s $15,000 Bank Account',cats:['Source','Conduct','Presumptions','Potential Rights','Distribution'],answers:[true,false,true,true,true],
+   explanation:'Source: Ann\'s earnings during a meretricious relationship — not CP of H & W (no valid marriage). Presumptions: Account in Ann\'s name alone. CP presumption applies only to spouses. If putative spouse → quasi-marital property. Putative spouse fails (see threshold) → not QMP. Potential Rights: Ann\'s putative spouse claim fails — belief not objectively reasonable. Neither H, W, nor Montana Bank can reach this account. Distribution: Ann\'s separate property entirely.'},
+  {id:'note',title:'2 — Montana Bank Note ($8,000)',cats:['Source','Conduct','Presumptions','Potential Rights','Distribution'],answers:[true,false,false,true,true],
+   explanation:'Source: Note executed before marriage → Wendy\'s premarital separate debt. Potential Rights: Creditor of premarital debt may reach (1) debtor spouse\'s SP first, then (2) CP. QCP treated like CP for debt satisfaction. Cannot reach non-debtor spouse\'s SP. Distribution: Montana Bank can reach W\'s SP, Montana house (QCP = treated as CP), automobile (H & W\'s CP). Cannot reach Ann\'s $15k account (Ann\'s SP). Cannot reach Herb\'s SP (non-debtor). CA court can order W to transfer Montana property via personal jurisdiction.'},
+];
+var L2=[
+  {subq:'Threshold — Separation',issueTitle:'Living Separate and Apart — 1999 or 2003?',
+   element:'Living separate and apart requires: (1) at least one spouse has an unequivocal intent to end the marriage permanently, AND (2) that spouse\'s conduct is consistent with that intent. Both prongs required.',
+   sub:'What facts determine whether H and W legally separated when H moved out in 1999?',
+   keyFacts:['f-weekends','f-counseling','f-herb-told-wendy','f-filing'],
+   allFacts:['f-weekends','f-counseling','f-herb-told-wendy','f-filing','f-affair','f-herb-told-ann','f-marriage','f-auto-paid'],
+   explain:'"Occasional weekends with Wendy" — conduct inconsistent with intent to end the marriage. "Marriage counseling" — the purpose of counseling is to save the marriage; both spouses must have held onto the possibility of reconciliation. "Needed some space" — H never told W the marriage was over; he deceived her. "Filed for dissolution in 2003" — that\'s when legal separation actually occurs. Neither prong is satisfied in 1999. H\'s earnings 1999–2003 remain CP. This controls the automobile analysis.'},
+  {subq:'Threshold — Ann\'s Claims',issueTitle:'Putative Spouse Doctrine — Why Ann Fails',
+   element:'Putative spouse: a person who reasonably believes in good faith that they are validly married. Property acquired during the putative marriage = quasi-marital property (QMP), treated as CP at dissolution. Belief must be both subjectively in good faith AND objectively reasonable.',
+   sub:'What facts defeat Ann\'s putative spouse claim?',
+   keyFacts:['f-herb-told-ann','f-affair','f-ann-name'],
+   allFacts:['f-herb-told-ann','f-affair','f-ann-name','f-auto','f-marriage','f-counseling','f-weekends'],
+   explain:'"Herb told Ann he intended to divorce Wendy" — not that the divorce was complete. Ann knew H was still married to W. A reasonable person would verify that a prior marriage was actually dissolved before believing themselves validly married. No marriage license, no ceremony. Ann\'s belief, even if subjectively genuine, is not objectively reasonable. Putative spouse doctrine fails. Ann\'s $15k account cannot be claimed as QMP.'},
+  {subq:'1a — Montana Residence',issueTitle:'Quasi-Community Property + Joint Form Presumption',
+   element:'Quasi-community property: property acquired during marriage in a non-CP state that would have been CP if acquired while domiciled in California. Treated as CP at dissolution. Joint form title (including tenants in common) creates a CP presumption under CA law.',
+   sub:'What facts establish QCP character and what happens at dissolution?',
+   keyFacts:['f-montana-house','f-marriage','f-ca-domicile'],
+   allFacts:['f-montana-house','f-marriage','f-ca-domicile','f-note','f-filing','f-affair','f-weekends'],
+   explain:'"Herb and Wendy, using savings from their salaries during their marriage, bought a Montana residence" — salary savings during marriage would have been CP if in CA. Domiciled in Montana at time of purchase → QCP. "Took title as tenants in common" — joint form title creates CP presumption under CA law; reinforces QCP result. Both analyses point the same direction. At dissolution, QCP is treated as CP → divided equally. Ann has no rights. CA court has personal jurisdiction over W → can order transfer even of out-of-state real property.'},
+  {subq:'1b — Automobile',issueTitle:'Invalid Gift of CP Without Written Consent',
+   element:'A spouse may not make a gift of community property without the written consent of the other spouse. Such gifts may be set aside at any time. Since 1985, transmutation of property character requires a signed writing from the adversely affected spouse.',
+   sub:'What facts show H attempted an invalid gift/transmutation of CP to Ann?',
+   keyFacts:['f-auto','f-auto-paid','f-filing','f-weekends'],
+   allFacts:['f-auto','f-auto-paid','f-filing','f-weekends','f-affair','f-marriage','f-ann-name','f-herb-told-ann'],
+   explain:'"Herb paid off the automobile loan out of his earnings" — no valid separation in 1999, so H\'s earnings = CP through 2003. Car paid off with CP funds → car is CP. "Took title as husband and wife" — H\'s act of titling car in his and Ann\'s name = attempted gift of CP without W\'s written consent → invalid. Also fails as transmutation — no signed writing from W as the adversely affected spouse (required since 1985). W may set aside the gift at any time. Car = H & W\'s CP. Ann takes nothing.'},
+  {subq:'2 — Montana Bank Note',issueTitle:'Creditor Rights — Premarital Separate Debt',
+   element:'A creditor holding a premarital separate debt may reach: (1) the debtor spouse\'s separate property first, then (2) community property (including QCP, treated as CP). Cannot reach the non-debtor spouse\'s separate property.',
+   sub:'What property can Montana Bank reach to satisfy Wendy\'s premarital note?',
+   keyFacts:['f-note','f-note-balance','f-montana-house','f-ann-account'],
+   allFacts:['f-note','f-note-balance','f-montana-house','f-ann-account','f-auto','f-filing','f-marriage','f-ca-domicile'],
+   explain:'"Wendy had borrowed $25,000 from a Montana bank and executed a promissory note" — before marriage → W\'s premarital separate debt. "$8,000 balance reduced to a judgment." Montana Bank can reach: (1) Wendy\'s SP first; (2) Montana house (QCP → treated as CP for debt purposes); (3) automobile (H & W\'s CP). CANNOT reach: Ann\'s $15,000 account (Ann\'s SP — no relationship to the marriage estate); Herb\'s separate property (non-debtor spouse). CA court can order W to transfer Montana property via personal jurisdiction even though it\'s out of state.'},
+];
+var HYPO_FACTS={
+  'f-marriage':'H and W married in 1989 while domiciled in Montana (non-CP state)',
+  'f-note':'W borrowed $25,000 from Montana bank and executed a promissory note BEFORE marriage',
+  'f-montana-house':'H & W bought Montana residence with salary savings during marriage; took title as tenants in common',
+  'f-ca-domicile':'H and W moved to California and became domiciled here in 1998',
+  'f-affair':'In 1999, Herb began having an affair with Ann',
+  'f-herb-told-ann':'Herb told Ann he intended to divorce Wendy and marry her',
+  'f-herb-told-wendy':'Herb told Wendy he was moving out because he "needed some space"',
+  'f-ann-name':'Ann assumed Herb\'s last name; Herb introduced her to friends as his wife',
+  'f-auto':'H and Ann bought an automobile; listed as husband and wife on loan; took title as husband and wife',
+  'f-auto-paid':'Herb paid off the automobile loan out of his earnings',
+  'f-weekends':'Herb continued to spend occasional weekends with Wendy',
+  'f-counseling':'Wendy urged Herb to see a marriage counselor with her; he did (without disclosing Ann)',
+  'f-filing':'Wendy filed a petition for dissolution in 2003',
+  'f-note-balance':'Montana bank demanding $8,000 past-due balance — reduced to judgment',
+  'f-ann-account':'Ann had $15,000 bank account in her name alone — solely from her earnings while living with Herb',
+};
+var state={phase:'l1',checks:{},l1Correct:0,l1Missed:0,l1Wrong:0,l2Idx:0,l2FactSel:{},totalFactsCorrect:0,totalFactsTotal:0};
+function g(id){return document.getElementById(id);}
+g('approach-title').addEventListener('click',function(){
+  var grid=g('approach-grid');var showing=grid.style.display!=='none';
+  grid.style.display=showing?'none':'grid';
+  g('approach-title').textContent='CP Mental Checklist — Tap to '+(showing?'expand ▼':'collapse ▲');
+});
+var STATES=['empty','sp','cp','mixed'];
+var SC={empty:'#1a2f4a',sp:'#e24b4a',cp:'#1d9e75',mixed:'#c9973a'};
+var SB={empty:'#2a4a6a',sp:'#e24b4a',cp:'#1d9e75',mixed:'#c9973a'};
+document.querySelectorAll('.mdot').forEach(function(dot){
+  dot.style.cssText='width:20px;height:20px;border-radius:50%;display:inline-block;cursor:pointer;border:2px solid #2a4a6a;background:#1a2f4a;transition:all 0.15s;';
+  dot.dataset.state='empty';
+  dot.addEventListener('click',function(){
+    if(dot.dataset.locked)return;
+    var idx=STATES.indexOf(dot.dataset.state);var next=STATES[(idx+1)%STATES.length];
+    dot.dataset.state=next;dot.style.background=SC[next];dot.style.borderColor=SB[next];dot.style.boxShadow='';
+  });
+});
+g('matrix-reveal').addEventListener('click',function(){
+  var correct=0,total=0;
+  document.querySelectorAll('.mdot').forEach(function(dot){
+    dot.dataset.locked='true';var answer=dot.dataset.answer;var chosen=dot.dataset.state;total++;
+    dot.style.background=SC[answer];dot.style.borderColor=SB[answer];
+    if(chosen===answer){correct++;dot.style.boxShadow='0 0 0 3px rgba(29,158,117,0.6)';}
+    else{dot.style.boxShadow='0 0 0 3px rgba(226,75,74,0.6)';}
+  });
+  document.querySelectorAll('.doctrine-cell,.dist-cell').forEach(function(td){td.style.display='';});
+  var pct=Math.round(correct/total*100);
+  g('matrix-score').style.display='block';
+  g('matrix-score').textContent=correct+'/'+total+' correct ('+pct+'%) — Green ring = correct · Red ring = check answer';
+  g('matrix-reveal').style.display='none';
+});
+g('matrix-reset').addEventListener('click',function(){
+  document.querySelectorAll('.mdot').forEach(function(dot){
+    delete dot.dataset.locked;dot.dataset.state='empty';dot.style.background=SC['empty'];dot.style.borderColor=SB['empty'];dot.style.boxShadow='';
+  });
+  document.querySelectorAll('.doctrine-cell,.dist-cell').forEach(function(td){td.style.display='none';});
+  g('matrix-score').style.display='none';g('matrix-reveal').style.display='block';
+});
+function buildL1(){
+  var grid=g('issue-grid');grid.innerHTML='';
+  ASSETS.forEach(function(asset){
+    var block=document.createElement('div');block.className='asset-block';block.id='block-'+asset.id;
+    var title=document.createElement('div');title.className='asset-block-title';title.textContent=asset.title;block.appendChild(title);
+    var row=document.createElement('div');row.className='checklist-row';
+    asset.cats.forEach(function(cat,idx){
+      var item=document.createElement('div');item.className='check-item';item.id='check-'+asset.id+'-'+idx;
+      item.innerHTML='<div class="check-box"></div><div class="check-label">'+cat+'</div>';
+      item.addEventListener('click',function(){
+        if(state.phase!=='l1')return;
+        var key=asset.id+'-'+idx;state.checks[key]=!state.checks[key];
+        item.classList.toggle('selected',!!state.checks[key]);
+        item.querySelector('.check-box').textContent=state.checks[key]?'✓':'';
+      });
+      row.appendChild(item);
+    });
+    block.appendChild(row);
+    var revBtn=document.createElement('button');revBtn.className='reveal-asset-btn';revBtn.textContent='Reveal this asset';
+    revBtn.addEventListener('click',function(e){e.stopPropagation();revealAsset(asset,block,revBtn);});
+    block.appendChild(revBtn);
+    var ansDiv=document.createElement('div');ansDiv.className='asset-answer';ansDiv.id='ans-'+asset.id;
+    ansDiv.textContent=asset.explanation;block.appendChild(ansDiv);
+    grid.appendChild(block);
+  });
+}
+function revealAsset(asset,block,btn){
+  asset.cats.forEach(function(cat,idx){
+    var item=g('check-'+asset.id+'-'+idx);
+    var key=asset.id+'-'+idx;var selected=!!state.checks[key];var correct=asset.answers[idx];
+    item.classList.remove('selected');item.querySelector('.check-box').textContent=correct?'✓':'';
+    if(correct&&selected){item.classList.add('ans-yes');}
+    else if(correct&&!selected){item.classList.add('missed-item');}
+    else if(!correct&&selected){item.classList.add('wrong-item');}
+    else{item.classList.add('ans-no');}
+  });
+  g('ans-'+asset.id).classList.add('visible');btn.style.display='none';
+}
+g('l1-submit').addEventListener('click',function(){
+  if(state.phase!=='l1')return;state.phase='l1-result';
+  var correct=0,missed=0,wrong=0;
+  ASSETS.forEach(function(asset){
+    var block=g('block-'+asset.id);var btn=block.querySelector('.reveal-asset-btn');
+    revealAsset(asset,block,btn);
+    asset.cats.forEach(function(cat,idx){
+      var key=asset.id+'-'+idx;var selected=!!state.checks[key];var ans=asset.answers[idx];
+      if(ans){if(selected)correct++;else missed++;}else{if(selected)wrong++;}
+    });
+  });
+  state.l1Correct=correct;state.l1Missed=missed;state.l1Wrong=wrong;
+  var realTotal=ASSETS.reduce(function(sum,a){return sum+a.answers.filter(Boolean).length;},0);
+  var pct=Math.round(correct/realTotal*100);
+  g('l1-correct-n').textContent=correct;g('l1-missed-n').textContent=missed;g('l1-wrong-n').textContent=wrong;g('l1-pct').textContent=pct+'%';
+  g('score-bar').style.display='block';g('l1-btn-wrap').style.display='none';g('l1-next-wrap').style.display='block';
+  g('pip1').className='level-pip done';g('pip2').className='level-pip active';g('level-label').textContent='Level 2 ready';
+});
+g('l1-next').addEventListener('click',function(){
+  g('level1').style.display='none';g('level2').style.display='block';
+  state.phase='l2';state.l2Idx=0;g('level-label').textContent='Level 2';buildDots();renderL2();
+});
+function buildDots(){
+  var wrap=g('l2-progress');wrap.innerHTML='';
+  L2.forEach(function(el,i){
+    var dot=document.createElement('div');dot.className='issue-dot'+(i===0?' active':'');dot.id='dot-'+i;dot.textContent=(i+1);wrap.appendChild(dot);
+  });
+}
+function renderL2(){
+  var el=L2[state.l2Idx];state.l2FactSel={};
+  g('l2-subq').textContent=el.subq;g('l2-issue-title').textContent=el.issueTitle;
+  g('l2-element-text').textContent=el.element;g('l2-element-sub').textContent=el.sub;
+  g('l2-explain').style.display='none';g('l2-check').textContent='Check Facts →';
+  g('prog-text').textContent='Element '+(state.l2Idx+1)+' of '+L2.length;
+  var tilesWrap=g('fact-tiles');tilesWrap.innerHTML='';
+  el.allFacts.forEach(function(fid){
+    var text=HYPO_FACTS[fid]||fid;var tile=document.createElement('div');
+    tile.className='fact-tile';tile.textContent=text;tile.id='tile-'+fid;
+    tile.addEventListener('click',function(){
+      if(state.l2FactSel._locked)return;
+      state.l2FactSel[fid]=!state.l2FactSel[fid];tile.classList.toggle('selected',!!state.l2FactSel[fid]);
+    });
+    tilesWrap.appendChild(tile);
+  });
+  L2.forEach(function(e,i){var dot=g('dot-'+i);if(dot)dot.className='issue-dot'+(i===state.l2Idx?' active':i<state.l2Idx?' done':'');});
+}
+g('l2-check').addEventListener('click',function(){
+  if(state.phase!=='l2')return;var el=L2[state.l2Idx];
+  if(!state.l2FactSel._locked){
+    state.l2FactSel._locked=true;var correct=0;
+    el.allFacts.forEach(function(fid){
+      var isKey=el.keyFacts.indexOf(fid)>=0;var sel=!!state.l2FactSel[fid];var tile=g('tile-'+fid);
+      tile.classList.remove('selected');
+      if(isKey&&sel){correct++;tile.className='fact-tile correct';}
+      else if(isKey&&!sel){tile.className='fact-tile missed-fact';}
+      else if(!isKey&&sel){tile.className='fact-tile wrong-fact';}
+      else{tile.className='fact-tile neutral';}
+    });
+    state.totalFactsCorrect+=correct;state.totalFactsTotal+=el.keyFacts.length;
+    g('l2-explain-text').textContent=el.explain;g('l2-explain').style.display='block';
+    g('l2-check').textContent=state.l2Idx<L2.length-1?'Next Element →':'See Results →';
+  } else {
+    if(state.l2Idx<L2.length-1){g('dot-'+state.l2Idx).className='issue-dot done';state.l2Idx++;state.l2FactSel={};renderL2();}
+    else{showResults();}
+  }
+});
+function showResults(){
+  g('level2').style.display='none';g('results').style.display='block';
+  g('pip2').className='level-pip done';g('level-label').textContent='Complete';
+  var realTotal=ASSETS.reduce(function(sum,a){return sum+a.answers.filter(Boolean).length;},0);
+  var issuePct=Math.round(state.l1Correct/realTotal*100);
+  var factPct=state.totalFactsTotal>0?Math.round(state.totalFactsCorrect/state.totalFactsTotal*100):0;
+  var combined=Math.round((issuePct+factPct)/2);
+  g('results-score').textContent=combined+'%';
+  g('results-sub').textContent=combined>=85?'No fact left behind, Counselor.':combined>=65?'Solid — a few facts slipped through.':'Keep drilling — the facts are all there.';
+  g('r-issues').textContent=state.l1Correct+'/'+realTotal;g('r-facts').textContent=state.totalFactsCorrect+'/'+state.totalFactsTotal;g('r-total').textContent=combined+'%';
+}
+g('restart-btn').addEventListener('click',function(){
+  state={phase:'l1',checks:{},l1Correct:0,l1Missed:0,l1Wrong:0,l2Idx:0,l2FactSel:{},totalFactsCorrect:0,totalFactsTotal:0};
+  g('results').style.display='none';g('level2').style.display='none';g('level1').style.display='block';
+  g('score-bar').style.display='none';g('l1-btn-wrap').style.display='block';g('l1-next-wrap').style.display='none';
+  g('pip1').className='level-pip active';g('pip2').className='level-pip';g('level-label').textContent='Level 1';buildL1();
+});
+buildL1();
+})();
+</script>
+</body>
+</html>

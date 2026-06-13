@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LegalMinds — PR Rule Elements Drill</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 720px; }
+
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(181,69,62,0.35); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; letter-spacing: 0.04em; }
+#header h1 span { color: #d4655c; font-style: italic; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#deck-stats { text-align: right; }
+#deck-count { font-size: 16px; color: #d4655c; font-weight: 600; }
+#deck-label { font-size: 9px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.08em; }
+
+#filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.filter-btn { background: #0f1e35; border: 1.5px solid #1a2f4a; border-radius: 20px; padding: 7px 14px; font-size: 11px; color: #a0b8cc; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.filter-btn:hover { border-color: #b5453e; }
+.filter-btn.active { background: rgba(181,69,62,0.18); border-color: #b5453e; color: #f0a8a2; font-weight: 600; }
+.filter-btn .fcount { opacity: 0.6; font-size: 10px; margin-left: 3px; }
+
+#controls { display: flex; gap: 8px; margin-bottom: 12px; }
+.ctrl-btn { flex: 1; background: #0f1e35; border: 1.5px solid #1a2f4a; border-radius: 8px; padding: 9px; font-size: 11px; color: #a0b8cc; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.ctrl-btn:hover { border-color: #2a4a6a; color: #f5f0e8; }
+
+#card-zone { perspective: 1200px; margin-bottom: 14px; }
+#card { position: relative; width: 100%; min-height: 340px; cursor: pointer; transform-style: preserve-3d; transition: transform 0.45s; }
+#card.flipped { transform: rotateY(180deg); }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 14px; padding: 26px; display: flex; flex-direction: column; }
+#face-front { background: #0f1e35; border: 1.5px solid rgba(181,69,62,0.4); justify-content: center; align-items: center; text-align: center; }
+#face-back { background: #101f38; border: 1.5px solid #b5453e; transform: rotateY(180deg); overflow-y: auto; min-height: 340px; position: relative; }
+
+.front-cat { font-size: 9px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 18px; }
+.front-name { font-size: 22px; font-weight: 700; color: #f5f0e8; letter-spacing: 0.05em; line-height: 1.35; text-transform: uppercase; }
+.front-nums { font-size: 11px; color: #6b8aaa; margin-top: 22px; letter-spacing: 0.05em; }
+.front-hint { font-size: 10px; color: #4a6a8a; margin-top: 26px; font-style: italic; }
+
+.back-name { font-size: 11px; font-weight: 700; color: #e8b54f; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.part { margin-bottom: 12px; }
+.part-label { font-size: 10px; font-weight: 700; color: #e8b54f; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+.part-text { font-size: 13.5px; color: #d0dce8; line-height: 1.7; }
+.part-text b { color: #ed8a7f; font-weight: 600; }
+.note { font-size: 11.5px; color: #8aa5bd; line-height: 1.55; font-style: italic; margin-top: 4px; border-left: 2px solid #1a2f4a; padding-left: 10px; }
+
+.flag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 12px; margin-top: 10px; }
+.flag-same { background: rgba(29,158,117,0.18); color: #4fc79f; border: 1px solid rgba(29,158,117,0.5); }
+.flag-differs { background: rgba(201,151,58,0.16); color: #e8b54f; border: 1px solid rgba(201,151,58,0.55); }
+.flag-only { background: rgba(90,143,191,0.16); color: #7fb3e0; border: 1px solid rgba(90,143,191,0.55); }
+.flag-concept { background: rgba(160,160,180,0.14); color: #b8b8cc; border: 1px solid rgba(160,160,180,0.4); }
+.flag-detail { font-size: 12px; color: #d0dce8; line-height: 1.6; margin-top: 8px; }
+.flag-detail b { color: #ed8a7f; font-weight: 600; }
+
+#grade-bar { display: none; gap: 10px; margin-bottom: 14px; }
+#grade-bar.show { display: flex; }
+.grade-btn { flex: 1; border: none; border-radius: 8px; padding: 13px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
+.grade-btn:hover { opacity: 0.88; }
+#btn-again { background: #2a3a52; color: #f0c987; }
+#btn-got { background: #b5453e; color: #fdf2f0; }
+
+#progress { background: #0f1e35; border-radius: 10px; padding: 12px 16px; display: flex; gap: 14px; align-items: center; }
+.prog-cell { text-align: center; }
+.prog-n { font-size: 16px; font-weight: 600; color: #d4655c; }
+.prog-n.green { color: #4fc79f; }
+.prog-n.amber { color: #e8b54f; }
+.prog-l { font-size: 8.5px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 1px; }
+#prog-track { flex: 1; height: 6px; background: #1a2f4a; border-radius: 3px; overflow: hidden; }
+#prog-fill { height: 100%; width: 0%; background: #b5453e; border-radius: 3px; transition: width 0.3s; }
+
+#done-panel { display: none; background: #0f1e35; border-radius: 14px; padding: 36px 24px; text-align: center; border: 1.5px solid rgba(181,69,62,0.4); margin-bottom: 14px; }
+#done-panel h2 { font-size: 20px; color: #f5f0e8; font-weight: 600; margin-bottom: 8px; }
+#done-sub { font-size: 13px; color: #8aa5bd; margin-bottom: 20px; line-height: 1.6; }
+.done-btn { background: #b5453e; border: none; border-radius: 8px; padding: 12px 22px; font-size: 13px; font-weight: 600; color: #fdf2f0; cursor: pointer; font-family: inherit; margin: 4px; }
+.done-btn.ghost { background: transparent; border: 1.5px solid #2a4a6a; color: #a0b8cc; }
+
+@media (max-width: 480px) {
+  .front-name { font-size: 18px; }
+  .part-text { font-size: 12.5px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="header">
+  <div>
+    <h1>LEGAL<span>MINDS</span> ⚖️</h1>
+    <p>PR Rule Elements Drill · Midterm · ABA &amp; Cal Bar</p>
+  </div>
+  <div id="deck-stats">
+    <div id="deck-count">0</div>
+    <div id="deck-label">cards in deck</div>
+  </div>
+</div>
+
+<div id="filters"></div>
+
+<div id="controls">
+  <button class="ctrl-btn" id="btn-shuffle">⤮ Shuffle</button>
+  <button class="ctrl-btn" id="btn-restart">↺ Restart Deck</button>
+</div>
+
+<div id="card-zone">
+  <div id="card">
+    <div class="face" id="face-front">
+      <div class="front-cat" id="f-cat"></div>
+      <div class="front-name" id="f-name"></div>
+      <div class="front-nums" id="f-nums"></div>
+      <div class="front-hint">Recite the elements — then tap to flip</div>
+    </div>
+    <div class="face" id="face-back">
+      <div class="back-name" id="b-name"></div>
+      <div id="b-body"></div>
+    </div>
+  </div>
+</div>
+
+<div id="grade-bar">
+  <button class="grade-btn" id="btn-again">↻ Again</button>
+  <button class="grade-btn" id="btn-got">✓ Got It</button>
+</div>
+
+<div id="done-panel">
+  <h2 id="done-title">Deck complete.</h2>
+  <div id="done-sub"></div>
+  <button class="done-btn" id="btn-review">Drill the "Again" pile →</button>
+  <button class="done-btn ghost" id="btn-full">Restart full deck</button>
+</div>
+
+<div id="progress">
+  <div class="prog-cell"><div class="prog-n green" id="p-got">0</div><div class="prog-l">Got it</div></div>
+  <div class="prog-cell"><div class="prog-n amber" id="p-again">0</div><div class="prog-l">Again</div></div>
+  <div id="prog-track"><div id="prog-fill"></div></div>
+  <div class="prog-cell"><div class="prog-n" id="p-left">0</div><div class="prog-l">Left</div></div>
+</div>
+
+</div>
+
+<script>
+(function(){
+
+// flag: 'same' | 'differs' | 'caonly' | 'concept'
+var CARDS = [
+
+// ============ REGULATION OF THE PROFESSION (Weeks 1–2) ============
+{ cat:'Regulation', name:'Unauthorized Practice of Law; Multijurisdictional Practice', nums:'ABA 5.5 / CA 5.5', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Prohibition', html:'Lawyer shall not (1) <b>practice law</b> in a jurisdiction in violation of its regulations, or (2) <b>assist another</b> in doing so. No (3) <b>systematic or continuous presence</b> in, or (4) <b>holding out</b> as admitted in, a jurisdiction where not admitted.'},
+    {label:'Part II — Temporary practice permitted if', html:'(1) <b>association with admitted local counsel</b> who actively participates; (2) related to a proceeding lawyer is <b>authorized to appear in</b> (or reasonably expects — <b>pro hac vice</b>); (3) <b>arbitration/mediation</b> arising out of home-state practice; (4) <b>reasonably related</b> to lawyer\u2019s home-state practice.'},
+    {note:'Draft card — database row was empty; verify against professor\u2019s Week 1 framing.'}
+  ]},
+{ cat:'Regulation', name:'Competence', nums:'ABA 1.1 / CA 1.1', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'Lawyer must provide <b>competent representation</b>: (1) <b>legal knowledge</b>, (2) <b>skill</b>, (3) <b>thoroughness</b>, (4) <b>preparation</b> reasonably necessary.'},
+    {html:'If lacking skill, must become competent via (1) <b>study</b>, (2) <b>association / consultation</b> with competent counsel, or (3) <b>referral</b>.'}
+  ]},
+{ cat:'Regulation', name:'Diligence', nums:'ABA 1.3 / CA 1.3', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'Lawyer must act with (1) <b>reasonable diligence</b> and (2) <b>promptness</b>; (3) pursue matter despite <b>opposition or obstruction</b>; (4) <b>manage workload</b> so each matter is handled competently and timely.'}
+  ]},
+{ cat:'Regulation', name:'Bar Admission & Disciplinary Matters', nums:'ABA 8.1 / CA 8.1', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'In a <b>bar admission or disciplinary matter</b>, applicant/lawyer shall not knowingly (1) make a <b>false statement of material fact</b>, (2) <b>fail to disclose</b> a fact necessary to correct a <b>misapprehension</b>, or (3) <b>fail to respond</b> to a lawful demand for information.'}
+  ]},
+{ cat:'Regulation', name:'Reporting Professional Misconduct', nums:'ABA 8.3 / CA 8.3', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Duty', html:'Lawyer who <b>knows</b> another lawyer violated the Rules raising a <b>substantial question</b> as to that lawyer\u2019s <b>honesty, trustworthiness, or fitness</b> must inform the <b>appropriate authority</b>. Same for judges.'},
+    {label:'Part II — Exceptions', html:'No duty to disclose information protected by <b>Rule 1.6</b> or gained in an approved <b>lawyer-assistance program</b>.'}
+  ]},
+{ cat:'Regulation', name:'Misconduct', nums:'ABA 8.4 / CA 8.4 + 8.4.1', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'Professional misconduct includes: (1) <b>violate / attempt / assist / induce</b> a Rules violation; (2) <b>criminal act</b> reflecting adversely on <b>honesty, trustworthiness, or fitness</b>; (3) <b>dishonesty, fraud, deceit, misrepresentation</b>; (4) conduct <b>prejudicial to the administration of justice</b>; (5) implying ability to <b>improperly influence</b> officials; (6) assisting <b>judicial misconduct</b>; (7) <b>harassment / discrimination</b> in conduct related to practice (ABA 8.4(g) = CA 8.4.1).'}
+  ]},
+{ cat:'Regulation', name:'Disciplinary Authority; Choice of Law', nums:'ABA 8.5 / CA 8.5', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Authority', html:'<b>Admitted</b> lawyers: subject to discipline <b>regardless of where conduct occurs</b>. <b>Non-admitted</b>: subject if they <b>provide or offer services</b> in the jurisdiction.'},
+    {label:'Part II — Choice of law', html:'(1) Matter <b>before a tribunal</b> → rules of the jurisdiction <b>where tribunal sits</b>; (2) other conduct → where <b>conduct occurred</b> or where <b>predominant effect</b> occurs. <b>Safe harbor</b>: reasonable belief + compliance with predominant-effect jurisdiction.'}
+  ]},
+{ cat:'Regulation', name:'Disclosure of Professional Liability Insurance', nums:'CA 1.4.2 — no ABA counterpart', flag:'caonly', flagText:'CA ONLY',
+  parts:[
+    {html:'If lawyer <b>knows or should know</b> they lack <b>professional liability insurance</b>, must inform client <b>in writing</b> (1) at <b>engagement</b>, or (2) within <b>30 days</b> of learning coverage ended mid-representation.'},
+    {label:'Exceptions', html:'(1) engagements under <b>4 hours</b> (unless later exceeded); (2) <b>government / in-house</b> counsel; (3) <b>emergency</b> services; (4) prior written notice to same client.'}
+  ]},
+
+// ============ CLIENT-LAWYER RELATIONSHIP (Week 3) ============
+{ cat:'Client-Lawyer', name:'Scope of Representation & Allocation of Authority', nums:'ABA 1.2 / CA 1.2', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Allocation', html:'<b>Client controls objectives</b> + key decisions: (1) whether to <b>settle</b>; (2) <b>plea</b>; (3) <b>jury trial waiver</b>; (4) whether to <b>testify</b>. <b>Lawyer controls means</b> after <b>consulting</b> client; may take action <b>impliedly authorized</b>.'},
+    {label:'Part II — Limiting scope', html:'Lawyer may <b>limit scope</b> if (1) <b>reasonable</b> under the circumstances and (2) client gives <b>informed consent</b>.'}
+  ]},
+{ cat:'Client-Lawyer', name:'Advising or Assisting the Violation of Law', nums:'ABA 1.2(d) / CA 1.2.1', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'Lawyer shall not <b>counsel or assist</b> conduct the lawyer <b>knows is criminal or fraudulent</b>. Lawyer MAY (1) discuss <b>legal consequences</b> of proposed conduct; (2) help a <b>good-faith effort</b> to determine the <b>validity, scope, meaning, or application</b> of the law.'}
+  ]},
+{ cat:'Client-Lawyer', name:'Communication with Clients', nums:'ABA 1.4 / CA 1.4', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'Lawyer must: (1) <b>promptly inform</b> of decisions requiring <b>informed consent</b>; (2) <b>reasonably consult</b> about <b>means</b>; (3) keep client <b>reasonably informed of status</b>; (4) <b>promptly comply</b> with reasonable requests for information; (5) consult about <b>limits</b> when client expects prohibited assistance; (6) <b>explain</b> matters as needed for <b>informed decisions</b>.'}
+  ]},
+{ cat:'Client-Lawyer', name:'Communication of Settlement Offers', nums:'CA 1.4.1 — no ABA counterpart', flag:'caonly', flagText:'CA ONLY',
+  parts:[
+    {html:'Must <b>promptly communicate</b> to client: (1) <b>all terms and conditions</b> of a proposed <b>plea bargain or dispositive offer</b> in a criminal matter; (2) all <b>amounts, terms, and conditions</b> of any <b>written settlement offer</b> in all other matters.'}
+  ]},
+{ cat:'Client-Lawyer', name:'Fees for Legal Services', nums:'ABA 1.5 / CA 1.5', flag:'same', flagText:'ABA & Cal Bar (verify: ABA \u201cunreasonable\u201d vs CA \u201cunconscionable\u201d wording with professor)',
+  parts:[
+    {label:'Part I — Reasonableness', html:'Shall not charge or collect an <b>unreasonable fee</b> or expenses. Must <b>communicate the basis/rate</b> of fee and expenses <b>early</b>, preferably <b>in writing</b>; communicate changes.'},
+    {label:'Part II — Contingent fees', html:'Must be (1) <b>in writing + signed</b>; (2) explain <b>how fee is calculated</b>; (3) explain <b>expense handling</b>.'},
+    {label:'Part III — Prohibited contingencies', html:'(1) <b>criminal defense</b>; (2) <b>domestic relations</b> — contingent on securing divorce or on amount of support/property settlement.'}
+  ]},
+{ cat:'Client-Lawyer', name:'Fee Divisions Among Lawyers', nums:'ABA 1.5(e) / CA 1.5.1', flag:'same', flagText:'ABA & Cal Bar (verify: CA referral-fee treatment with professor)',
+  parts:[
+    {html:'Fee division between lawyers <b>not in the same firm</b> only if: (1) division <b>proportional to services</b> OR each assumes <b>joint responsibility</b>; (2) <b>client agrees</b> — including <b>each lawyer\u2019s share</b> — <b>confirmed in writing</b>; (3) <b>total fee is reasonable</b>.'}
+  ]},
+{ cat:'Client-Lawyer', name:'Safekeeping Funds & Property', nums:'ABA 1.15 / CA 1.15', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'Lawyer must: (1) keep client/third-party property <b>separate</b> — funds in a <b>client trust account</b>; (2) <b>maintain records</b>; (3) <b>notify upon receipt</b>; (4) <b>promptly deliver</b> property owed; (5) provide <b>accounting on request</b>; (6) keep <b>disputed portion separate</b> until resolved — distribute undisputed portions promptly.'}
+  ]},
+{ cat:'Client-Lawyer', name:'Declining or Terminating Representation', nums:'ABA 1.16 / CA 1.16', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Mandatory withdrawal', html:'(1) representation results in <b>violation of Rules or law</b>; (2) lawyer\u2019s condition <b>materially impairs</b> representation; (3) lawyer is <b>discharged</b>.'},
+    {label:'Part II — Permissive withdrawal', html:'(1) no <b>material adverse effect</b> on client; (2) client persists in <b>crime / fraud</b>; (3) action lawyer finds <b>repugnant / fundamental disagreement</b>; (4) <b>nonpayment after warning</b>; (5) <b>unreasonable financial burden</b>; (6) other good cause — subject to <b>tribunal approval</b>.'},
+    {label:'Part III — Duties on termination', html:'(1) <b>notice</b> + time to retain new counsel; (2) <b>surrender papers & property</b>; (3) <b>refund unearned fees</b>/expenses.'}
+  ]},
+{ cat:'Client-Lawyer', name:'Duties to Prospective Client', nums:'ABA 1.18 / CA 1.18', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Confidentiality', html:'Even if <b>no attorney-client relationship forms</b>, lawyer shall not <b>use or reveal</b> information learned in the <b>consultation</b>.'},
+    {label:'Part II — Disqualification', html:'Disqualified from representing an adverse client in the <b>same or substantially related matter</b> if lawyer received <b>significantly harmful information</b> — unless (1) <b>informed written consent</b> from both, or (2) <b>timely screening</b> + notice where permitted.'}
+  ]},
+
+// ============ CONFIDENTIALITY (Week 4) ============
+{ cat:'Confidentiality', name:'Confidentiality of Information', nums:'ABA 1.6 / CA 1.6 + B&P 6068(e)(1)', flag:'differs', flagText:'CA DIFFERS',
+  flagDetail:'CA: disclosure permitted <b>only</b> to prevent a <b>criminal act</b> likely to cause <b>death or substantial bodily harm</b> — and only after (1) good-faith effort to <b>persuade</b> the client, (2) disclosure <b>limited</b> to what is necessary. Plus: compelled by law/court order; lawyer claim/defense.',
+  parts:[
+    {label:'Part I — The duty', html:'(1) Cannot <b>reveal</b> (2) information <b>relating to representation</b> (3) of a <b>client</b> — any source, anytime, not just court — (4) unless an <b>exception</b> applies.'},
+    {label:'Part II — ABA exceptions', html:'(1) <b>informed consent / implied authorization</b>; (2) prevent <b>reasonably certain death / substantial bodily harm</b>; (3) prevent / mitigate / rectify client <b>crime-fraud</b> causing substantial <b>financial or property injury</b> <b>using lawyer\u2019s services</b>; (4) secure <b>ethics advice</b>; (5) lawyer <b>self-defense</b> (malpractice, fee dispute, charges); (6) comply with <b>law / court order</b>.'}
+  ]},
+{ cat:'Confidentiality', name:'Attorney-Client Privilege', nums:'Evidence law — CA Evid. Code §§950–962', flag:'concept', flagText:'Evidence — not the Rules of Prof. Conduct',
+  parts:[
+    {label:'Part I — Elements', html:'(1) a <b>communication</b>; (2) between <b>lawyer and client</b>; (3) intended to be <b>confidential</b>; (4) for the purpose of <b>legal advice or services</b>.'},
+    {label:'Part II — Scope & holder', html:'Protects <b>communications, not things</b>; narrow; triggered by <b>compelled disclosure</b> (testimony, subpoena). <b>Holder = client</b> (lawyer may assert on client\u2019s behalf).'},
+    {label:'Part III — Key exceptions', html:'(1) <b>crime-fraud</b>; (2) <b>lawyer-client dispute</b>; (3) <b>joint / common-interest</b> client disputes.'}
+  ]},
+{ cat:'Confidentiality', name:'Work Product Doctrine', nums:'FRCP 26(b)(3) / CCP §2018.030 — Civ Pro flashback', flag:'concept', flagText:'Civil Procedure — discovery protection',
+  parts:[
+    {label:'Part I — Qualified protection', html:'(1) <b>documents & tangible things</b> (2) prepared <b>in anticipation of litigation</b> (3) by or for an attorney/representative — discoverable only on (4) <b>substantial need</b> + (5) <b>undue hardship</b>.'},
+    {label:'Part II — Near-absolute protection', html:'<b>Mental impressions, conclusions, opinions, legal theories</b> of counsel — protected even on a showing of need.'}
+  ]},
+{ cat:'Confidentiality', name:'The Confidentiality Triangle', nums:'1.6 · Privilege · Work Product', flag:'concept', flagText:'Concept card — which doctrine, which source, which forum',
+  parts:[
+    {html:'(1) <b>Duty of Confidentiality</b> — <b>Ethics</b> (State Bar) — broadest: <b>any info relating to representation</b>, any source, applies <b>everywhere, always</b>.'},
+    {html:'(2) <b>Attorney-Client Privilege</b> — <b>Evidence</b> (court) — narrow: <b>confidential communications</b> only, against <b>compelled disclosure</b>.'},
+    {html:'(3) <b>Work Product</b> — <b>Civ Pro</b> (discovery) — <b>materials prepared in anticipation of litigation</b>.'},
+    {note:'Essay move: identify which doctrine(s) the facts trigger and name the source of law for each.'}
+  ]},
+{ cat:'Confidentiality', name:'Truthfulness in Statements to Others', nums:'ABA 4.1 / CA 4.1', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — False statements', html:'Shall not <b>knowingly</b> make a <b>false statement of material fact or law</b> to a <b>third person</b>.'},
+    {label:'Part II — Omissions', html:'Shall not <b>fail to disclose</b> a material fact when necessary to avoid <b>assisting client crime or fraud</b> — <b>unless prohibited by Rule 1.6</b>. (The 1.6 trump is the trap.)'}
+  ]},
+{ cat:'Confidentiality', name:'Inadvertently Transmitted Writings', nums:'ABA 4.4(b) / CA 4.4', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'Lawyer who receives a document and <b>knows or reasonably should know</b> it was <b>inadvertently sent</b> must (1) <b>promptly notify the sender</b>, then (2) follow applicable <b>law / court orders</b> on return or sequestration.'}
+  ]},
+
+// ============ CONFLICTS OF INTEREST (Weeks 4–6) ============
+{ cat:'Conflicts', name:'Conflict of Interest: Current Clients', nums:'ABA 1.7 / CA 1.7', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Conflict exists if', html:'(1) representation is <b>directly adverse</b> to another current client, OR (2) <b>significant risk</b> representation will be <b>materially limited</b> by duties to another client, former client, third person, or lawyer\u2019s <b>personal interest</b>.'},
+    {label:'Part II — Consentable if', html:'(1) lawyer <b>reasonably believes</b> competent + diligent representation possible; (2) not <b>prohibited by law</b>; (3) not <b>assertion of claim by one client against another</b> in same proceeding; (4) <b>informed written consent</b>.'}
+  ]},
+{ cat:'Conflicts', name:'Business Transactions with a Client', nums:'ABA 1.8(a) / CA 1.8.1', flag:'same', flagText:'ABA & Cal Bar (numbering differs)',
+  parts:[
+    {label:'Part I — Prohibition', html:'Shall not (1) enter a <b>business transaction</b> with a client, or (2) knowingly acquire an <b>ownership, possessory, security, or other pecuniary interest adverse</b> to a client —'},
+    {label:'Part II — Unless', html:'(1) terms are <b>fair and reasonable</b> + <b>fully disclosed in writing</b> in a manner client can reasonably understand; (2) client <b>advised in writing to seek independent counsel</b> + reasonable opportunity; (3) <b>informed written consent</b> to the essential terms <b>and the lawyer\u2019s role</b>.'}
+  ]},
+{ cat:'Conflicts', name:'Use of Current Client\u2019s Information', nums:'ABA 1.8(b) / CA 1.8.2', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'Shall not <b>use</b> information <b>relating to representation</b> of a client <b>to the client\u2019s disadvantage</b>, unless (1) <b>informed consent</b>, or (2) otherwise permitted by the Rules.'},
+    {note:'Trap: this is about USING info — REVEALING it is 1.6\u2019s job. Use vs. reveal is the distinction graders reward.'}
+  ]},
+{ cat:'Conflicts', name:'Gifts from Client', nums:'ABA 1.8(c) / CA 1.8.3', flag:'differs', flagText:'CA DIFFERS',
+  flagDetail:'ABA: <b>relative exception only</b>. CA adds a second path for non-relatives: client advised by an <b>independent lawyer</b> who provides a <b>certificate of independent review</b>.',
+  parts:[
+    {label:'Part I — Prohibition', html:'Shall not (1) <b>solicit</b> a <b>substantial gift</b> from a client, or (2) <b>prepare an instrument</b> giving the lawyer or lawyer\u2019s relative a substantial gift —'},
+    {label:'Part II — Unless', html:'(1) lawyer or recipient is <b>related to</b> the client, OR (2) <b>(CA)</b> client is advised by an <b>independent lawyer</b> providing a <b>certificate of independent review</b>.'}
+  ]},
+{ cat:'Conflicts', name:'Payment of Client Expenses / Financial Assistance', nums:'ABA 1.8(e) / CA 1.8.5', flag:'differs', flagText:'CA DIFFERS',
+  flagDetail:'CA is broader: lawyer may also <b>lend money to a client for any purpose</b> after the client gives a <b>written promise to repay</b> — a loan ABA flatly prohibits.',
+  parts:[
+    {label:'Part I — Prohibition', html:'Shall not provide <b>financial assistance</b> to a client in connection with <b>pending or contemplated litigation</b> —'},
+    {label:'Part II — Except', html:'(1) <b>advance court costs & litigation expenses</b>, repayment <b>contingent on outcome</b>; (2) for <b>indigent</b> clients, pay costs/expenses <b>outright</b>.'}
+  ]},
+{ cat:'Conflicts', name:'Compensation from One Other Than Client', nums:'ABA 1.8(f) / CA 1.8.6', flag:'differs', flagText:'CA DIFFERS',
+  flagDetail:'CA requires the consent be <b>in writing</b>; ABA requires informed consent only.',
+  parts:[
+    {html:'Shall not accept <b>compensation from a third party</b> for representing a client unless: (1) client gives <b>informed consent</b> <b>(CA: written)</b>; (2) <b>no interference</b> with lawyer\u2019s <b>independent professional judgment</b> or the relationship; (3) client <b>confidentiality (1.6)</b> protected.'},
+    {note:'Classic triggers: insurer paying for insured\u2019s defense; parent paying for child\u2019s lawyer.'}
+  ]},
+{ cat:'Conflicts', name:'Aggregate Settlements', nums:'ABA 1.8(g) / CA 1.8.7', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'Lawyer representing <b>two or more clients</b> shall not participate in an <b>aggregate settlement</b> (or aggregated plea) unless <b>each client</b> gives <b>informed written consent</b> after disclosure of (1) the <b>existence and nature of all claims/pleas</b>, and (2) the <b>participation of each person</b> in the settlement.'},
+    {note:'Point-scorer: each client must see what every other client is getting.'}
+  ]},
+{ cat:'Conflicts', name:'Limiting Liability to Client', nums:'ABA 1.8(h) / CA 1.8.8', flag:'differs', flagText:'CA DIFFERS',
+  flagDetail:'Part I: <b>CA flat ban</b> on prospective limitation — no exception. ABA allows it if client is <b>independently represented</b>. Part II aligned.',
+  parts:[
+    {label:'Part I — Prospective limits', html:'Shall not make an agreement <b>prospectively limiting malpractice liability</b> — ABA: unless client <b>independently represented</b>; <b>CA: prohibited entirely</b>.'},
+    {label:'Part II — Settling malpractice claims', html:'Shall not <b>settle a malpractice claim</b> with an unrepresented client/former client unless that person is (1) <b>advised in writing to seek independent counsel</b> and (2) given <b>reasonable opportunity</b> to do so.'}
+  ]},
+{ cat:'Conflicts', name:'Sexual Relations with Current Client', nums:'ABA 1.8(j) / CA 1.8.10', flag:'differs', flagText:'CA DIFFERS',
+  flagDetail:'CA adds: for an <b>organizational client</b>, the ban runs to any constituent who <b>supervises, directs, or consults with</b> the lawyer. CA explicitly exempts <b>spouses / registered domestic partners</b>.',
+  parts:[
+    {html:'Shall not have <b>sexual relations</b> with a <b>current client</b> unless a <b>consensual sexual relationship existed before</b> the representation began.'},
+    {note:'No \u201cclient consented\u201d defense in either system — the pre-existing relationship is the only out.'}
+  ]},
+{ cat:'Conflicts', name:'Imputation of 1.8 Prohibitions', nums:'ABA 1.8(k) / CA 1.8.11', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {html:'While lawyers are <b>associated in a firm</b>, a 1.8-series prohibition applying to <b>any one of them</b> applies to <b>all of them</b> — <b>except sexual relations</b> (1.8(j) / 1.8.10), which is <b>personal and not imputed</b>.'},
+    {note:'The exam trap IS the exception: the sex rule doesn\u2019t impute; everything else in 1.8 does.'}
+  ]},
+{ cat:'Conflicts', name:'Duties to Former Clients', nums:'ABA 1.9 / CA 1.9', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Former-client conflict', html:'Lawyer who <b>formerly represented</b> a client shall not represent another person in (1) the <b>same or a substantially related matter</b> (2) where interests are <b>materially adverse</b> to the former client — (3) unless former client gives <b>informed written consent</b>.'},
+    {label:'Part II — Substantially related test', html:'(1) same <b>transaction / legal dispute</b>, OR (2) <b>substantial risk</b> that <b>confidential information</b> from the prior representation would <b>materially advance</b> the new client\u2019s position.'},
+    {label:'Part III — Confidentiality survives', html:'Shall not <b>use or reveal</b> former client\u2019s information except as Rules permit or where info is <b>generally known</b> (use only). Loyalty ends; <b>confidentiality is forever</b>.'}
+  ]},
+{ cat:'Conflicts', name:'Imputation of Conflicts: General Rule', nums:'ABA 1.10 / CA 1.10', flag:'differs', flagText:'CA DIFFERS',
+  flagDetail:'CA permits lateral-hire screening <b>only if the tainted lawyer did not substantially participate</b> in the prior matter. ABA allows screening regardless of participation. Deep involvement → in CA, the whole firm is out.',
+  parts:[
+    {label:'Part I — General rule', html:'While <b>associated in a firm</b>, no lawyer shall represent a client when <b>any one of them alone</b> would be prohibited by <b>1.7 or 1.9</b> — unless based on the prohibited lawyer\u2019s <b>personal interest</b> with <b>no significant risk</b> of materially limiting the others.'},
+    {label:'Part II — Lateral hire + screening', html:'No imputation from new lawyer\u2019s <b>prior firm</b> if: (1) <b>timely screened</b>; (2) <b>apportioned no fee</b>; (3) <b>written notice</b> to affected former client.'},
+    {label:'Part III — Lawyer leaves firm', html:'Firm may be adverse to departed lawyer\u2019s client unless (1) <b>same or substantially related matter</b> AND (2) a <b>remaining lawyer</b> holds protected <b>confidential information</b>.'}
+  ]},
+{ cat:'Conflicts', name:'Special Conflicts: Government Officials & Employees', nums:'ABA 1.11 / CA 1.11', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Former government lawyer', html:'Shall not represent a client in a matter in which lawyer <b>participated personally and substantially</b> as a government employee — unless the <b>agency gives informed written consent</b>.'},
+    {label:'Part II — Firm screening', html:'New firm may take the matter if lawyer is (1) <b>timely screened</b>, (2) <b>apportioned no fee</b>, (3) <b>written notice</b> to the agency.'},
+    {label:'Part III — Confidential government info', html:'Lawyer with such info about a person may not represent a client adverse to that person where the info could cause <b>material disadvantage</b>.'},
+    {note:'Gate is \u201cpersonally and substantially participated\u201d — NOT the 1.9 substantial-relationship test.'}
+  ]},
+{ cat:'Conflicts', name:'Former Judge, Arbitrator, Mediator, or Third-Party Neutral', nums:'ABA 1.12 / CA 1.12', flag:'same', flagText:'ABA & Cal Bar',
+  parts:[
+    {label:'Part I — Prohibition', html:'Shall not represent anyone in a matter in which lawyer <b>participated personally and substantially</b> as a <b>judge, adjudicative officer, arbitrator, mediator, or other third-party neutral</b> — unless <b>all parties</b> give <b>informed written consent</b>.'},
+    {label:'Part II — Screening', html:'Firm not disqualified if (1) <b>timely screen</b>, (2) <b>no fee apportionment</b>, (3) <b>written notice</b> to the parties.'}
+  ]},
+{ cat:'Conflicts', name:'Organization as Client', nums:'ABA 1.13 / CA 1.13', flag:'differs', flagText:'CA DIFFERS',
+  flagDetail:'Part III is the major divergence: ABA permits limited <b>reporting out</b>; <b>CA never does</b> — confidentiality holds and the remedy is to <b>withdraw / resign</b>. Flows directly from CA\u2019s stricter 1.6.',
+  parts:[
+    {label:'Part I — Who is the client', html:'Lawyer represents the <b>organization itself</b>, acting through its <b>duly authorized constituents</b> — not officers, directors, or employees personally.'},
+    {label:'Part II — Up the ladder', html:'If lawyer knows a constituent is acting (or refusing to act) in a way that is (1) a <b>violation of legal duty to the org</b> or law attributable to it, and (2) <b>likely to cause substantial injury</b> → proceed in org\u2019s best interest, including <b>referring to higher authority</b> (ultimately the board).'},
+    {label:'Part III — If the top refuses', html:'<b>ABA:</b> may <b>reveal outside the org</b> to the extent necessary to prevent substantial injury. <b>CA: NO reporting out</b> — withdraw / resign.'},
+    {label:'Part IV — Corporate Miranda', html:'When interests diverge, lawyer must <b>explain the identity of the client</b> (the org) to constituents.'}
+  ]},
+];
+
+var CATS = ['All','Regulation','Client-Lawyer','Confidentiality','Conflicts'];
+var state = { filter:'All', deck:[], idx:0, flipped:false, got:[], again:[], reviewMode:false };
+
+function g(id){ return document.getElementById(id); }
+
+function cardsFor(filter){
+  return CARDS.map(function(c,i){ return i; }).filter(function(i){
+    return filter==='All' || CARDS[i].cat===filter;
+  });
+}
+
+function buildFilters(){
+  var wrap = g('filters'); wrap.innerHTML='';
+  CATS.forEach(function(cat){
+    var n = cat==='All' ? CARDS.length : CARDS.filter(function(c){return c.cat===cat;}).length;
+    var b = document.createElement('button');
+    b.className = 'filter-btn' + (state.filter===cat ? ' active' : '');
+    b.innerHTML = cat + '<span class="fcount">' + n + '</span>';
+    b.addEventListener('click', function(){
+      state.filter = cat;
+      startDeck(cardsFor(cat));
+      buildFilters();
+    });
+    wrap.appendChild(b);
+  });
+}
+
+function shuffle(arr){
+  for(var i=arr.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var t=arr[i];arr[i]=arr[j];arr[j]=t;
+  }
+  return arr;
+}
+
+function startDeck(indices){
+  state.deck = indices.slice();
+  state.idx = 0; state.flipped = false;
+  state.got = []; state.again = []; state.reviewMode = false;
+  g('done-panel').style.display='none';
+  g('card-zone').style.display='block';
+  render();
+}
+
+function render(){
+  var total = state.deck.length;
+  g('deck-count').textContent = total;
+  g('p-got').textContent = state.got.length;
+  g('p-again').textContent = state.again.length;
+  g('p-left').textContent = Math.max(0, total - state.idx);
+  var done = state.got.length + state.again.length;
+  g('prog-fill').style.width = total>0 ? Math.round(done/total*100)+'%' : '0%';
+
+  if(state.idx >= total){ showDone(); return; }
+
+  var c = CARDS[state.deck[state.idx]];
+  var card = g('card');
+  card.classList.remove('flipped');
+  state.flipped = false;
+  g('grade-bar').classList.remove('show');
+
+  g('f-cat').textContent = c.cat + ' · Card ' + (state.idx+1) + ' of ' + total;
+  g('f-name').textContent = c.name;
+  g('f-nums').textContent = c.nums;
+  g('b-name').textContent = c.name;
+
+  var body = g('b-body'); body.innerHTML='';
+  c.parts.forEach(function(p){
+    var d = document.createElement('div');
+    if(p.note){ d.className='note'; d.innerHTML = p.note; }
+    else {
+      d.className='part';
+      d.innerHTML = (p.label ? '<div class="part-label">'+p.label+'</div>' : '') + '<div class="part-text">'+p.html+'</div>';
+    }
+    body.appendChild(d);
+  });
+  var flag = document.createElement('div');
+  var cls = {same:'flag-same', differs:'flag-differs', caonly:'flag-only', concept:'flag-concept'}[c.flag];
+  var icon = {same:'\u2713 SAME', differs:'\u26a0 CA DIFFERS', caonly:'\u25c6 CA ONLY', concept:'\u25cb CONCEPT'}[c.flag];
+  flag.className = 'flag ' + cls;
+  flag.textContent = icon + ' — ' + c.flagText;
+  body.appendChild(flag);
+  if(c.flagDetail){
+    var fd = document.createElement('div');
+    fd.className = 'flag-detail';
+    fd.innerHTML = c.flagDetail;
+    body.appendChild(fd);
+  }
+}
+
+g('card').addEventListener('click', function(){
+  if(state.idx >= state.deck.length) return;
+  state.flipped = !state.flipped;
+  g('card').classList.toggle('flipped', state.flipped);
+  g('grade-bar').classList.toggle('show', state.flipped);
+});
+
+g('btn-got').addEventListener('click', function(){
+  state.got.push(state.deck[state.idx]);
+  state.idx++; render();
+});
+g('btn-again').addEventListener('click', function(){
+  state.again.push(state.deck[state.idx]);
+  state.idx++; render();
+});
+
+function showDone(){
+  g('card-zone').style.display='none';
+  g('grade-bar').classList.remove('show');
+  g('done-panel').style.display='block';
+  var n = state.deck.length, got = state.got.length;
+  var pct = n>0 ? Math.round(got/n*100) : 0;
+  g('done-title').textContent = pct===100 ? 'Every element, cold.' : 'Deck complete.';
+  g('done-sub').innerHTML = got + ' of ' + n + ' cards solid (' + pct + '%).' +
+    (state.again.length>0 ? '<br>' + state.again.length + ' card' + (state.again.length>1?'s':'') + ' marked for another pass.' : '');
+  g('btn-review').style.display = state.again.length>0 ? 'inline-block' : 'none';
+}
+
+g('btn-review').addEventListener('click', function(){
+  startDeck(shuffle(state.again.slice()));
+});
+g('btn-full').addEventListener('click', function(){
+  startDeck(cardsFor(state.filter));
+});
+g('btn-shuffle').addEventListener('click', function(){
+  startDeck(shuffle(cardsFor(state.filter)));
+});
+g('btn-restart').addEventListener('click', function(){
+  startDeck(cardsFor(state.filter));
+});
+
+document.addEventListener('keydown', function(e){
+  if(e.code==='Space'){ e.preventDefault(); g('card').click(); }
+  if(e.key==='1' && state.flipped){ g('btn-again').click(); }
+  if(e.key==='2' && state.flipped){ g('btn-got').click(); }
+});
+
+buildFilters();
+startDeck(cardsFor('All'));
+})();
+</script>
+</body>
+</html>

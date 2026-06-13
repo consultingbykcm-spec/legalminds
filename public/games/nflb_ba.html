@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Fact Left Behind — BA · Agency Essay</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 860px; }
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(111,163,210,0.25); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; letter-spacing: 0.04em; }
+#header h1 span { color: #6fa3d2; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#level-indicator { display: flex; gap: 8px; align-items: center; }
+.level-pip { width: 32px; height: 6px; border-radius: 3px; background: #1a2f4a; transition: background 0.3s; }
+.level-pip.active { background: #6fa3d2; }
+.level-pip.done { background: #1d9e75; }
+#level-label { font-size: 12px; color: #6fa3d2; font-weight: 500; margin-left: 4px; }
+#hypo-box { background: #0f1e35; border-radius: 12px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(111,163,210,0.15); }
+#hypo-title { font-size: 10px; color: #6fa3d2; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#hypo-text { font-size: 13px; color: #d0dce8; line-height: 1.75; }
+.fact { background: rgba(111,163,210,0.15); border-radius: 3px; padding: 1px 4px; }
+.verify-note { font-size: 10.5px; color: #f09595; font-style: italic; margin-top: 10px; border-left: 2px solid rgba(226,75,74,0.45); padding-left: 8px; }
+#panel { background: #0f1e35; border-radius: 12px; padding: 20px; }
+#l1-question { font-size: 14px; font-weight: 500; color: #f5f0e8; margin-bottom: 4px; }
+#l1-sub { font-size: 11px; color: #6b8aaa; margin-bottom: 18px; }
+#issue-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.cat-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 0 2px; font-weight: 500; }
+.issue-item { display: flex; align-items: flex-start; gap: 12px; background: #1a2f4a; border-radius: 8px; padding: 13px 15px; cursor: pointer; border: 1.5px solid #1a2f4a; transition: all 0.15s; }
+.issue-item:hover { border-color: #2a4a6a; }
+.issue-item.selected { background: #1e3a58; border-color: #6fa3d2; }
+.issue-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #2a4a6a; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.issue-item.selected .issue-check { background: #6fa3d2; border-color: #6fa3d2; }
+.check-mark { font-size: 12px; color: #0f1e35; display: none; }
+.issue-item.selected .check-mark { display: block; }
+.issue-text { font-size: 13px; color: #a0b8cc; line-height: 1.4; }
+.issue-item.selected .issue-text { color: #f5f0e8; }
+.issue-item.correct { background: #0f3d2a; border-color: #1d9e75; }
+.issue-item.correct .issue-text { color: #9fe1cb; }
+.issue-item.correct .issue-check { background: #1d9e75; border-color: #1d9e75; }
+.issue-item.missed { background: #2a2410; border-color: #6fa3d2; }
+.issue-item.missed .issue-text { color: #a8c9e8; }
+.issue-item.missed .issue-check { border-color: #6fa3d2; }
+.issue-item.wrong { background: #3d1515; border-color: #e24b4a; }
+.issue-item.wrong .issue-text { color: #f09595; }
+.result-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
+.tag-correct { background: rgba(29,158,117,0.2); color: #1d9e75; }
+.tag-missed { background: rgba(111,163,210,0.2); color: #6fa3d2; }
+.tag-wrong { background: rgba(226,75,74,0.2); color: #e24b4a; }
+#score-bar { background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; display: none; }
+#score-bar-title { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+#score-cells { display: flex; gap: 10px; }
+.score-cell { flex: 1; text-align: center; background: #0f1e35; border-radius: 6px; padding: 10px 6px; }
+.score-cell-n { font-size: 18px; font-weight: 500; color: #6fa3d2; }
+.score-cell-l { font-size: 9px; color: #6b8aaa; text-transform: uppercase; margin-top: 2px; }
+#l2-progress { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.issue-dot { width: 28px; height: 28px; border-radius: 50%; background: #1a2f4a; border: 2px solid #2a4a6a; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #6b8aaa; }
+.issue-dot.active { border-color: #6fa3d2; background: rgba(111,163,210,0.15); color: #6fa3d2; }
+.issue-dot.done { border-color: #1d9e75; background: rgba(29,158,117,0.15); color: #9fe1cb; }
+#l2-subq { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+#l2-issue-title { font-size: 10px; color: #6fa3d2; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#l2-element-box { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(111,163,210,0.2); }
+#l2-element-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+#l2-element-text { font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.5; }
+#l2-element-sub { font-size: 12px; color: #6b8aaa; margin-top: 5px; }
+#l2-instruction { font-size: 11px; color: #6b8aaa; margin-bottom: 10px; }
+#fact-tiles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.fact-tile { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #2a4a6a; background: #1a2f4a; color: #a0b8cc; font-size: 12px; cursor: pointer; transition: all 0.15s; line-height: 1.4; }
+.fact-tile:hover { border-color: #6fa3d2; color: #f5f0e8; }
+.fact-tile.selected { background: #1e3a58; border-color: #6fa3d2; color: #f5f0e8; }
+.fact-tile.correct { background: #0f3d2a; border-color: #1d9e75; color: #9fe1cb; cursor: default; }
+.fact-tile.missed-fact { background: #1c2c44; border-color: #6fa3d2; color: #a8c9e8; cursor: default; }
+.fact-tile.wrong-fact { background: #3d1515; border-color: #e24b4a; color: #f09595; cursor: default; }
+.fact-tile.neutral { background: #1a2f4a; border-color: #1a2f4a; color: #4a6a8a; cursor: default; }
+#l2-explain { display: none; background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(111,163,210,0.3); }
+#l2-explain-text { font-size: 13px; color: #a0b8cc; line-height: 1.6; }
+.btn-primary { width: 100%; background: #6fa3d2; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; }
+#prog-text { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 12px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 22px; font-weight: 500; color: #f5f0e8; margin-bottom: 6px; }
+#results-score { font-size: 54px; font-weight: 500; color: #6fa3d2; line-height: 1; margin-bottom: 4px; }
+#results-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-cell-n { font-size: 20px; font-weight: 500; color: #6fa3d2; }
+.r-cell-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="header">
+  <div>
+    <h1>No Fact <span>Left Behind</span></h1>
+    <p>BA · Agency Essay · Bell, Tome &amp; Lamp (NCBE Practice)</p>
+  </div>
+  <div id="level-indicator">
+    <div class="level-pip active" id="pip1"></div>
+    <div class="level-pip" id="pip2"></div>
+    <span id="level-label">Level 1</span>
+  </div>
+</div>
+
+<div id="hypo-box">
+  <div id="hypo-title">Fact Pattern — Is Principal Liable to Bell Seller, Tome Seller, and Lamp Seller?</div>
+  <div id="hypo-text">
+    Principal is an antiques dealer. As is common in the antiques business, Principal acquires inventory by <span class="fact" id="f-buyers">using a group of buyers to purchase antiques on his behalf</span>. <span class="fact" id="f-commission">Principal pays the buyers a percentage commission</span> on the items they buy. <span class="fact" id="f-trains">Principal trains the buyers</span> to evaluate potential purchases and sends them into the field with <span class="fact" id="f-credentials">credentials identifying them as Principal's buyers</span>, which they use to introduce themselves to sellers. The buyers <span class="fact" id="f-forms">enter into contracts using Principal's contract forms</span>.<br><br>
+    <strong>The Bell.</strong> <span class="fact" id="f-bell-creds">Using Principal's credentials, Agent bought an antique church bell for $3,500</span> from Bell Seller, <span class="fact" id="f-bell-belief">who believed Agent was acting on Principal's behalf</span>. <span class="fact" id="f-bell-list">The church bell was on Principal's list</span> and <span class="fact" id="f-bell-price">the price was within the range authorized by Principal</span>. However, <span class="fact" id="f-bell-greta">Agent did not intend to purchase the bell for Principal — he intended it for Greta, a competing antiques dealer, who agreed to pay Agent $250 to find such a bell</span>. <span class="fact" id="f-greta-money">Agent intended to use Greta's money to pay for the bell</span>. <span class="fact" id="f-greta-reject">Greta rejected the bell.</span> Principal refuses to pay Bell Seller.<br><br>
+    <strong>The Tome.</strong> <span class="fact" id="f-tome-auth">Agent had a written authorization from Principal to buy several books, including <em>Looking Backward</em> by Edward Bellamy</span>. <span class="fact" id="f-tome-showed">Agent showed this authorization to Tome Seller</span>, who had a first edition. However, <span class="fact" id="f-tome-limit">Agent did not tell Tome Seller that Principal had imposed a price limit on the purchase</span>. <span class="fact" id="f-tome-100">Agent bought the book on Principal's behalf for $100 — above the limit</span>. Principal refuses to pay Tome Seller.<br><br>
+    <strong>The Lamp.</strong> When Principal learned of Agent's transactions, <span class="fact" id="f-letter">Principal sent Agent a letter terminating the agency</span>. <span class="fact" id="f-after-letter">Several days after Agent received the letter</span>, <span class="fact" id="f-own-account">Agent purchased — for his own account — a whale oil lamp for $5,000</span> from Lamp Seller. <span class="fact" id="f-lamp-told">Agent told Lamp Seller the purchase was for Principal's account</span>, <span class="fact" id="f-lamp-creds">showed Lamp Seller his credentials from Principal</span>, and <span class="fact" id="f-lamp-forms">used Principal's contract forms</span>. <span class="fact" id="f-no-disclose">Agent did not disclose that the agency had been terminated.</span> Principal refuses to pay Lamp Seller, arguing Agent was no longer his buyer at the time of purchase.
+  <div class="verify-note">⚠ Reconstructed from the class transcript — check against the essay posted in the Week 4 module, especially the exact dollar amount of the Tome price limit, and tell me any fact that differs so I can correct the game.</div>
+  </div>
+</div>
+
+<div id="panel">
+
+  <div id="level1">
+    <div id="l1-question">Spot the Issues</div>
+    <div id="l1-sub">Check every legal issue this fact pattern raises. Include all issues you would address in an essay — even ones that resolve quickly.</div>
+    <div id="issue-grid"></div>
+    <div id="score-bar">
+      <div id="score-bar-title">Level 1 Results</div>
+      <div id="score-cells">
+        <div class="score-cell"><div class="score-cell-n" id="l1-correct-n">0</div><div class="score-cell-l">Spotted</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-missed-n">0</div><div class="score-cell-l">Missed</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-wrong-n">0</div><div class="score-cell-l">False alarms</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-pct">0%</div><div class="score-cell-l">Accuracy</div></div>
+      </div>
+    </div>
+    <div id="l1-btn-wrap"><button class="btn-primary" id="l1-submit">Check My Issues →</button></div>
+    <div id="l1-next-wrap" style="display:none;"><button class="btn-primary" id="l1-next">Level 2 — No Fact Left Behind →</button></div>
+  </div>
+
+  <div id="level2" style="display:none;">
+    <div id="l2-progress"></div>
+    <div id="l2-subq"></div>
+    <div id="l2-issue-title"></div>
+    <div id="l2-element-box">
+      <div id="l2-element-label">Element / Rule</div>
+      <div id="l2-element-text"></div>
+      <div id="l2-element-sub"></div>
+    </div>
+    <div id="l2-instruction">Tap every fact from the hypo that is legally operative for this element.</div>
+    <div id="fact-tiles"></div>
+    <div id="l2-explain"><div id="l2-explain-text"></div></div>
+    <button class="btn-primary" id="l2-check">Check Facts →</button>
+    <div id="prog-text"></div>
+  </div>
+
+  <div id="results">
+    <h2>No Fact Left Behind.</h2>
+    <div id="results-score"></div>
+    <div id="results-sub"></div>
+    <div id="results-grid">
+      <div class="r-cell"><div class="r-cell-n" id="r-issues"></div><div class="r-cell-l">Issues spotted</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-facts"></div><div class="r-cell-l">Facts deployed</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-total"></div><div class="r-cell-l">Combined %</div></div>
+    </div>
+    <button class="btn-primary" id="restart-btn">Play again</button>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+
+var ISSUES = [
+  // CREATION
+  { id:'agency-created', text:'Agency relationship created — assent, benefit, control (commission buyers, trained, credentialed)', cat:'Creation', real:true },
+  // BELL
+  { id:'bell-actual', text:'Bell — actual authority FAILS: bell on list and price authorized, but Agent did not intend to act on Principal\'s behalf (acting for Greta)', cat:'Bell Seller', real:true },
+  { id:'bell-apparent', text:'Bell — apparent authority: credentials + contract forms + Bell Seller\'s reasonable belief → Principal bound', cat:'Bell Seller', real:true },
+  { id:'bell-disloyal', text:'Agent\'s secret disloyal intent (the Greta deal) does NOT defeat apparent authority as to Bell Seller', cat:'Bell Seller', real:true },
+  // TOME
+  { id:'tome-express', text:'Tome — express actual authority: written authorization naming the book', cat:'Tome Seller', real:true },
+  { id:'tome-limit', text:'Tome — secret price limit not communicated to Tome Seller cannot cut back apparent authority; Principal bound at $100', cat:'Tome Seller', real:true },
+  // LAMP
+  { id:'lamp-term', text:'Lamp — actual authority terminated: letter received before the purchase ended the agency', cat:'Lamp Seller', real:true },
+  { id:'lamp-linger', text:'Lamp — lingering apparent authority: no notice to Lamp Seller + credentials/forms still in hand → Principal bound', cat:'Lamp Seller', real:true },
+  // INTERNAL
+  { id:'agent-breach', text:'Agent\'s liability to Principal — breach of loyalty (secret $250 deal), exceeding authority (price limit), post-termination fraud; indemnification', cat:'Internal Claims', real:true },
+  // DECOYS
+  { id:'ratification', text:'Principal ratified the three purchases by accepting their benefits', cat:'Consider carefully', real:false },
+  { id:'undisclosed-greta', text:'Greta is liable to Bell Seller as an undisclosed principal', cat:'Consider carefully', real:false },
+  { id:'resp-superior', text:'Respondeat superior — Principal vicariously liable for Agent\'s torts within scope of employment', cat:'Consider carefully', real:false },
+  { id:'frolic', text:'Frolic and detour — Agent\'s side trip for Greta was a detour within the scope of employment', cat:'Consider carefully', real:false },
+];
+
+var L2 = [
+  {
+    subq: 'Creation of the Agency',
+    issueTitle: 'Agency Relationship — Assent, Benefit, Control',
+    element: 'Agency arises when the principal manifests intention that the agent act on the principal\'s behalf: (1) assent by both parties; (2) the agent acts for the principal\'s benefit; (3) the principal has the right to control the agent\'s conduct.',
+    sub: 'Was Agent acting as Principal\'s agent at all?',
+    keyFacts: ['f-buyers','f-commission','f-trains','f-credentials','f-forms'],
+    allFacts: ['f-buyers','f-commission','f-trains','f-credentials','f-forms','f-bell-list','f-letter'],
+    explain: 'Every creation element is in the setup paragraph: buyers purchase ON PRINCIPAL\'S BEHALF (assent + benefit), Principal pays PERCENTAGE COMMISSION (benefit, compensation), Principal TRAINS the buyers and supplies CREDENTIALS and CONTRACT FORMS (control + manifestations). On an essay, spend two sentences establishing the relationship before touching authority — the graders allocate points for it.'
+  },
+  {
+    subq: 'Bell Seller',
+    issueTitle: 'Actual Authority — And Why It Fails for the Bell',
+    element: 'Actual authority exists when the agent reasonably believes, based on the principal\'s manifestations, that the principal wishes him so to act — and the agent must act on the principal\'s behalf. An agent acting for his own account or a third party\'s benefit does not act with actual authority.',
+    sub: 'The bell was on the list and the price was authorized — so why is there no actual authority?',
+    keyFacts: ['f-bell-list','f-bell-price','f-bell-greta','f-greta-money'],
+    allFacts: ['f-bell-list','f-bell-price','f-bell-greta','f-greta-money','f-greta-reject','f-bell-creds','f-commission'],
+    explain: 'The trap is to see "bell on Principal\'s list" + "price authorized" and conclude actual authority. But actual authority requires acting ON THE PRINCIPAL\'S BEHALF — and Agent intended the bell for GRETA, a competing dealer paying him $250, using GRETA\'S MONEY. Agent was not acting for Principal at all. No actual authority. (Greta\'s later rejection is background — it explains why Bell Seller is chasing Principal, but it isn\'t an element fact.)'
+  },
+  {
+    subq: 'Bell Seller',
+    issueTitle: 'Apparent Authority — Principal Is Bound Anyway',
+    element: 'Apparent authority arises from the principal\'s manifestations to a third party that cause the third party reasonably to believe the agent has authority. The agent\'s secret intent or disloyalty does not defeat apparent authority.',
+    sub: 'Why does Principal lose even though Agent was secretly working for Greta?',
+    keyFacts: ['f-credentials','f-forms','f-bell-creds','f-bell-belief'],
+    allFacts: ['f-credentials','f-forms','f-bell-creds','f-bell-belief','f-bell-greta','f-greta-reject','f-trains'],
+    explain: 'Principal\'s own manifestations: he ISSUED THE CREDENTIALS and SUPPLIED THE CONTRACT FORMS; Agent USED THE CREDENTIALS in this very purchase; Bell Seller BELIEVED Agent acted for Principal — and reasonably so, since everything Principal gave Agent said exactly that. Agent\'s secret Greta deal lives only in Agent\'s head; Bell Seller had no way to know. Principal is liable to Bell Seller on apparent authority, then recovers from Agent (see the internal-claims element).'
+  },
+  {
+    subq: 'Tome Seller',
+    issueTitle: 'Express Authority + the Secret Price Limit',
+    element: 'A secret limitation on an agent\'s authority does not bind a third party who has no notice of it. As to the third party, the agent\'s apparent authority extends to the full scope of the principal\'s manifestations.',
+    sub: 'Agent had written authorization but blew past a price cap Tome Seller never heard about. Is Principal bound at $100?',
+    keyFacts: ['f-tome-auth','f-tome-showed','f-tome-limit','f-tome-100'],
+    allFacts: ['f-tome-auth','f-tome-showed','f-tome-limit','f-tome-100','f-credentials','f-bell-belief','f-forms'],
+    explain: 'The WRITTEN AUTHORIZATION naming the book is Principal\'s manifestation; Agent SHOWED IT to Tome Seller, completing the apparent-authority circuit. The PRICE LIMIT was never communicated to Tome Seller — a secret limitation, ineffective against a third party without notice. Buying at $100 exceeded Agent\'s ACTUAL authority (he\'s liable to Principal for the excess) but was within his APPARENT authority. Principal is bound to Tome Seller at $100.'
+  },
+  {
+    subq: 'Lamp Seller',
+    issueTitle: 'Termination of Actual Authority',
+    element: 'A principal may revoke an agent\'s actual authority at any time; revocation is effective upon communication to the agent. After receipt, the agent has no actual authority to bind the principal.',
+    sub: 'Did the termination letter end Agent\'s power to bind Principal?',
+    keyFacts: ['f-letter','f-after-letter','f-own-account'],
+    allFacts: ['f-letter','f-after-letter','f-own-account','f-lamp-told','f-credentials','f-commission'],
+    explain: 'The LETTER TERMINATING THE AGENCY, RECEIVED by Agent days before the lamp purchase, cleanly ended actual authority — and Agent knew it, buying FOR HIS OWN ACCOUNT. As between Principal and Agent, the agency is dead. But that\'s only half the analysis — the next element is where Principal\'s argument falls apart.'
+  },
+  {
+    subq: 'Lamp Seller',
+    issueTitle: 'Lingering Apparent Authority — Termination Without Notice',
+    element: 'Apparent authority survives the termination of actual authority and continues until third parties receive notice of the termination. A principal who leaves credentials in a terminated agent\'s hands bears the risk of their continued use.',
+    sub: 'Agent was fired — so why is Principal still liable to Lamp Seller?',
+    keyFacts: ['f-lamp-told','f-lamp-creds','f-lamp-forms','f-no-disclose'],
+    allFacts: ['f-lamp-told','f-lamp-creds','f-lamp-forms','f-no-disclose','f-letter','f-after-letter','f-bell-belief'],
+    explain: 'Agent TOLD Lamp Seller the purchase was for Principal, SHOWED the credentials Principal never retrieved, and USED PRINCIPAL\'S FORMS — and NO ONE DISCLOSED the termination to Lamp Seller. Apparent authority lingers until notice reaches third parties. Principal terminated the agent but not the appearance. Principal is liable to Lamp Seller; his remedy is against Agent for fraud. Exam tie-in: this is the same notice principle as post-dissolution partner authority.'
+  },
+  {
+    subq: 'Internal Claims',
+    issueTitle: 'Agent\'s Liability to Principal — Loyalty, Obedience, Fraud',
+    element: 'An agent owes the principal duties of loyalty (no acting for an adverse party, no secret profits) and obedience (follow lawful instructions). A principal held liable on the agent\'s unauthorized or disloyal dealings may recover from the agent — damages, disgorgement of secret profits, indemnification.',
+    sub: 'Principal pays Bell Seller, Tome Seller, and Lamp Seller. What does he recover from Agent?',
+    keyFacts: ['f-bell-greta','f-greta-money','f-tome-limit','f-tome-100','f-after-letter','f-own-account'],
+    allFacts: ['f-bell-greta','f-greta-money','f-tome-limit','f-tome-100','f-after-letter','f-own-account','f-commission','f-trains'],
+    explain: 'Three breaches, one per transaction: (1) Bell — acting for GRETA, an adverse competing party, for a secret $250 — loyalty breach; disgorgement of the $250 + damages. (2) Tome — violating the PRICE LIMIT — obedience breach; damages for the excess over the cap. (3) Lamp — purchasing AFTER TERMINATION for HIS OWN ACCOUNT while invoking Principal\'s name — fraud; full indemnification for the $5,000. Close the essay with the internal claims even though the calls only ask about the sellers — that\'s the "no fact left behind" move.'
+  },
+];
+
+var state = {
+  phase:'l1', selected:{},
+  l1Correct:0, l1Missed:0, l1Wrong:0,
+  l2Idx:0, l2FactSel:{},
+  totalFactsCorrect:0, totalFactsTotal:0,
+};
+
+function g(id){ return document.getElementById(id); }
+
+function buildL1(){
+  var grid = g('issue-grid');
+  grid.innerHTML = '';
+  var lastCat = '';
+  ISSUES.forEach(function(issue){
+    if(issue.cat !== lastCat){
+      var label = document.createElement('div');
+      label.className = 'cat-label';
+      label.textContent = issue.cat;
+      grid.appendChild(label);
+      lastCat = issue.cat;
+    }
+    var div = document.createElement('div');
+    div.className = 'issue-item'; div.id = 'issue-' + issue.id;
+    div.innerHTML = '<div class="issue-check"><span class="check-mark">✓</span></div><div class="issue-text">' + issue.text + '</div>';
+    div.addEventListener('click', function(){
+      if(state.phase !== 'l1') return;
+      state.selected[issue.id] = !state.selected[issue.id];
+      div.classList.toggle('selected', !!state.selected[issue.id]);
+    });
+    grid.appendChild(div);
+  });
+}
+
+g('l1-submit').addEventListener('click', function(){
+  if(state.phase !== 'l1') return;
+  state.phase = 'l1-result';
+  var correct=0, missed=0, wrong=0;
+  ISSUES.forEach(function(issue){
+    var el = g('issue-' + issue.id);
+    var sel = !!state.selected[issue.id];
+    if(issue.real && sel){ correct++; el.classList.add('correct'); var t=document.createElement('span'); t.className='result-tag tag-correct'; t.textContent='✓ Spotted'; el.appendChild(t); }
+    else if(issue.real && !sel){ missed++; el.classList.add('missed'); var t=document.createElement('span'); t.className='result-tag tag-missed'; t.textContent='⚠ Missed'; el.appendChild(t); }
+    else if(!issue.real && sel){ wrong++; el.classList.add('wrong'); var t=document.createElement('span'); t.className='result-tag tag-wrong'; t.textContent='✗ False alarm'; el.appendChild(t); }
+  });
+  state.l1Correct=correct; state.l1Missed=missed; state.l1Wrong=wrong;
+  var realCount = ISSUES.filter(function(i){ return i.real; }).length;
+  var pct = Math.round(correct/realCount*100);
+  g('l1-correct-n').textContent=correct; g('l1-missed-n').textContent=missed; g('l1-wrong-n').textContent=wrong; g('l1-pct').textContent=pct+'%';
+  g('score-bar').style.display='block'; g('l1-btn-wrap').style.display='none'; g('l1-next-wrap').style.display='block';
+  g('pip1').className='level-pip done'; g('pip2').className='level-pip active'; g('level-label').textContent='Level 2 ready';
+});
+
+g('l1-next').addEventListener('click', function(){
+  g('level1').style.display='none'; g('level2').style.display='block';
+  state.phase='l2'; state.l2Idx=0; g('level-label').textContent='Level 2';
+  buildDots(); renderL2();
+});
+
+function buildDots(){
+  var wrap = g('l2-progress'); wrap.innerHTML='';
+  L2.forEach(function(el,i){
+    var dot = document.createElement('div');
+    dot.className='issue-dot'+(i===0?' active':''); dot.id='dot-'+i; dot.textContent=(i+1);
+    wrap.appendChild(dot);
+  });
+}
+
+function renderL2(){
+  var el = L2[state.l2Idx];
+  state.l2FactSel = {};
+  g('l2-subq').textContent = el.subq;
+  g('l2-issue-title').textContent = el.issueTitle;
+  g('l2-element-text').textContent = el.element;
+  g('l2-element-sub').textContent = el.sub;
+  g('l2-explain').style.display='none';
+  g('l2-check').textContent='Check Facts →';
+  g('prog-text').textContent='Element '+(state.l2Idx+1)+' of '+L2.length;
+  var tilesWrap = g('fact-tiles'); tilesWrap.innerHTML='';
+  el.allFacts.forEach(function(fid){
+    var factEl = document.getElementById(fid);
+    var text = factEl ? factEl.textContent : fid;
+    var tile = document.createElement('div');
+    tile.className='fact-tile'; tile.textContent=text; tile.id='tile-'+fid;
+    tile.addEventListener('click', function(){
+      if(state.l2FactSel._locked) return;
+      state.l2FactSel[fid] = !state.l2FactSel[fid];
+      tile.classList.toggle('selected', !!state.l2FactSel[fid]);
+    });
+    tilesWrap.appendChild(tile);
+  });
+  L2.forEach(function(e,i){
+    var dot=g('dot-'+i);
+    dot.className='issue-dot'+(i===state.l2Idx?' active':i<state.l2Idx?' done':'');
+  });
+}
+
+g('l2-check').addEventListener('click', function(){
+  if(state.phase !== 'l2') return;
+  var el = L2[state.l2Idx];
+  if(!state.l2FactSel._locked){
+    state.l2FactSel._locked = true;
+    var correct=0, missed=0;
+    el.allFacts.forEach(function(fid){
+      var isKey = el.keyFacts.indexOf(fid) >= 0;
+      var sel = !!state.l2FactSel[fid];
+      var tile = g('tile-'+fid);
+      tile.classList.remove('selected');
+      if(isKey && sel){ correct++; tile.className='fact-tile correct'; }
+      else if(isKey && !sel){ missed++; tile.className='fact-tile missed-fact'; }
+      else if(!isKey && sel){ tile.className='fact-tile wrong-fact'; }
+      else{ tile.className='fact-tile neutral'; }
+    });
+    state.totalFactsCorrect += correct; state.totalFactsTotal += el.keyFacts.length;
+    g('l2-explain-text').textContent = el.explain;
+    g('l2-explain').style.display='block';
+    g('l2-check').textContent = state.l2Idx < L2.length-1 ? 'Next Element →' : 'See Results →';
+  } else {
+    if(state.l2Idx < L2.length-1){
+      g('dot-'+state.l2Idx).className='issue-dot done';
+      state.l2Idx++; state.l2FactSel={}; renderL2();
+    } else { showResults(); }
+  }
+});
+
+function showResults(){
+  g('level2').style.display='none'; g('results').style.display='block';
+  g('pip2').className='level-pip done'; g('level-label').textContent='Complete';
+  var realCount = ISSUES.filter(function(i){ return i.real; }).length;
+  var issuePct = Math.round(state.l1Correct/realCount*100);
+  var factPct = state.totalFactsTotal>0 ? Math.round(state.totalFactsCorrect/state.totalFactsTotal*100) : 0;
+  var combined = Math.round((issuePct+factPct)/2);
+  g('results-score').textContent = combined+'%';
+  g('results-sub').textContent = combined>=85?'No fact left behind, Counselor.':combined>=65?'Solid — a few facts slipped through.':'Keep drilling — the facts are all there.';
+  g('r-issues').textContent = state.l1Correct+'/'+realCount;
+  g('r-facts').textContent = state.totalFactsCorrect+'/'+state.totalFactsTotal;
+  g('r-total').textContent = combined+'%';
+}
+
+g('restart-btn').addEventListener('click', function(){
+  state={phase:'l1',selected:{},l1Correct:0,l1Missed:0,l1Wrong:0,l2Idx:0,l2FactSel:{},totalFactsCorrect:0,totalFactsTotal:0};
+  g('results').style.display='none'; g('level2').style.display='none'; g('level1').style.display='block';
+  g('score-bar').style.display='none'; g('l1-btn-wrap').style.display='block'; g('l1-next-wrap').style.display='none';
+  g('pip1').className='level-pip active'; g('pip2').className='level-pip'; g('level-label').textContent='Level 1';
+  buildL1();
+});
+
+buildL1();
+})();
+</script>
+</body>
+</html>

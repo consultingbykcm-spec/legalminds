@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wills — Checklist Drill</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+:root{
+  --bg:#0d0d0f;--surface:#13131a;--border:#2a2a3a;--gold:#c9a84c;--gold-dim:#7a6430;
+  --cream:#e8e0cc;--muted:#7a7a90;--text:#ccc8d8;
+  --green:#2d6a4f;--green-bright:#52b788;--red:#7a2a2a;--red-bright:#c05555;
+  --policy:#4a2a6a;--policy-bright:#9b72cf;--blue:#3a5f8a;--blue-bright:#5a8fbf;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;min-height:100vh;}
+
+header{padding:20px 32px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;justify-content:space-between;align-items:flex-end;}
+.brand{font-family:'Playfair Display',serif;font-size:10pt;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px;}
+.title{font-family:'Playfair Display',serif;font-size:24pt;font-weight:900;color:var(--cream);line-height:1;}
+.subtitle{font-size:8pt;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:4px;}
+.header-right{text-align:right;}
+.score-row{display:flex;gap:20px;justify-content:flex-end;}
+.score-item{text-align:center;}
+.score-num{font-family:'Playfair Display',serif;font-size:18pt;font-weight:700;display:block;line-height:1;}
+.score-num.got{color:var(--green-bright);}
+.score-num.again{color:var(--red-bright);}
+.score-lbl{font-size:7pt;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+
+.controls{padding:10px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.ctrl-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Source Serif 4',serif;font-size:8pt;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:2px;cursor:pointer;transition:all .18s;}
+.ctrl-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
+.ctrl-btn.active{background:var(--gold);border-color:var(--gold);color:#0d0d0f;font-weight:600;}
+.ctrl-label{font-size:8pt;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-right:4px;}
+
+main{max-width:900px;margin:0 auto;padding:28px 24px;}
+
+/* Mental checklist */
+.mental{display:flex;gap:0;margin-bottom:24px;border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.step{flex:1;text-align:center;padding:10px 8px;border-right:1px solid var(--border);cursor:pointer;transition:all .2s;}
+.step:last-child{border-right:none;}
+.step:hover{background:rgba(201,168,76,.08);}
+.step.active-section{background:rgba(201,168,76,.15);border-bottom:2px solid var(--gold);}
+.step-num{font-family:'Playfair Display',serif;font-size:16pt;font-weight:900;color:var(--gold);display:block;line-height:1;}
+.step-lbl{font-size:7pt;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+
+/* Sections */
+.section{margin-bottom:20px;}
+.section-header{font-family:'Playfair Display',serif;font-size:12pt;font-weight:900;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold);padding:8px 14px;border-radius:2px;margin-bottom:2px;letter-spacing:.04em;color:var(--cream);}
+
+/* Rows */
+.row{display:flex;align-items:center;gap:10px;padding:5px 8px;border-bottom:1px solid rgba(42,42,58,.5);cursor:pointer;transition:background .15s;position:relative;}
+.row:hover{background:rgba(201,168,76,.05);}
+.row.revealed{background:rgba(42,62,42,.15);}
+.row.marked-got{background:rgba(45,106,79,.12);}
+.row.marked-again{background:rgba(122,42,42,.12);}
+
+.row-indent-0{padding-left:8px;}
+.row-indent-1{padding-left:24px;}
+.row-indent-2{padding-left:40px;}
+.row-indent-3{padding-left:56px;}
+
+.row-label{font-size:9.5pt;min-width:200px;flex-shrink:0;line-height:1.35;color:var(--text);}
+.row-label.l0{font-family:'Playfair Display',serif;font-weight:700;font-size:10pt;color:var(--cream);}
+.row-label.l1{font-weight:600;}
+.row-label.l2{font-weight:400;}
+.row-label.l3{font-weight:400;font-style:italic;font-size:8.5pt;color:var(--muted);}
+
+.buzz-area{display:flex;flex-wrap:wrap;gap:5px;align-items:center;flex:1;}
+.buzz-hidden{color:var(--muted);font-size:8pt;font-style:italic;letter-spacing:.08em;}
+
+.tag{display:inline-block;font-family:'Playfair Display',serif;font-size:9.5pt;font-weight:700;padding:3px 10px;border-radius:2px;letter-spacing:.03em;opacity:0;transition:opacity .3s;pointer-events:none;}
+.tag.show{opacity:1;pointer-events:auto;}
+.tag.standard{background:rgba(201,168,76,.1);border:1px solid var(--gold-dim);color:var(--gold);}
+.tag.policy{background:rgba(155,114,207,.1);border:1px solid var(--policy);color:var(--policy-bright);}
+.tag.note{background:rgba(90,143,191,.1);border:1px solid var(--blue);color:var(--blue-bright);font-family:'Source Serif 4',serif;font-weight:400;font-style:italic;font-size:8pt;}
+
+/* Row actions */
+.row-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s;flex-shrink:0;}
+.row:hover .row-actions,.row.revealed .row-actions{opacity:1;}
+.act-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:7.5pt;padding:3px 8px;border-radius:2px;cursor:pointer;transition:all .15s;font-family:'Source Serif 4',serif;letter-spacing:.08em;text-transform:uppercase;}
+.act-btn.got:hover,.act-btn.got.active{background:var(--green);border-color:var(--green);color:#fff;}
+.act-btn.again:hover,.act-btn.again.active{background:var(--red);border-color:var(--red);color:#fff;}
+
+.reveal-hint{font-size:7.5pt;color:var(--border);font-style:italic;position:absolute;right:8px;bottom:3px;pointer-events:none;}
+.row:hover .reveal-hint{color:var(--muted);}
+.row.revealed .reveal-hint{display:none;}
+
+/* Progress */
+.progress-bar-wrap{margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.progress-bar{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .4s;}
+.progress-text{font-size:8pt;color:var(--muted);white-space:nowrap;}
+
+/* Summary */
+.summary{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:16px 20px;margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.summary-title{font-family:'Playfair Display',serif;font-size:13pt;color:var(--cream);}
+.summary-scores{display:flex;gap:20px;}
+.sum-item{text-align:center;}
+.sum-num{font-family:'Playfair Display',serif;font-size:22pt;font-weight:700;display:block;line-height:1;}
+.sum-num.got{color:var(--green-bright);}
+.sum-num.again{color:var(--red-bright);}
+.sum-lbl{font-size:7.5pt;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.btn-reset{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Source Serif 4',serif;font-size:9pt;letter-spacing:.1em;text-transform:uppercase;padding:9px 20px;border-radius:2px;cursor:pointer;transition:all .18s;}
+.btn-reset:hover{background:var(--gold);color:#0d0d0f;}
+.btn-reveal-all{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Source Serif 4',serif;font-size:9pt;letter-spacing:.1em;text-transform:uppercase;padding:9px 20px;border-radius:2px;cursor:pointer;transition:all .18s;}
+.btn-reveal-all:hover{border-color:var(--muted);color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="brand">LegalMinds ⚖️</div>
+    <div class="title">WILLS — CHECKLIST DRILL</div>
+    <div class="subtitle">Click each issue to reveal buzz words · Colleges of Law · Class of 2026</div>
+  </div>
+  <div class="header-right">
+    <div class="score-row">
+      <div class="score-item"><span class="score-num got" id="got-count">0</span><span class="score-lbl">Got It</span></div>
+      <div class="score-item"><span class="score-num again" id="again-count">0</span><span class="score-lbl">Again</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <span class="ctrl-label">Show:</span>
+  <button class="ctrl-btn active" onclick="setMode('hide',this)">Hide All</button>
+  <button class="ctrl-btn" onclick="setMode('show',this)">Show All</button>
+  <button class="ctrl-btn" onclick="resetAll()">Reset</button>
+</div>
+
+<main>
+<div class="progress-bar-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="progress-text" id="progress-text">0 revealed</div>
+</div>
+
+<!-- Mental checklist nav -->
+<div class="mental">
+  <div class="step" onclick="scrollTo('s1')"><span class="step-num">I</span><span class="step-lbl">Validity</span></div>
+  <div class="step" onclick="scrollTo('s2')"><span class="step-num">II</span><span class="step-lbl">Consists Of</span></div>
+  <div class="step" onclick="scrollTo('s3')"><span class="step-num">III</span><span class="step-lbl">Revocation</span></div>
+  <div class="step" onclick="scrollTo('s4')"><span class="step-num">IV</span><span class="step-lbl">Distribution</span></div>
+  <div class="step" onclick="scrollTo('s5')"><span class="step-num">V</span><span class="step-lbl">Renunciation</span></div>
+  <div class="step" onclick="scrollTo('s6')"><span class="step-num">VI</span><span class="step-lbl">Intestate</span></div>
+</div>
+
+<div id="checklist"></div>
+
+<div class="summary">
+  <div>
+    <div class="summary-title">Progress</div>
+    <div style="font-size:8.5pt;color:var(--muted);margin-top:4px;">Click rows to reveal · Mark Got It or Again</div>
+  </div>
+  <div class="summary-scores">
+    <div class="sum-item"><span class="sum-num got" id="sum-got">0</span><span class="sum-lbl">Got It</span></div>
+    <div class="sum-item"><span class="sum-num again" id="sum-again">0</span><span class="sum-lbl">Again</span></div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn-reveal-all" onclick="revealAll()">Reveal All</button>
+    <button class="btn-reset" onclick="resetAll()">Reset ↺</button>
+  </div>
+</div>
+</main>
+
+<script>
+const CHECKLIST = [
+  {id:'s1', type:'section', label:'I. Is There a Valid Will?'},
+  {id:'r1', type:'row', indent:1, label:'A. Testamentary Intent', buzz:[{t:'Unequivocal Intent'},{t:'Actions'}]},
+  {id:'r2', type:'row', indent:1, label:'B. Testamentary Capacity', buzz:[{t:'18'},{t:'Sound Mind'},{t:'At Execution'}]},
+  {id:'r3', type:'row', indent:2, label:'1. Infancy', buzz:[{t:'Under 18'},{t:'Lacks Capacity'}]},
+  {id:'r4', type:'row', indent:2, label:'2. Mental Capacity — Sound Mind', buzz:[{t:'Know'},{t:'Extent'},{t:'Bounty'},{t:'Relate'}]},
+  {id:'r5', type:'row', indent:2, label:'3. Insane Delusion', buzz:[{t:'Derangement'},{t:'Against Evidence & Reason'},{t:'Cannot Be Dissuaded'},{t:'Gift Fails — Not Whole Will',c:'policy'}]},
+  {id:'r6', type:'row', indent:2, label:'*4. Fraud', buzz:[{t:'False Fact'},{t:'Knew'},{t:'Intent'},{t:'Deceived'}]},
+  {id:'r7', type:'row', indent:2, label:'*5. Undue Influence', buzz:[{t:'Susceptible'},{t:'Opportunity'},{t:'Motive'},{t:'Acted'}]},
+  {id:'r8', type:'row', indent:3, label:'Presumption', buzz:[{t:'Confidential Relationship'},{t:'Suspicious Circumstances'}]},
+  {id:'r9', type:'row', indent:3, label:'3 Types of Conf. Relationship', buzz:[{t:'Fiduciary'},{t:'Reliant'},{t:'Dominant-Subordinate'}]},
+  {id:'r10', type:'row', indent:3, label:'Suspicious Circumstances (8)', buzz:[{t:'Weakened'},{t:'Influencer'},{t:'No Ind. Advice'},{t:'Secrecy'},{t:'Haste'},{t:'Attitude'},{t:'Discrepancy'},{t:'Unjust Disposition'}]},
+  {id:'r11', type:'row', indent:2, label:'*6. Mistake', buzz:[{t:'Mistaken Belief'},{t:'Would Not Have Done It'}]},
+  {id:'r12', type:'row', indent:2, label:'7. Ambiguity', buzz:[{t:'Patent: On the Face'},{t:'Latent: Applied to Facts'},{t:'Extrinsic Evidence'}]},
+  {id:'r13', type:'row', indent:3, label:'Reform Unambiguous Will (Duke)', buzz:[{t:'Mistake in Expression'},{t:'C&C Evidence'},{t:'Actual Intent'}]},
+  {id:'r14', type:'row', indent:1, label:'C. Legal Formalities', buzz:[{t:'Ritual / Evidentiary / Protective',c:'note'}]},
+  {id:'r15', type:'row', indent:2, label:'1. Formal Will (CA)', buzz:[{t:'Writing'},{t:'Signed'},{t:'Presence'},{t:'2 Witnesses'},{t:'Understand'},{t:'Strict'}]},
+  {id:'r16', type:'row', indent:3, label:'Witness Standard', buzz:[{t:'Majority: Present Sense'},{t:'Minority: Line of Sight'},{t:'Both: Contemporaneous'}]},
+  {id:'r17', type:'row', indent:3, label:'Signature Requirement', buzz:[{t:'Any Mark'},{t:'If Intended = Valid'}]},
+  {id:'r18', type:'row', indent:2, label:'2. Holographic Will', buzz:[{t:'Signed & Dated'},{t:"T's Handwriting"},{t:'No Witness'}]},
+  {id:'r19', type:'row', indent:1, label:'D. Contracts to Make a Will', buzz:[{t:'Contract / Remedies',c:'note'}]},
+  {id:'r20', type:'row', indent:1, label:'E. Joint / Mutual Wills', buzz:[{t:'Contract Not to Revoke'},{t:'Mirror Image'}]},
+
+  {id:'s2', type:'section', label:'II. What Does the Will Consist Of?'},
+  {id:'r21', type:'row', indent:1, label:'A. Integration', buzz:[{t:'# Pages at Execution'},{t:'Intent'}]},
+  {id:'r22', type:'row', indent:1, label:'B. Codicil', buzz:[{t:'Add or Modify'},{t:'Republication'}]},
+  {id:'r23', type:'row', indent:1, label:'C. Incorporation by Reference', buzz:[{t:'Separate Writing'},{t:'Intent'},{t:'ID'},{t:'Valid'}]},
+  {id:'r24', type:'row', indent:1, label:'D. Independent Significance', buzz:[{t:'External Facts'},{t:'Acts'},{t:'Benefits'}]},
+  {id:'r25', type:'row', indent:2, label:'1. Pour-Over Trust', buzz:[{t:'Living Trust'},{t:'Residue in Will'},{t:'Cleanup'}]},
+
+  {id:'s3', type:'section', label:'III. Is Validity Affected by Subsequent Events?'},
+  {id:'r26', type:'row', indent:1, label:'A. Revocation', buzz:[]},
+  {id:'r27', type:'row', indent:2, label:'1. Subsequent Testamentary Instrument', buzz:[{t:'New Doc'},{t:'Express or Implied'}]},
+  {id:'r28', type:'row', indent:3, label:'a. Express Revocation', buzz:[{t:'Revocation Clause'}]},
+  {id:'r29', type:'row', indent:3, label:'b. Implied — Total Inconsistency', buzz:[{t:'Total Inconsistency'}]},
+  {id:'r30', type:'row', indent:3, label:'b. Implied — Partial Inconsistency', buzz:[{t:'Partial Inconsistency'}]},
+  {id:'r31', type:'row', indent:2, label:'2. Physical Act', buzz:[{t:'Burn / Tear / Cancel'},{t:'Intent'}]},
+  {id:'r32', type:'row', indent:3, label:'a. Presumption', buzz:[{t:'Not Found = Presumed Revoked'}]},
+  {id:'r33', type:'row', indent:3, label:'b. Lost / Destroyed Will', buzz:[{t:'Rebut Presumption'},{t:'C&C Evidence'}]},
+  {id:'r34', type:'row', indent:2, label:'3. Operation of Law', buzz:[{t:'Omitted Spouse'},{t:'Omitted Child'},{t:'Divorce'},{t:'Forfeiture'}]},
+  {id:'r35', type:'row', indent:2, label:'4. Dependent Relative Revocation', buzz:[{t:'Revoke'},{t:'Belief'},{t:'Intent'},{t:'Wanted to Revoke Regardless = No DRR',c:'policy'}]},
+  {id:'r36', type:'row', indent:3, label:'Maj / Min / CA', buzz:[{t:'Maj: Subsequent Instrument'},{t:'Min: Physical Act'},{t:'CA: Intent (Broad)'}]},
+  {id:'r37', type:'row', indent:1, label:'B. Revival', buzz:[{t:'Not Auto'},{t:'Intent'},{t:'Codicil by Ref'},{t:'Writing'},{t:'Re-execution'},{t:'Revoking New Will ≠ Auto-Revival',c:'policy'}]},
+  {id:'r38', type:'row', indent:2, label:'Reformation (Curative)', buzz:[{t:'Modify'},{t:'C&C Evidence'},{t:'Intent'}]},
+  {id:'r39', type:'row', indent:2, label:'Substantial Compliance (Curative)', buzz:[{t:'Express Intent'},{t:'Sufficient'}]},
+  {id:'r40', type:'row', indent:2, label:'Harmless Error (Curative)', buzz:[{t:'Non-Compliant'},{t:'Clear Evidence'},{t:'Intent Satisfies'}]},
+
+  {id:'s4', type:'section', label:'IV. How Is Property to Be Distributed?'},
+  {id:'r41', type:'row', indent:1, label:'A. Order of Payment', buzz:[{t:'Debts & Expenses First'},{t:'Intestate → Residuary → General → Demonstrative → Specific Last'}]},
+  {id:'r42', type:'row', indent:3, label:'Creditor Priority', buzz:[{t:'1. Admin Expenses'},{t:'2. Funeral & Illness'},{t:'3. Preferred'},{t:'4. Rest'}]},
+  {id:'r43', type:'row', indent:1, label:'B. Classification of Gifts', buzz:[]},
+  {id:'r44', type:'row', indent:2, label:'1. Specific', buzz:[{t:'"My"'},{t:'Identified Asset'}]},
+  {id:'r45', type:'row', indent:2, label:'2. General', buzz:[{t:'"The"'},{t:'Amount'},{t:'No Possessive'}]},
+  {id:'r46', type:'row', indent:2, label:'3. Demonstrative', buzz:[{t:'Hybrid'},{t:'Specific Source First'},{t:'Secondarily General'}]},
+  {id:'r47', type:'row', indent:2, label:'4. Residuary', buzz:[{t:'Leftover'},{t:'Rest and Residue'}]},
+  {id:'r48', type:'row', indent:1, label:'C. Doctrine of Ademption', buzz:[{t:'Specific Gift'},{t:'No Longer Exists'},{t:'Adeem = Revoke/Withdraw'}]},
+  {id:'r49', type:'row', indent:3, label:'CL vs. UPC', buzz:[{t:'CL: Intent Irrelevant — Fails'},{t:'UPC: Intent Matters — Cash Sub'}]},
+  {id:'r50', type:'row', indent:1, label:'D. Satisfaction by Inter Vivos Gift', buzz:[{t:'After Will Execution'},{t:'Subs Gift in Will'},{t:'Writing Required'}]},
+  {id:'r51', type:'row', indent:1, label:'E. Abatement', buzz:[{t:'Reduce Gifts'},{t:'Pay Obligations'},{t:'Order: Specific Last'}]},
+  {id:'r52', type:'row', indent:1, label:'F. Increases in Property Value', buzz:[]},
+  {id:'r53', type:'row', indent:2, label:'1. During Testator\'s Life', buzz:[{t:'Accession'},{t:'Goes with Gift'}]},
+  {id:'r54', type:'row', indent:2, label:'2. After Testator\'s Death', buzz:[{t:'Goes to Specific Devisee'}]},
+  {id:'r55', type:'row', indent:1, label:'G. Exoneration', buzz:[{t:'Mortgage on Gift'},{t:'Modern: No Auto-Exoneration'}]},
+  {id:'r56', type:'row', indent:1, label:'H. Lapse / Anti-Lapse Statutes', buzz:[]},
+  {id:'r57', type:'row', indent:2, label:'Lapse', buzz:[{t:'Beneficiary Predeceases'},{t:'Gift Fails'}]},
+  {id:'r58', type:'row', indent:2, label:'Anti-Lapse', buzz:[{t:'Save'},{t:'Qualifying Relative'},{t:'Descendants Step In'}]},
+  {id:'r59', type:'row', indent:3, label:'Strict vs. Broad', buzz:[{t:"Strict: T's Descendants Only"},{t:'Broad (UPC): Stepchild / Grandparent'}]},
+  {id:'r60', type:'row', indent:2, label:'Survivorship Requirement', buzz:[{t:'UPC: 120 Hours'},{t:'Must Survive'},{t:'Surviving Beneficiary Rule'}]},
+  {id:'r61', type:'row', indent:1, label:'I. Survivor Rights', buzz:[]},
+  {id:'r62', type:'row', indent:2, label:'1. Omitted Spouse', buzz:[{t:'Will Existed'},{t:'Not Updated'},{t:'Intended or Oversight'},{t:'½ CP / ½ QCP / Up to ½ SP',c:'note'}]},
+  {id:'r63', type:'row', indent:2, label:'2. Omitted Child', buzz:[{t:'No Kids at Execution: Intestate Share'},{t:'Kids Existed: Pro Rata'}]},
+  {id:'r64', type:'row', indent:2, label:'Elective Share', buzz:[{t:'SP Regime Only'},{t:'Sets Floor'},{t:'Cannot Fully Disinherit'}]},
+  {id:'r65', type:'row', indent:3, label:'Sullivan Rule', buzz:[{t:'Intent to Defraud Spouse'},{t:'Illusory Trust'},{t:'Non-Probate Reached'}]},
+  {id:'r66', type:'row', indent:3, label:'Care Custodian Spouse (CCS)', buzz:[{t:'Caregiving'},{t:'Marriage within 90 Days'},{t:'Death within 6 Months'},{t:'Presumption: Fraud / UI'}]},
+  {id:'r67', type:'row', indent:2, label:'3. Slayers', buzz:[{t:"Can't Kill for the Will"},{t:'Treated as Predeceased'},{t:'Gets Zero'}]},
+  {id:'r68', type:'row', indent:2, label:'Advancement', buzz:[{t:"Heir's Share"},{t:'CL: Gifts = Advancements'},{t:'Modern: Writing Required'}]},
+  {id:'r69', type:'row', indent:2, label:'Hotchpot', buzz:[{t:'Add Back'},{t:'Recalculate'},{t:'Exceeds Share = Nothing More'}]},
+
+  {id:'s5', type:'section', label:'V. Has Beneficiary Renounced Rights?'},
+  {id:'r70', type:'row', indent:1, label:'A. Disclaimer / Release', buzz:[{t:'Heir Releases Interest'},{t:'Does NOT Avoid Creditors',c:'policy'},{t:'Medicaid Still Counts',c:'policy'}]},
+
+  {id:'s6', type:'section', label:'VI. Has There Been Partial / Total Failure of Will?'},
+  {id:'r71', type:'row', indent:1, label:'A. Intestate Succession — I PIG IN PE', buzz:[{t:'Issue'},{t:'Parents'},{t:'Issue of Parents'},{t:'Grandparents'},{t:'Issue of Pre-de Step'},{t:'Next of Kin'},{t:'Parents of Dead Spouse'},{t:'Escheat'}]},
+  {id:'r72', type:'row', indent:2, label:'CP Rules', buzz:[{t:'½ CP'},{t:'½ QCP'},{t:'Up to ½ SP'}]},
+  {id:'r73', type:'row', indent:2, label:'Distribution Methods', buzz:[{t:'Strict Per Stirpes: First Gen Always'},{t:'Per Capita w/ Rep: Where Alive'},{t:'UPC: Equalizes Each Gen'}]},
+  {id:'r74', type:'row', indent:2, label:'Simultaneous Death', buzz:[{t:'UPC: 120 Hours'},{t:'Must Survive'}]},
+  {id:'r75', type:'row', indent:2, label:'Adopted Children', buzz:[{t:'Full Intestate Rights'},{t:'Both Directions'}]},
+  {id:'r76', type:'row', indent:2, label:'Stepchildren', buzz:[{t:'No Auto Rights'},{t:'Unless Adopted'}]},
+  {id:'r77', type:'row', indent:2, label:'Advancements', buzz:[{t:'Add Back'},{t:'Recalculate'},{t:'Modern: Writing Required'}]},
+  {id:'r78', type:'row', indent:2, label:'General POA', buzz:[{t:'Anyone Including Self'},{t:'Creditors Can Reach'},{t:'In Estate (Tax)'}]},
+  {id:'r79', type:'row', indent:2, label:'Non-General (Special) POA', buzz:[{t:'Restricted Class'},{t:'Creditors Cannot Reach'},{t:'Not in Estate (Tax)'}]},
+  {id:'r80', type:'row', indent:2, label:'Taker in Default', buzz:[{t:'Donee Fumbled'},{t:"Donor's Backup"}]},
+  {id:'r81', type:'row', indent:2, label:'Residual Clause + General POA', buzz:[{t:'Majority: No'},{t:'Minority & UPC: Yes'}]},
+];
+
+let revealed = {};
+let marked = {};
+let mode = 'hide';
+
+function build() {
+  const container = document.getElementById('checklist');
+  container.innerHTML = '';
+  CHECKLIST.forEach(item => {
+    if (item.type === 'section') {
+      const sec = document.createElement('div');
+      sec.className = 'section';
+      sec.id = item.id;
+      const h = document.createElement('div');
+      h.className = 'section-header';
+      h.textContent = item.label;
+      sec.appendChild(h);
+      container.appendChild(sec);
+      return;
+    }
+    const lastSection = container.lastElementChild;
+    const row = document.createElement('div');
+    row.className = `row row-indent-${item.indent}`;
+    row.id = item.id;
+    if (marked[item.id] === 'got') row.classList.add('marked-got');
+    if (marked[item.id] === 'again') row.classList.add('marked-again');
+    if (revealed[item.id] || mode === 'show') row.classList.add('revealed');
+
+    const lbl = document.createElement('div');
+    lbl.className = `row-label l${Math.min(item.indent,3)}`;
+    lbl.textContent = item.label;
+    row.appendChild(lbl);
+
+    const buzzArea = document.createElement('div');
+    buzzArea.className = 'buzz-area';
+
+    if (item.buzz && item.buzz.length > 0) {
+      if (!revealed[item.id] && mode !== 'show') {
+        const hint = document.createElement('span');
+        hint.className = 'buzz-hidden';
+        hint.textContent = '— click to reveal';
+        buzzArea.appendChild(hint);
+      }
+      item.buzz.forEach(b => {
+        const tag = document.createElement('span');
+        tag.className = `tag ${b.c || 'standard'}`;
+        if (revealed[item.id] || mode === 'show') tag.classList.add('show');
+        tag.textContent = b.t;
+        buzzArea.appendChild(tag);
+      });
+
+      if (revealed[item.id] || mode === 'show') {
+        const actions = document.createElement('div');
+        actions.className = 'row-actions';
+        const gotBtn = document.createElement('button');
+        gotBtn.className = 'act-btn got' + (marked[item.id]==='got'?' active':'');
+        gotBtn.textContent = '✓ Got It';
+        gotBtn.onclick = (e) => { e.stopPropagation(); markRow(item.id, 'got'); };
+        const againBtn = document.createElement('button');
+        againBtn.className = 'act-btn again' + (marked[item.id]==='again'?' active':'');
+        againBtn.textContent = '↺ Again';
+        againBtn.onclick = (e) => { e.stopPropagation(); markRow(item.id, 'again'); };
+        actions.appendChild(gotBtn);
+        actions.appendChild(againBtn);
+        row.appendChild(actions);
+      }
+
+      row.onclick = () => revealRow(item.id);
+    }
+
+    row.appendChild(buzzArea);
+    if (lastSection) lastSection.appendChild(row);
+  });
+  updateProgress();
+}
+
+function revealRow(id) {
+  revealed[id] = true;
+  build();
+}
+
+function markRow(id, mark) {
+  if (marked[id] === mark) { delete marked[id]; }
+  else { marked[id] = mark; }
+  updateProgress();
+  build();
+}
+
+function revealAll() {
+  CHECKLIST.forEach(item => { if (item.type==='row' && item.buzz && item.buzz.length) revealed[item.id] = true; });
+  build();
+}
+
+function resetAll() {
+  revealed = {}; marked = {}; mode = 'hide';
+  document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.ctrl-btn').classList.add('active');
+  build();
+}
+
+function setMode(m, btn) {
+  mode = m;
+  document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if (m === 'show') revealAll();
+  else build();
+}
+
+function updateProgress() {
+  const rows = CHECKLIST.filter(i=>i.type==='row' && i.buzz && i.buzz.length > 0);
+  const rev = rows.filter(i=>revealed[i.id] || mode==='show').length;
+  const got = Object.values(marked).filter(v=>v==='got').length;
+  const again = Object.values(marked).filter(v=>v==='again').length;
+  const pct = rows.length ? (rev/rows.length*100) : 0;
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-text').textContent = rev+' of '+rows.length+' revealed';
+  document.getElementById('got-count').textContent = got;
+  document.getElementById('again-count').textContent = again;
+  document.getElementById('sum-got').textContent = got;
+  document.getElementById('sum-again').textContent = again;
+}
+
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+build();
+</script>
+</body>
+</html>

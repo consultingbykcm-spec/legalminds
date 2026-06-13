@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Fact Left Behind — Wills Q3</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+#app { width: 100%; max-width: 860px; }
+#header { background: #0f1e35; border-radius: 12px; padding: 16px 20px 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(201,151,58,0.25); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 18px; font-weight: 600; color: #f5f0e8; letter-spacing: 0.04em; }
+#header h1 span { color: #c9973a; }
+#header p { font-size: 10px; color: #6b8aaa; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em; }
+#level-indicator { display: flex; gap: 8px; align-items: center; }
+.level-pip { width: 32px; height: 6px; border-radius: 3px; background: #1a2f4a; transition: background 0.3s; }
+.level-pip.active { background: #c9973a; }
+.level-pip.done { background: #1d9e75; }
+#level-label { font-size: 12px; color: #c9973a; font-weight: 500; margin-left: 4px; }
+#hypo-box { background: #0f1e35; border-radius: 12px; padding: 20px; margin-bottom: 12px; border: 1px solid rgba(201,151,58,0.15); }
+#hypo-title { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#hypo-text { font-size: 13px; color: #d0dce8; line-height: 1.75; }
+.fact { background: rgba(201,151,58,0.15); border-radius: 3px; padding: 1px 4px; }
+#panel { background: #0f1e35; border-radius: 12px; padding: 20px; }
+#l1-question { font-size: 14px; font-weight: 500; color: #f5f0e8; margin-bottom: 4px; }
+#l1-sub { font-size: 11px; color: #6b8aaa; margin-bottom: 18px; }
+#issue-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.cat-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 0 2px; font-weight: 500; }
+.issue-item { display: flex; align-items: flex-start; gap: 12px; background: #1a2f4a; border-radius: 8px; padding: 13px 15px; cursor: pointer; border: 1.5px solid #1a2f4a; transition: all 0.15s; }
+.issue-item:hover { border-color: #2a4a6a; }
+.issue-item.selected { background: #1e3a58; border-color: #c9973a; }
+.issue-check { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #2a4a6a; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.issue-item.selected .issue-check { background: #c9973a; border-color: #c9973a; }
+.check-mark { font-size: 12px; color: #0f1e35; display: none; }
+.issue-item.selected .check-mark { display: block; }
+.issue-text { font-size: 13px; color: #a0b8cc; line-height: 1.4; }
+.issue-item.selected .issue-text { color: #f5f0e8; }
+.issue-item.correct { background: #0f3d2a; border-color: #1d9e75; }
+.issue-item.correct .issue-text { color: #9fe1cb; }
+.issue-item.correct .issue-check { background: #1d9e75; border-color: #1d9e75; }
+.issue-item.missed { background: #2a1a0a; border-color: #c9973a; }
+.issue-item.missed .issue-text { color: #f5d06a; }
+.issue-item.missed .issue-check { border-color: #c9973a; }
+.issue-item.wrong { background: #3d1515; border-color: #e24b4a; }
+.issue-item.wrong .issue-text { color: #f09595; }
+.result-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
+.tag-correct { background: rgba(29,158,117,0.2); color: #1d9e75; }
+.tag-missed { background: rgba(201,151,58,0.2); color: #c9973a; }
+.tag-wrong { background: rgba(226,75,74,0.2); color: #e24b4a; }
+#score-bar { background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; display: none; }
+#score-bar-title { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+#score-cells { display: flex; gap: 10px; }
+.score-cell { flex: 1; text-align: center; background: #0f1e35; border-radius: 6px; padding: 10px 6px; }
+.score-cell-n { font-size: 18px; font-weight: 500; color: #c9973a; }
+.score-cell-l { font-size: 9px; color: #6b8aaa; text-transform: uppercase; margin-top: 2px; }
+#l2-progress { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.issue-dot { width: 28px; height: 28px; border-radius: 50%; background: #1a2f4a; border: 2px solid #2a4a6a; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #6b8aaa; }
+.issue-dot.active { border-color: #c9973a; background: rgba(201,151,58,0.15); color: #c9973a; }
+.issue-dot.done { border-color: #1d9e75; background: rgba(29,158,117,0.15); color: #9fe1cb; }
+#l2-subq { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+#l2-issue-title { font-size: 10px; color: #c9973a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+#l2-element-box { background: #1a2f4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(201,151,58,0.2); }
+#l2-element-label { font-size: 10px; color: #6b8aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+#l2-element-text { font-size: 14px; font-weight: 500; color: #f5f0e8; line-height: 1.5; }
+#l2-element-sub { font-size: 12px; color: #6b8aaa; margin-top: 5px; }
+#l2-instruction { font-size: 11px; color: #6b8aaa; margin-bottom: 10px; }
+#fact-tiles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.fact-tile { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #2a4a6a; background: #1a2f4a; color: #a0b8cc; font-size: 12px; cursor: pointer; transition: all 0.15s; line-height: 1.4; }
+.fact-tile:hover { border-color: #c9973a; color: #f5f0e8; }
+.fact-tile.selected { background: #1e3a58; border-color: #c9973a; color: #f5f0e8; }
+.fact-tile.correct { background: #0f3d2a; border-color: #1d9e75; color: #9fe1cb; cursor: default; }
+.fact-tile.missed-fact { background: #3d2f0a; border-color: #c9973a; color: #f5d06a; cursor: default; }
+.fact-tile.wrong-fact { background: #3d1515; border-color: #e24b4a; color: #f09595; cursor: default; }
+.fact-tile.neutral { background: #1a2f4a; border-color: #1a2f4a; color: #4a6a8a; cursor: default; }
+#l2-explain { display: none; background: #1a2f4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1px solid rgba(201,151,58,0.3); }
+#l2-explain-text { font-size: 13px; color: #a0b8cc; line-height: 1.6; }
+.btn-primary { width: 100%; background: #c9973a; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 500; color: #0f1e35; cursor: pointer; font-family: inherit; }
+#prog-text { text-align: center; font-size: 11px; color: #6b8aaa; margin-top: 12px; }
+#results { display: none; text-align: center; padding: 32px 20px; }
+#results h2 { font-size: 22px; font-weight: 500; color: #f5f0e8; margin-bottom: 6px; }
+#results-score { font-size: 54px; font-weight: 500; color: #c9973a; line-height: 1; margin-bottom: 4px; }
+#results-sub { font-size: 13px; color: #6b8aaa; margin-bottom: 24px; }
+#results-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.r-cell { background: #1a2f4a; border-radius: 8px; padding: 14px; }
+.r-cell-n { font-size: 20px; font-weight: 500; color: #c9973a; }
+.r-cell-l { font-size: 10px; color: #6b8aaa; text-transform: uppercase; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="header">
+  <div>
+    <h1>No Fact <span>Left Behind</span></h1>
+    <p>Wills · Question 3 · Tom's Estate</p>
+  </div>
+  <div id="level-indicator">
+    <div class="level-pip active" id="pip1"></div>
+    <div class="level-pip" id="pip2"></div>
+    <span id="level-label">Level 1</span>
+  </div>
+</div>
+
+<div id="hypo-box">
+  <div id="hypo-title">Fact Pattern — Question #3</div>
+  <div id="hypo-text">
+    In 1998, <span class="fact" id="f-will-valid">Tom executed a valid will</span>. The dispositive provisions: (1) <span class="fact" id="f-al-gift">$100,000 to my friend, Al</span>; (2) <span class="fact" id="f-beth-gift">My residence on Elm St. to my sister Beth</span>; (3) <span class="fact" id="f-carl-gift">My OmegaCorp stock to my brother Carl</span>; (4) <span class="fact" id="f-su-residue">The residue of my estate to State University (SU)</span>.<br><br>
+    In 1999, <span class="fact" id="f-codicil-valid">Tom had a falling out with Al and executed a valid codicil</span> that <span class="fact" id="f-codicil-revokes">expressly revoked paragraph 1 of the will</span> but made no other changes.<br><br>
+    In 2000, <span class="fact" id="f-reconciled">Tom reconciled with Al</span> and <span class="fact" id="f-al-statement">told several people, "Al doesn't need to worry; I've provided for him."</span><br><br>
+    In 2001, <span class="fact" id="f-beth-died">Beth died intestate</span>, survived only by <span class="fact" id="f-beth-heirs">one child, Norm, and two grandchildren, Deb and Eve, who were children of a predeceased child of Beth</span>. Also in 2001, <span class="fact" id="f-omega-sold">Tom sold his OmegaCorp stock</span> and <span class="fact" id="f-alpha-bought">reinvested the proceeds by purchasing AlphaCorp stock</span>.<br><br>
+    Tom died in 2002. The will was unmarred, but <span class="fact" id="f-null-void">"Null and Void" was written across the text of the codicil in Tom's handwriting</span>, <span class="fact" id="f-tom-sig">followed by Tom's signature</span>. The codicil was found in <span class="fact" id="f-safe-box">Tom's safe deposit box</span>.<br><br>
+    Tom was survived by <span class="fact" id="f-survivors">Al, Carl, Norm, Deb, and Eve</span>. His estate: <span class="fact" id="f-estate">$100,000 in cash, the residence on Elm St., and the AlphaCorp stock</span>.
+  </div>
+</div>
+
+<div id="panel">
+
+  <div id="level1">
+    <div id="l1-question">Spot the Issues</div>
+    <div id="l1-sub">Check every legal issue this fact pattern raises. Include all issues you would address in an essay — even ones that resolve quickly.</div>
+    <div id="issue-grid"></div>
+    <div id="score-bar">
+      <div id="score-bar-title">Level 1 Results</div>
+      <div id="score-cells">
+        <div class="score-cell"><div class="score-cell-n" id="l1-correct-n">0</div><div class="score-cell-l">Spotted</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-missed-n">0</div><div class="score-cell-l">Missed</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-wrong-n">0</div><div class="score-cell-l">False alarms</div></div>
+        <div class="score-cell"><div class="score-cell-n" id="l1-pct">0%</div><div class="score-cell-l">Accuracy</div></div>
+      </div>
+    </div>
+    <div id="l1-btn-wrap"><button class="btn-primary" id="l1-submit">Check My Issues →</button></div>
+    <div id="l1-next-wrap" style="display:none;"><button class="btn-primary" id="l1-next">Level 2 — No Fact Left Behind →</button></div>
+  </div>
+
+  <div id="level2" style="display:none;">
+    <div id="l2-progress"></div>
+    <div id="l2-subq"></div>
+    <div id="l2-issue-title"></div>
+    <div id="l2-element-box">
+      <div id="l2-element-label">Element / Rule</div>
+      <div id="l2-element-text"></div>
+      <div id="l2-element-sub"></div>
+    </div>
+    <div id="l2-instruction">Tap every fact from the hypo that is legally operative for this element.</div>
+    <div id="fact-tiles"></div>
+    <div id="l2-explain"><div id="l2-explain-text"></div></div>
+    <button class="btn-primary" id="l2-check">Check Facts →</button>
+    <div id="prog-text"></div>
+  </div>
+
+  <div id="results">
+    <h2>No Fact Left Behind.</h2>
+    <div id="results-score"></div>
+    <div id="results-sub"></div>
+    <div id="results-grid">
+      <div class="r-cell"><div class="r-cell-n" id="r-issues"></div><div class="r-cell-l">Issues spotted</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-facts"></div><div class="r-cell-l">Facts deployed</div></div>
+      <div class="r-cell"><div class="r-cell-n" id="r-total"></div><div class="r-cell-l">Combined %</div></div>
+    </div>
+    <button class="btn-primary" id="restart-btn">Play again</button>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+
+var ISSUES = [
+  // VALIDITY
+  { id:'will-valid', text:'Validity of 1998 will — all formalities satisfied', cat:'Validity', real:true },
+  // CODICIL
+  { id:'codicil-effect', text:'Effect of 1999 codicil — expressly revokes Al\'s $100K gift; republishes will as of 1999', cat:'The 1999 Codicil', real:true },
+  // REVOCATION OF CODICIL
+  { id:'phys-revoke', text:'Revocation of 1999 codicil by physical act — "Null and Void" + Tom\'s signature', cat:'Revocation of Codicil', real:true },
+  { id:'holo-revoke', text:'Alternative: "Null and Void" as holographic revocation instrument (weaker argument)', cat:'Revocation of Codicil', real:true },
+  // DRR
+  { id:'drr', text:'Dependent Relative Revocation (DRR) — Tom revoked codicil in reliance on mistaken belief that Al was otherwise provided for', cat:'DRR & Revival', real:true },
+  { id:'revival-al', text:'Revival of Al\'s $100K gift if codicil is revoked and DRR applies', cat:'DRR & Revival', real:true },
+  // BETH / ANTI-LAPSE
+  { id:'beth-predecease', text:'Beth predeceased Tom — gift of Elm St. residence lapses', cat:'Anti-Lapse', real:true },
+  { id:'anti-lapse', text:'Anti-lapse statute — Beth is Tom\'s sister (qualifying relative); does the gift pass to Beth\'s descendants?', cat:'Anti-Lapse', real:true },
+  // CARL / ADEMPTION
+  { id:'carl-specific', text:'Classification of OmegaCorp stock gift — specific devise ("my OmegaCorp stock")', cat:'Carl & Ademption', real:true },
+  { id:'ademption', text:'Ademption by extinction — Tom sold OmegaCorp stock before death; Carl takes nothing', cat:'Carl & Ademption', real:true },
+  // RESIDUE / SU
+  { id:'alpha-residue', text:'AlphaCorp stock — after-acquired property not disposed of by will → passes as residue to SU', cat:'Residue & SU', real:true },
+  // DECOYS
+  { id:'capacity', text:'Tom lacked testamentary capacity when writing "Null and Void"', cat:'Consider carefully', real:false },
+  { id:'lapse-al', text:'Al\'s gift lapses because Al predeceased Tom', cat:'Consider carefully', real:false },
+  { id:'satisfaction', text:'Tom\'s statement "Al doesn\'t need to worry" constitutes a satisfaction of the $100K gift', cat:'Consider carefully', real:false },
+  { id:'accretion', text:'AlphaCorp stock passes to Carl as an accretion/increase of the OmegaCorp gift', cat:'Consider carefully', real:false },
+];
+
+var L2 = [
+  {
+    subq: 'Revocation of Codicil',
+    issueTitle: 'Revocation by Physical Act — "Null and Void" + Tom\'s Signature',
+    element: 'A codicil may be revoked by a physical act (burning, tearing, canceling, obliterating, or destroying) coupled with simultaneous intent to revoke. When a codicil is last known to be in the possession of the testator and the testator remained competent until death, any physical act on the codicil is presumed to have been done by the testator.',
+    sub: 'Does writing "Null and Void" across the codicil constitute a valid physical act revocation?',
+    keyFacts: ['f-null-void','f-tom-sig','f-safe-box','f-will-valid'],
+    allFacts: ['f-null-void','f-tom-sig','f-safe-box','f-will-valid','f-codicil-valid','f-reconciled','f-al-statement','f-codicil-revokes'],
+    explain: 'Three facts do the work here: (1) "Null and Void" written across the TEXT of the codicil — writing across the text is cancellation of a material part, qualifying as a physical act. (2) Tom\'s signature — resolves any ambiguity about who performed the act; the presumption is Tom did it. (3) Found in Tom\'s safe deposit box — last known in Tom\'s possession, supporting the presumption he was the one who wrote it. Together: valid revocation by physical act with simultaneous intent to revoke.'
+  },
+  {
+    subq: 'Revocation of Codicil — Alternative Argument',
+    issueTitle: 'Alternative: Holographic Revocation Instrument',
+    element: 'A will or codicil may also be revoked by a subsequent testamentary instrument. A holographic instrument requires that the material provisions be in the testator\'s handwriting and signed by the testator. However, "Null and Void" standing alone has no legal meaning — it does not identify WHAT is being made null and void.',
+    sub: 'Can "Null and Void" + Tom\'s signature qualify as a holographic revocation? Why is this the weaker argument?',
+    keyFacts: ['f-null-void','f-tom-sig'],
+    allFacts: ['f-null-void','f-tom-sig','f-safe-box','f-codicil-valid','f-will-valid','f-reconciled'],
+    explain: '"Null and Void" was written across the codicil in Tom\'s handwriting and signed by Tom — those elements are present. BUT the weakness is that "Null and Void" has no legal meaning standing alone. A holographic revocation instrument must have sufficient content to constitute a revocatory act. Courts may find the writing too ambiguous to serve as an independent holographic instrument. The physical act argument is much stronger — which is why the model answer calls this the weaker argument.'
+  },
+  {
+    subq: 'DRR & Revival of Al\'s Gift',
+    issueTitle: 'Dependent Relative Revocation — Was Tom\'s Revocation Based on a Mistake?',
+    element: 'DRR: A court may disregard a revocation if (1) the revocation was based on a mistake of law or fact; (2) the testator would not have revoked but for that mistake; AND (3) disregarding the revocation brings the result closer to testator\'s intent than the alternative.',
+    sub: 'Did Tom revoke the codicil in reliance on a mistaken belief that Al was otherwise provided for?',
+    keyFacts: ['f-reconciled','f-al-statement','f-null-void','f-codicil-revokes','f-al-gift'],
+    allFacts: ['f-reconciled','f-al-statement','f-null-void','f-codicil-revokes','f-al-gift','f-codicil-valid','f-estate','f-survivors'],
+    explain: '"Al doesn\'t need to worry; I\'ve provided for him" is the DRR key fact. Tom told SEVERAL PEOPLE this — it shows he revoked the codicil based on a mistaken belief that Al was somehow provided for elsewhere. In fact, Al was NOT otherwise provided for. Tom would not have revoked the codicil (which had stripped Al\'s gift) if he knew Al had no other provision. Under DRR, the revocation of the codicil is disregarded → the codicil is treated as never revoked → wait, that leaves Al with nothing. Actually the reverse: the codicil itself is revoked → the original 1998 will provision ($100K to Al) is REVIVED. Result closer to Tom\'s intent than letting SU take the $100K.'
+  },
+  {
+    subq: 'Anti-Lapse — Beth\'s Gift',
+    issueTitle: 'Anti-Lapse — Beth Predeceased Tom; Who Takes the Elm St. Residence?',
+    element: 'Anti-lapse statute: if a predeceasing beneficiary was a qualifying relative of the testator AND left descendants who survived the testator, those descendants take the gift by substitution. Under the broad view (California), a sister qualifies. Descendants take by representation.',
+    sub: 'Beth died before Tom. Does her gift of the Elm St. residence lapse, or does anti-lapse save it for her descendants?',
+    keyFacts: ['f-beth-died','f-beth-heirs','f-beth-gift','f-survivors'],
+    allFacts: ['f-beth-died','f-beth-heirs','f-beth-gift','f-survivors','f-will-valid','f-estate','f-su-residue'],
+    explain: 'Beth (Tom\'s sister) predeceased Tom — she is a qualifying relative under California\'s anti-lapse statute. She left Norm (her child) and Deb and Eve (grandchildren, children of a predeceased child of Beth). Anti-lapse saves the gift. Distribution by representation: Norm takes 1/2 (his parent\'s share). The other 1/2 goes to the branch of the predeceased child — Deb and Eve split that 1/2, each taking 1/4. Norm = 1/2, Deb = 1/4, Eve = 1/4.'
+  },
+  {
+    subq: 'Carl & Ademption',
+    issueTitle: 'Classification of OmegaCorp Gift — Specific Devise',
+    element: 'A specific devise is a testamentary disposition of a specifically identified asset. The word "my" signals a specific devise — the testator is referring to a particular, identified piece of property that he currently owns.',
+    sub: 'Is "My OmegaCorp stock to my brother Carl" a specific, general, or demonstrative devise?',
+    keyFacts: ['f-carl-gift'],
+    allFacts: ['f-carl-gift','f-omega-sold','f-alpha-bought','f-su-residue','f-estate','f-al-gift'],
+    explain: '"My OmegaCorp stock" — the possessive "my" is the signal. Tom was referring to the specific OmegaCorp stock he owned at the time of execution. This is a specific devise, not a general one. Classification matters critically here because only specific devises are subject to ademption.'
+  },
+  {
+    subq: 'Carl & Ademption',
+    issueTitle: 'Ademption by Extinction — OmegaCorp Stock Sold Before Death',
+    element: 'Ademption by extinction: when a testator disposes of specifically devised property during lifetime, the gift is adeemed — the beneficiary takes nothing. Under the common law identity rule, the testator\'s motive or intent is irrelevant. The property is simply gone.',
+    sub: 'Tom sold the OmegaCorp stock in 2001 and bought AlphaCorp stock. Does Carl get anything?',
+    keyFacts: ['f-omega-sold','f-alpha-bought','f-carl-gift','f-estate'],
+    allFacts: ['f-omega-sold','f-alpha-bought','f-carl-gift','f-estate','f-su-residue','f-will-valid','f-survivors'],
+    explain: 'Tom sold ALL of his OmegaCorp stock in 2001 — before his death in 2002. The estate at death contains AlphaCorp stock, NOT OmegaCorp stock. The specifically devised property is not in the estate. The gift is adeemed by extinction. Carl receives nothing. Note: the AlphaCorp stock is NOT a replacement or accretion of the OmegaCorp gift — it is a completely different corporate entity, a substantive change, not a mere change in form.'
+  },
+  {
+    subq: 'Residue & SU',
+    issueTitle: 'AlphaCorp Stock — After-Acquired Property Passes as Residue',
+    element: 'Property not otherwise disposed of by the will passes through the residuary clause. After-acquired property — property purchased after the will was executed — is not specifically devised and falls into the residue.',
+    sub: 'Who gets the AlphaCorp stock?',
+    keyFacts: ['f-alpha-bought','f-su-residue','f-estate'],
+    allFacts: ['f-alpha-bought','f-su-residue','f-estate','f-omega-sold','f-carl-gift','f-will-valid'],
+    explain: 'Tom purchased AlphaCorp stock in 2001 — after the 1998 will was executed. The will does not dispose of AlphaCorp stock specifically. It is after-acquired property that falls into the residue. The residuary clause gives "the residue of my estate to State University." SU takes the AlphaCorp stock. Carl has no claim to it — it is a different corporate entity, not a continuation of the OmegaCorp gift.'
+  },
+];
+
+var state = {
+  phase:'l1', selected:{},
+  l1Correct:0, l1Missed:0, l1Wrong:0,
+  l2Idx:0, l2FactSel:{},
+  totalFactsCorrect:0, totalFactsTotal:0,
+};
+
+function g(id){ return document.getElementById(id); }
+
+function buildL1(){
+  var grid = g('issue-grid');
+  grid.innerHTML = '';
+  var lastCat = '';
+  ISSUES.forEach(function(issue){
+    if(issue.cat !== lastCat){
+      var label = document.createElement('div');
+      label.className = 'cat-label';
+      label.textContent = issue.cat;
+      grid.appendChild(label);
+      lastCat = issue.cat;
+    }
+    var div = document.createElement('div');
+    div.className = 'issue-item'; div.id = 'issue-' + issue.id;
+    div.innerHTML = '<div class="issue-check"><span class="check-mark">✓</span></div><div class="issue-text">' + issue.text + '</div>';
+    div.addEventListener('click', function(){
+      if(state.phase !== 'l1') return;
+      state.selected[issue.id] = !state.selected[issue.id];
+      div.classList.toggle('selected', !!state.selected[issue.id]);
+    });
+    grid.appendChild(div);
+  });
+}
+
+g('l1-submit').addEventListener('click', function(){
+  if(state.phase !== 'l1') return;
+  state.phase = 'l1-result';
+  var correct=0, missed=0, wrong=0;
+  ISSUES.forEach(function(issue){
+    var el = g('issue-' + issue.id);
+    var sel = !!state.selected[issue.id];
+    if(issue.real && sel){ correct++; el.classList.add('correct'); var t=document.createElement('span'); t.className='result-tag tag-correct'; t.textContent='✓ Spotted'; el.appendChild(t); }
+    else if(issue.real && !sel){ missed++; el.classList.add('missed'); var t=document.createElement('span'); t.className='result-tag tag-missed'; t.textContent='⚠ Missed'; el.appendChild(t); }
+    else if(!issue.real && sel){ wrong++; el.classList.add('wrong'); var t=document.createElement('span'); t.className='result-tag tag-wrong'; t.textContent='✗ False alarm'; el.appendChild(t); }
+  });
+  state.l1Correct=correct; state.l1Missed=missed; state.l1Wrong=wrong;
+  var realCount = ISSUES.filter(function(i){ return i.real; }).length;
+  var pct = Math.round(correct/realCount*100);
+  g('l1-correct-n').textContent=correct; g('l1-missed-n').textContent=missed; g('l1-wrong-n').textContent=wrong; g('l1-pct').textContent=pct+'%';
+  g('score-bar').style.display='block'; g('l1-btn-wrap').style.display='none'; g('l1-next-wrap').style.display='block';
+  g('pip1').className='level-pip done'; g('pip2').className='level-pip active'; g('level-label').textContent='Level 2 ready';
+});
+
+g('l1-next').addEventListener('click', function(){
+  g('level1').style.display='none'; g('level2').style.display='block';
+  state.phase='l2'; state.l2Idx=0; g('level-label').textContent='Level 2';
+  buildDots(); renderL2();
+});
+
+function buildDots(){
+  var wrap = g('l2-progress'); wrap.innerHTML='';
+  L2.forEach(function(el,i){
+    var dot = document.createElement('div');
+    dot.className='issue-dot'+(i===0?' active':''); dot.id='dot-'+i; dot.textContent=(i+1);
+    wrap.appendChild(dot);
+  });
+}
+
+function renderL2(){
+  var el = L2[state.l2Idx];
+  state.l2FactSel = {};
+  g('l2-subq').textContent = el.subq;
+  g('l2-issue-title').textContent = el.issueTitle;
+  g('l2-element-text').textContent = el.element;
+  g('l2-element-sub').textContent = el.sub;
+  g('l2-explain').style.display='none';
+  g('l2-check').textContent='Check Facts →';
+  g('prog-text').textContent='Element '+(state.l2Idx+1)+' of '+L2.length;
+  var tilesWrap = g('fact-tiles'); tilesWrap.innerHTML='';
+  el.allFacts.forEach(function(fid){
+    var factEl = document.getElementById(fid);
+    var text = factEl ? factEl.textContent : fid;
+    var tile = document.createElement('div');
+    tile.className='fact-tile'; tile.textContent=text; tile.id='tile-'+fid;
+    tile.addEventListener('click', function(){
+      if(state.l2FactSel._locked) return;
+      state.l2FactSel[fid] = !state.l2FactSel[fid];
+      tile.classList.toggle('selected', !!state.l2FactSel[fid]);
+    });
+    tilesWrap.appendChild(tile);
+  });
+  L2.forEach(function(e,i){
+    var dot=g('dot-'+i);
+    dot.className='issue-dot'+(i===state.l2Idx?' active':i<state.l2Idx?' done':'');
+  });
+}
+
+g('l2-check').addEventListener('click', function(){
+  if(state.phase !== 'l2') return;
+  var el = L2[state.l2Idx];
+  if(!state.l2FactSel._locked){
+    state.l2FactSel._locked = true;
+    var correct=0, missed=0;
+    el.allFacts.forEach(function(fid){
+      var isKey = el.keyFacts.indexOf(fid) >= 0;
+      var sel = !!state.l2FactSel[fid];
+      var tile = g('tile-'+fid);
+      tile.classList.remove('selected');
+      if(isKey && sel){ correct++; tile.className='fact-tile correct'; }
+      else if(isKey && !sel){ missed++; tile.className='fact-tile missed-fact'; }
+      else if(!isKey && sel){ tile.className='fact-tile wrong-fact'; }
+      else{ tile.className='fact-tile neutral'; }
+    });
+    state.totalFactsCorrect += correct; state.totalFactsTotal += el.keyFacts.length;
+    g('l2-explain-text').textContent = el.explain;
+    g('l2-explain').style.display='block';
+    g('l2-check').textContent = state.l2Idx < L2.length-1 ? 'Next Element →' : 'See Results →';
+  } else {
+    if(state.l2Idx < L2.length-1){
+      g('dot-'+state.l2Idx).className='issue-dot done';
+      state.l2Idx++; state.l2FactSel={}; renderL2();
+    } else { showResults(); }
+  }
+});
+
+function showResults(){
+  g('level2').style.display='none'; g('results').style.display='block';
+  g('pip2').className='level-pip done'; g('level-label').textContent='Complete';
+  var realCount = ISSUES.filter(function(i){ return i.real; }).length;
+  var issuePct = Math.round(state.l1Correct/realCount*100);
+  var factPct = state.totalFactsTotal>0 ? Math.round(state.totalFactsCorrect/state.totalFactsTotal*100) : 0;
+  var combined = Math.round((issuePct+factPct)/2);
+  g('results-score').textContent = combined+'%';
+  g('results-sub').textContent = combined>=85?'No fact left behind, Counselor.':combined>=65?'Solid — a few facts slipped through.':'Keep drilling — the facts are all there.';
+  g('r-issues').textContent = state.l1Correct+'/'+realCount;
+  g('r-facts').textContent = state.totalFactsCorrect+'/'+state.totalFactsTotal;
+  g('r-total').textContent = combined+'%';
+}
+
+g('restart-btn').addEventListener('click', function(){
+  state={phase:'l1',selected:{},l1Correct:0,l1Missed:0,l1Wrong:0,l2Idx:0,l2FactSel:{},totalFactsCorrect:0,totalFactsTotal:0};
+  g('results').style.display='none'; g('level2').style.display='none'; g('level1').style.display='block';
+  g('score-bar').style.display='none'; g('l1-btn-wrap').style.display='block'; g('l1-next-wrap').style.display='none';
+  g('pip1').className='level-pip active'; g('pip2').className='level-pip'; g('level-label').textContent='Level 1';
+  buildL1();
+});
+
+buildL1();
+})();
+</script>
+</body>
+</html>
